@@ -1,0 +1,5 @@
+{
+    "uwb.operation": [
+        "com.webos.service.uwb/getUwbServiceState"
+    ]
+}

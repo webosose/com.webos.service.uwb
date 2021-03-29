@@ -1,0 +1,4 @@
+[D-BUS Service]
+Name=com.webos.service.uwb
+Exec=@WEBOS_INSTALL_SBINDIR@/webos-uwb-service
+Type=static
