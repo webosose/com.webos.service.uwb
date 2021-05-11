@@ -24,17 +24,20 @@ public:
 
     ~UwbAdaptor();
     bool init(LSHandle *sh);
+
     bool getUwbServiceState(LSHandle *sh, LSMessage *message);
     bool getUwbSpecificInfo(LSHandle *sh, LSMessage *message);
     bool getRangingInfo(LSHandle *sh, LSMessage *message);
 
-    void updateServiceState(bool isServiceAvailable);
+    void updateServiceState(bool isServiceAvailable); //Not supported currently
     void updateSpecificInfo(bool modState, string fwVersion, string fwCrc);
-    void updateRangingInfo(uint8_t condition, string remoteDevAddr, int64_t angle, int64_t distance);
-    void updateDisconnectedStatus(bool isDisconnected);
+    void updateRangingInfo(int condition, string remoteDevAddr, int64_t angle, int64_t distance);
+    void updateDisconnectedDevice(uint16_t deviceID);
+
     void notifySubscriberServiceState(bool isServiceAvailable);
     void notifySubscriberSpecificInfo(UwbSpecInfo& info);
     void notifySubscriberRangingInfo(UwbRangingInfo& rangingInfo);
+
     void writeServiceState(pbnjson::JValue &responseObj, bool isServiceAvailable);
     void writeSpecificInfo(pbnjson::JValue &responseObj, UwbSpecInfo &info);
     void writeRangingInfo(pbnjson::JValue &responseObj, UwbRangingInfo& rangingInfo);

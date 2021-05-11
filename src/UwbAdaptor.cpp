@@ -289,7 +289,7 @@ void UwbAdaptor::updateRangingInfo(uint8_t condition, string remoteDevAddr, int6
     delete rangingInfo;
 }
 
-void UwbAdaptor::updateDisconnectedStatus(bool isDisconnected) {
+void UwbAdaptor::updateDisconnectedDevice(uint16_t deviceID) {
     m_connectionStatus = isDisconnected;
     m_sessionId = 0;
 }
