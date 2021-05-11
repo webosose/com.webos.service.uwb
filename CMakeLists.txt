@@ -20,6 +20,8 @@ add_definitions(${PBNJSON_CXX_CFLAGS})
 pkg_check_modules(PMLOGLIB REQUIRED PmLogLib)
 add_definitions(${PMLOGLIB_CFLAGS})
 
+webos_add_compiler_flags(ALL -fpermissive)
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
