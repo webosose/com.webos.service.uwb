@@ -14,6 +14,7 @@ add_definitions(${GLIB2_CFLAGS})
 #add_definitions(${GIO2_CFLAGS})
 
 pkg_check_modules(LUNASERVICE2 REQUIRED luna-service2)
+include_directories(${LUNASERVICE2_INCLUDE_DIRS})
 add_definitions(${LUNASERVICE2_CFLAGS})
 
 #pkg_check_modules(LUNAPREFS REQUIRED luna-prefs)
@@ -37,7 +38,7 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 target_link_libraries(${PROJECT_NAME}
     ${GLIB2_LDFLAGS} ${LUNASERVICE2_LDFLAGS} ${PBNJSON_CXX_LDFLAGS}
     ${PMLOGLIB_LDFLAGS}
-    pthread)
+    luna-service2++ pthread)
 
 webos_build_daemon(NAME ${PROJECT_NAME})
 webos_build_system_bus_files()
