@@ -1,5 +1,7 @@
 {
     "uwb.operation": [
-        "com.webos.service.uwb/getUwbServiceState"
+        "com.webos.service.uwb/getUwbServiceState",
+        "com.webos.service.uwb/getUwbSpecificInfo",
+        "com.webos.service.uwb/getRangingInfo"
     ]
 }

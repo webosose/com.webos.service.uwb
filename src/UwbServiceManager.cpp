@@ -4,8 +4,8 @@
 
 LSMethod UwbServiceManager::serviceMethods[] = {
     { "getUwbServiceState", getUwbServiceState },
-//    { "getUwbSpecificInfo", getUwbSpecificInfo },
-//    { "getRangingInfo",     getRangingInfo     },
+    { "getUwbSpecificInfo", getUwbSpecificInfo },
+    { "getRangingInfo",     getRangingInfo     },
     { 0               ,      0                 }
 };
 
@@ -34,21 +34,7 @@ bool UwbServiceManager::init(GMainLoop *mainLoop) {
 
     UWB_LOG_DEBUG("mServiceHandle =%p", mServiceHandle);
 
-//    mUwbAdaptor = UwbAdaptor::getInstance();
-//    if(!mUwbAdaptor) {
-//        mUwbAdaptor->init();
-//    } else {
-//        UWB_LOG_DEBUG("mUwbAdaptor not created");
-//        return false;
-//    }
-//
-//    mUwbSessionCtl = UwbSessionControl::getInstance();
-//    if(!mUwbSessionCtl) {
-//        mUwbSessionCtl->init();
-//    } else {
-//        UWB_LOG_DEBUG("mUwbSessionCtl not created");
-//        return false;
-//    }
+//TO DO : adaptor and session control initialization
 
     return true;
 }
@@ -102,7 +88,7 @@ bool UwbServiceManager::getUwbServiceState(LSHandle *sh, LSMessage *message, voi
 
     LSErrorInit(&mLSError);
 
-    //schema check routine
+    //TO DO : schema check routine
 
     //subscription check
     if (LSMessageIsSubscription(message)) {
@@ -126,6 +112,118 @@ bool UwbServiceManager::getUwbServiceState(LSHandle *sh, LSMessage *message, voi
     responseObj.put("returnValue", true);
     responseObj.put("serviceAvailability", true);
     responseObj.put("subscribed", isSubscription);
+
+    if (!LSMessageReply(sh, message, responseObj.stringify().c_str(), &mLSError))
+    {
+        UWB_LOG_ERROR("HANDLE_getUwbServiceState Message reply error!!");
+        LSErrorPrint(&mLSError, stdout);
+
+        return false;
+    }
+    return true;
+}
+
+bool UwbServiceManager::getUwbSpecificInfo(LSHandle *sh, LSMessage *message, void *data) {
+    UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
+
+    LSError mLSError;
+    bool isSubscription = false;
+    pbnjson::JValue responseObj = pbnjson::Object();
+
+    LSErrorInit(&mLSError);
+
+    //TO DO : schema check routine
+
+    //subscription check
+    if (LSMessageIsSubscription(message)) {
+        isSubscription = true;
+        if (LSSubscriptionAdd(sh, "getUwbServiceState", message, &mLSError) == false) {
+            UWB_LOG_ERROR("Failed to add getUwbServiceState to subscription");
+            //send error response
+            responseObj.put("returnValue", false);
+            responseObj.put("errorCode", UWB_UNKNOWN_ERROR);
+            responseObj.put("errorText", "Unknwon");
+            LSMessageReply(sh,message, responseObj.stringify().c_str() , &mLSError ); // send error message
+            return true;
+        }
+    }
+
+    // serialization and send
+
+    if (responseObj.isNull())
+            return false;
+
+    responseObj.put("returnValue", true);
+    responseObj.put("modState", "1");
+    responseObj.put("fwVersion", "0");
+    responseObj.put("subscribed", isSubscription);
+
+    if (!LSMessageReply(sh, message, responseObj.stringify().c_str(), &mLSError))
+    {
+        UWB_LOG_ERROR("HANDLE_getUwbServiceState Message reply error!!");
+        LSErrorPrint(&mLSError, stdout);
+
+        return false;
+    }
+    return true;
+}
+
+bool UwbServiceManager::getRangingInfo(LSHandle *sh, LSMessage *message, void *data) {
+    UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
+
+    LSError mLSError;
+    bool isSubscription = false;
+    pbnjson::JValue responseObj = pbnjson::Object();
+
+    pbnjson::JValue rangingInfoArray = pbnjson::Array();
+    pbnjson::JValue rangingInfoLgeAirCondObj = pbnjson::Object();
+
+    pbnjson::JValue lgeAirCondArray = pbnjson::Array();
+    pbnjson::JValue lgeAirCondData = pbnjson::Object();
+
+    pbnjson::JValue lgeAirCondRangingData = pbnjson::Object();
+    pbnjson::JValue lgeAirCondRangingArray = pbnjson::Array();
+
+    LSErrorInit(&mLSError);
+
+    //TO DO : schema check routine
+
+    //subscription check
+    if (LSMessageIsSubscription(message)) {
+        isSubscription = true;
+        if (LSSubscriptionAdd(sh, "getUwbServiceState", message, &mLSError) == false) {
+            UWB_LOG_ERROR("Failed to add getUwbServiceState to subscription");
+            //send error response
+            responseObj.put("returnValue", false);
+            responseObj.put("errorCode", UWB_UNKNOWN_ERROR);
+            responseObj.put("errorText", "Unknwon");
+            LSMessageReply(sh,message, responseObj.stringify().c_str() , &mLSError ); // send error message
+            return true;
+        }
+    }
+
+    // serialization and send
+
+    if (responseObj.isNull())
+            return false;
+
+    responseObj.put("returnValue", true);
+    responseObj.put("sessionId", "1");
+    responseObj.put("subscribed", isSubscription);
+    responseObj.put("rangingInfo", rangingInfoArray);
+
+    rangingInfoArray.append(rangingInfoLgeAirCondObj);
+    rangingInfoLgeAirCondObj.put("rangingDataLgeAirCond", lgeAirCondArray);
+
+    lgeAirCondArray.append(lgeAirCondData);
+    lgeAirCondData.put("remoteDeviceAddress", "01");
+    lgeAirCondData.put("connectionStatus", true);
+    lgeAirCondData.put("receivedData", lgeAirCondRangingArray);
+
+    lgeAirCondRangingArray.append(lgeAirCondRangingData);
+    lgeAirCondRangingData.put("status", "Success");
+    lgeAirCondRangingData.put("distance", 100);
+    lgeAirCondRangingData.put("angle", 30);
 
     if (!LSMessageReply(sh, message, responseObj.stringify().c_str(), &mLSError))
     {
