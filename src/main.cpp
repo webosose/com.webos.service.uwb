@@ -39,7 +39,6 @@ int main(int argc, char *argv[]) {
     }
 
     //Start uart communication, To be modified in refactoring step
-    /* Disabled for UART Communication 
     int ret = 0;
     pthread_t tid;
 
@@ -62,7 +61,6 @@ int main(int argc, char *argv[]) {
         perror("pthread_attr_destroy failed");
         return -1;
     }
-    Disabled for UART Communication */
     //End of start uart communication
 
     UWB_LOG_INFO("UWB service started.");
