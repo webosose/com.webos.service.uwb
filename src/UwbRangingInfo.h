@@ -48,7 +48,7 @@ public:
 
     UwbRangingInfo();
 
-    UwbRangingInfo(bool connectionStatus, uint8_t condition, string remoteDevAddr, string status, int64_t angle, int64_t distance) {
+    UwbRangingInfo(bool connectionStatus, int condition, string remoteDevAddr, string status, int64_t angle, int64_t distance) {
         m_connectionStatus = connectionStatus;
         m_condition = condition;
         m_remoteDevAddr = remoteDevAddr;
@@ -59,7 +59,7 @@ public:
         return m_connectionStatus;
     }
 
-    int8_t getCondition() {
+    int getCondition() {
         return m_condition;
     }
 
@@ -75,7 +75,7 @@ public:
         m_connectionStatus = connectionStatus;
     }
 
-    void setCondition(uint8_t condition) {
+    void setCondition(int condition) {
         m_condition = condition;
     }
 
@@ -93,7 +93,7 @@ private:
 
     uint16_t m_sessionId;
     bool m_connectionStatus;
-    int8_t m_condition;
+    int m_condition;
     string m_remoteDevAddr;
     RangingData* m_receivedData;
 

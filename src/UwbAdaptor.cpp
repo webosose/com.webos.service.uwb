@@ -126,7 +126,7 @@ bool UwbAdaptor::getRangingInfo(LSHandle *sh, LSMessage *message) {
     }
 
     if (responseObj.isNull())
-            return false;
+        return false;
 
     if(!mUwbRangingInfo) {
         mUwbRangingInfo = new UwbRangingInfo(m_connectionStatus, 1, "01", "Success", 30, 100);
@@ -165,7 +165,6 @@ void UwbAdaptor::notifySubscriberServiceState(bool isServiceAvailable) {
     }
     LSErrorFree(&lserror);
     return;
-
 }
 
 void UwbAdaptor::notifySubscriberSpecificInfo(UwbSpecInfo& info) {
@@ -244,7 +243,19 @@ void UwbAdaptor::writeRangingInfo(pbnjson::JValue &responseObj, UwbRangingInfo& 
 
     lgeAirCondArray.append(lgeAirCondData);
     lgeAirCondData.put("remoteDeviceAddress", rangingInfo.getRemoteDevAddr());
-    lgeAirCondData.put("connectionStatus", rangingInfo.getConnectionStatus());
+
+    UWB_LOG_INFO("writeRangingInfo : rangingInfo.getConnectionStatus() = [%d]", (int)(rangingInfo.getConnectionStatus()));
+    int comp_connStatus = (int)(rangingInfo.getConnectionStatus());
+    UWB_LOG_INFO("writeRangingInfo : comp_connStatus = [%d]", (int)(comp_connStatus));
+
+    if( comp_connStatus == 0 ) {
+        lgeAirCondData.put("connectionStatus", false);
+    }
+    else {
+        lgeAirCondData.put("connectionStatus", true);
+    }
+
+    UWB_LOG_INFO("writeRangingInfo : rangingInfo.getCondition() = [%d]", rangingInfo.getCondition());
     lgeAirCondData.put("condition", rangingInfo.getCondition());
     lgeAirCondData.put("receivedData", lgeAirCondRangingArray);
 
@@ -259,14 +270,21 @@ void UwbAdaptor::updateServiceState(bool isServiceAvailable) {
     notifySubscriberServiceState(m_isServiceAvailable);
 }
 void UwbAdaptor::updateSpecificInfo(bool modState, string fwVersion, string fwCrc) {
+    bool cModeState = !(modState); // 0 -> available in UART Protocol
+    UWB_LOG_INFO("updateSpecificInfo : modState [%d], fwVersion [%s], fwCrc [%s]", cModeState, fwVersion.c_str(), fwCrc.c_str());
+
     UwbSpecInfo *info = UwbSpecInfo::getInstance();
-    info->setModState(modState);
+    info->setModState(cModeState);
     info->setFwVersion(fwVersion);
     info->setFwCrc(fwCrc);
     notifySubscriberSpecificInfo(*info);
 }
 
-void UwbAdaptor::updateRangingInfo(uint8_t condition, string remoteDevAddr, int64_t angle, int64_t distance) {
+void UwbAdaptor::updateRangingInfo(int condition, string remoteDevAddr, int64_t angle, int64_t distance) {
+    UWB_LOG_INFO("updateRangingInfo : condition [%d], remoteDevAddr [%s], angle [%lld], distance [%lld]", condition, remoteDevAddr.c_str(), angle, distance);
+    //TEMP code, service state = true
+    updateServiceState(true);
+
     UwbRangingInfo *rangingInfo = new UwbRangingInfo();
 
     rangingInfo->setRemoteDevAddr(remoteDevAddr);
@@ -275,21 +293,35 @@ void UwbAdaptor::updateRangingInfo(uint8_t condition, string remoteDevAddr, int6
     rangingInfo->getData()->setDistance(distance);
     rangingInfo->getData()->setAngle(angle);
 
-    if(!m_connectionStatus) {
-        rangingInfo->setConnectionStatus(false);
-        rangingInfo->getData()->setStatus("OutOfRange");
-    } else {
-        rangingInfo->setConnectionStatus(true);
-        rangingInfo->getData()->setStatus("Success");
+    //If this API is called, it means that the UWB module is working well and also ranging is successfully received.
+    //TEMP code, to trigger connectionStatus
+    rangingInfo->setConnectionStatus(true);
+    rangingInfo->getData()->setStatus("Success");
 
-    }
     m_sessionId++;
     mUwbRangingInfo = rangingInfo;
     notifySubscriberRangingInfo(*rangingInfo);
-    delete rangingInfo;
+
+    //Need to single tone obj and remove the below line
+    //delete rangingInfo;
 }
 
-void UwbAdaptor::updateDisconnectedStatus(bool isDisconnected) {
-    m_connectionStatus = isDisconnected;
+void UwbAdaptor::updateDisconnectedDevice(uint16_t deviceID) {
+    UWB_LOG_INFO("updateDisconnectedStatus : deviceID [%d]", deviceID);
+
+    //TEMP code, service state = true
+    updateServiceState(false);
+
+    //If this API is called, it means that the UWB Tag (DeviceID) is disconnected and also ranging can be not received.
+    //TEMP code, to trigger connectionStatus
+    UwbRangingInfo *rangingInfo = new UwbRangingInfo();
+    rangingInfo->setConnectionStatus(false);
+    rangingInfo->getData()->setStatus("OutOfRange");
+    mUwbRangingInfo = rangingInfo; // for saving up-to-date ranging data
+    notifySubscriberRangingInfo(*rangingInfo);
+    //Need to single tone obj and remove the below line
+    //delete rangingInfo;
+
+    //m_connectionStatus = isDisconnected;
     m_sessionId = 0;
 }

@@ -20,6 +20,8 @@ add_definitions(${PBNJSON_CXX_CFLAGS})
 pkg_check_modules(PMLOGLIB REQUIRED PmLogLib)
 add_definitions(${PMLOGLIB_CFLAGS})
 
+webos_add_compiler_flags(ALL -fpermissive)
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
@@ -37,3 +39,6 @@ target_link_libraries(${PROJECT_NAME}
 webos_build_daemon(NAME ${PROJECT_NAME})
 webos_build_system_bus_files()
 webos_build_configured_file(files/systemd/com.webos.service.uwb.service SYSCONFDIR systemd/system)
+
+webos_include_install_paths()
+install(FILES @CMAKE_SOURCE_DIR@/files/rules/99-uwb-usb-serial.rules DESTINATION @WEBOS_INSTALL_SYSCONFDIR@/udev/rules.d/)
