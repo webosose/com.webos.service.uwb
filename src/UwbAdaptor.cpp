@@ -34,23 +34,18 @@ bool UwbAdaptor::getUwbServiceState(LSHandle *sh, LSMessage *message) {
 
     LSErrorInit(&mLSError);
 
-    //TO DO : schema check routine
-
-    //subscription check
     if (LSMessageIsSubscription(message)) {
         isSubscription = true;
         if (LSSubscriptionAdd(sh, "getUwbServiceState", message, &mLSError) == false) {
             UWB_LOG_ERROR("Failed to add getUwbServiceState to subscription");
-            //send error response
+
             responseObj.put("returnValue", false);
             responseObj.put("errorCode", UWB_UNKNOWN_ERROR);
             responseObj.put("errorText", "Unknwon");
-            LSMessageReply(sh,message, responseObj.stringify().c_str() , &mLSError ); // send error message
+            LSMessageReply(sh,message, responseObj.stringify().c_str() , &mLSError );
             return true;
         }
     }
-
-    // serialization and send
 
     if (responseObj.isNull())
             return false;
@@ -76,23 +71,18 @@ bool UwbAdaptor::getUwbSpecificInfo(LSHandle *sh, LSMessage *message) {
 
     LSErrorInit(&mLSError);
 
-    //TO DO : schema check routine
-
-    //subscription check
     if (LSMessageIsSubscription(message)) {
         isSubscription = true;
         if (LSSubscriptionAdd(sh, "getUwbSpecificInfo", message, &mLSError) == false) {
             UWB_LOG_ERROR("Failed to add getUwbServiceState to subscription");
-            //send error response
+
             responseObj.put("returnValue", false);
             responseObj.put("errorCode", UWB_UNKNOWN_ERROR);
             responseObj.put("errorText", "Unknwon");
-            LSMessageReply(sh,message, responseObj.stringify().c_str() , &mLSError ); // send error message
+            LSMessageReply(sh,message, responseObj.stringify().c_str() , &mLSError );
             return true;
         }
     }
-
-    // serialization and send
 
     if (responseObj.isNull())
             return false;
@@ -122,23 +112,18 @@ bool UwbAdaptor::getRangingInfo(LSHandle *sh, LSMessage *message) {
 
     LSErrorInit(&mLSError);
 
-    //TO DO : schema check routine
-
-    //add subscription
     if (LSMessageIsSubscription(message)) {
         isSubscription = true;
         if (LSSubscriptionAdd(sh, "getRangingInfo", message, &mLSError) == false) {
             UWB_LOG_ERROR("Failed to add getUwbServiceState to subscription");
-            //send error response
+
             responseObj.put("returnValue", false);
             responseObj.put("errorCode", UWB_UNKNOWN_ERROR);
             responseObj.put("errorText", "Unknwon");
-            LSMessageReply(sh,message, responseObj.stringify().c_str() , &mLSError ); // send error message
+            LSMessageReply(sh,message, responseObj.stringify().c_str() , &mLSError );
             return true;
         }
     }
-
-    // serialization and send
 
     if (responseObj.isNull())
             return false;
@@ -146,7 +131,7 @@ bool UwbAdaptor::getRangingInfo(LSHandle *sh, LSMessage *message) {
     if(!mUwbRangingInfo) {
         mUwbRangingInfo = new UwbRangingInfo(m_connectionStatus, 1, "01", "Success", 30, 100);
     }
-    writeRangingInfo(responseObj, *mUwbRangingInfo); // need to added default value
+    writeRangingInfo(responseObj, *mUwbRangingInfo);
 
     responseObj.put("returnValue", true);
     responseObj.put("subscribed", isSubscription);
@@ -166,7 +151,7 @@ void UwbAdaptor::notifySubscriberServiceState(bool isServiceAvailable) {
     UWB_LOG_INFO("notifySubscriberServiceState");
     LSError lserror;
     LSErrorInit(&lserror);
-    //need to add response data
+
     pbnjson::JValue responseObj = pbnjson::Object();
     writeServiceState(responseObj, isServiceAvailable );
     responseObj.put("subscribed", true);
@@ -187,7 +172,7 @@ void UwbAdaptor::notifySubscriberSpecificInfo(UwbSpecInfo& info) {
     UWB_LOG_INFO("notifySubscriberSpecificInfo");
     LSError lserror;
     LSErrorInit(&lserror);
-    //need to add response data
+
     pbnjson::JValue responseObj = pbnjson::Object();
 
     writeSpecificInfo(responseObj, info);
@@ -209,7 +194,7 @@ void UwbAdaptor::notifySubscriberRangingInfo(UwbRangingInfo& rangingInfo)
     UWB_LOG_INFO("notifySubscriberRangingInfo");
     LSError lserror;
     LSErrorInit(&lserror);
-    //need to add response data
+
     pbnjson::JValue responseObj = pbnjson::Object();
     writeRangingInfo(responseObj, rangingInfo);
     responseObj.put("returnValue", true);
@@ -299,7 +284,7 @@ void UwbAdaptor::updateRangingInfo(uint8_t condition, string remoteDevAddr, int6
 
     }
     m_sessionId++;
-    mUwbRangingInfo = rangingInfo; // for saving up-to-date ranging data
+    mUwbRangingInfo = rangingInfo;
     notifySubscriberRangingInfo(*rangingInfo);
     delete rangingInfo;
 }

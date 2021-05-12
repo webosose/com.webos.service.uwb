@@ -37,9 +37,7 @@ bool UwbServiceManager::init(GMainLoop *mainLoop) {
 
     UWB_LOG_DEBUG("mServiceHandle =%p", mServiceHandle);
 
-//TO DO : adaptor and session control initialization
     mUwbAdaptor = UwbAdaptor::getInstance();
-    //mUwbAdaptor = new UwbAdaptor();
 
     UWB_LOG_INFO("uwbServiceManager this = %p", this );
     mUwbAdaptor->init(mServiceHandle);
@@ -53,7 +51,6 @@ bool UwbServiceManager::UwbServiceRegister(const char *srvcname, GMainLoop *main
     LSError mLSError;
     LSErrorInit(&mLSError);
 
-    //service registration
     if(!LSRegister(srvcname, mServiceHandle, &mLSError))
     {
         UWB_LOG_ERROR("LS_REGISTER :Unable to register to luna-bus");
@@ -62,7 +59,6 @@ bool UwbServiceManager::UwbServiceRegister(const char *srvcname, GMainLoop *main
         return false;
     }
 
-    //Gmain attach
     if(!LSGmainAttach(*mServiceHandle, mainLoop, &mLSError))
     {
         UWB_LOG_ERROR("LS_REGISTER : unable to attach service");

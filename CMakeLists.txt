@@ -3,22 +3,16 @@ project(webos-uwb-service)
 
 include(webOS/webOS)
 webos_modules_init(1 0 0 QUALIFIER RC4)
-webos_component(1 0 1)
+webos_component(1 0 0)
 
 include(FindPkgConfig)
 
 pkg_check_modules(GLIB2 REQUIRED glib-2.0)
 add_definitions(${GLIB2_CFLAGS})
 
-#pkg_check_modules(GIO2 REQUIRED gio-2.0)
-#add_definitions(${GIO2_CFLAGS})
-
 pkg_check_modules(LUNASERVICE2 REQUIRED luna-service2)
 include_directories(${LUNASERVICE2_INCLUDE_DIRS})
 add_definitions(${LUNASERVICE2_CFLAGS})
-
-#pkg_check_modules(LUNAPREFS REQUIRED luna-prefs)
-#add_definitions(${LUNAPREFS_CFLAGS})
 
 pkg_check_modules(PBNJSON_CXX REQUIRED pbnjson_cpp)
 add_definitions(${PBNJSON_CXX_CFLAGS})

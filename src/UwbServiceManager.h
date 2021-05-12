@@ -1,7 +1,6 @@
 #ifndef H_UwbServiceManager
 #define H_UwbServiceManager
 
-//include
 #include "UwbServiceManager.h"
 #include "UwbLogging.h"
 #include "UwbAdaptor.h"
@@ -11,7 +10,6 @@
 #include <glib.h>
 #include <string>
 
-//definition
 #define UWB_SERVICE_NAME           "com.webos.service.uwb"
 
 #define UWB_SERVICE_METHOD(name) \
