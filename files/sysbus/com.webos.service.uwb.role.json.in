@@ -1,0 +1,13 @@
+{
+    "exeName":"@WEBOS_INSTALL_SBINDIR@/webos-uwb-service",
+    "type": "regular",
+    "trustLevel": "oem",
+    "allowedNames": ["com.webos.service.uwb"],
+    "permissions": [
+        {
+            "service":"com.webos.service.uwb",
+            "outbound":["*"]
+        }
+    ]
+}
+
