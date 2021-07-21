@@ -317,6 +317,7 @@ void UwbAdaptor::updateDisconnectedDevice(uint16_t deviceID) {
     UwbRangingInfo *rangingInfo = new UwbRangingInfo();
     rangingInfo->setConnectionStatus(false);
     rangingInfo->getData()->setStatus("OutOfRange");
+    rangingInfo->setCondition(255); // 255 : invalid ranging info, (0 : valid)
     mUwbRangingInfo = rangingInfo; // for saving up-to-date ranging data
     notifySubscriberRangingInfo(*rangingInfo);
     //Need to single tone obj and remove the below line
