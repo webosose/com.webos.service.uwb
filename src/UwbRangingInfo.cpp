@@ -5,5 +5,5 @@ UwbRangingInfo::UwbRangingInfo() : m_sessionId(0) {
 }
 
 UwbRangingInfo::~UwbRangingInfo() {
-
+    m_receivedData = NULL;
 }
