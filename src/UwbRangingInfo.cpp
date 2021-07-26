@@ -5,5 +5,7 @@ UwbRangingInfo::UwbRangingInfo() : m_sessionId(0) {
 }
 
 UwbRangingInfo::~UwbRangingInfo() {
-    delete m_receivedData;
+    if(m_receivedData) {
+            delete m_receivedData;
+    }
 }

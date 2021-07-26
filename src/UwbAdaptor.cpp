@@ -15,7 +15,9 @@ UwbAdaptor::UwbAdaptor() {
 }
 
 UwbAdaptor::~UwbAdaptor() {
-
+    delete mSavedUwbRangingInfo;
+    delete mRangingInfo;
+    delete disConnRangingInfo;
 }
 
 bool UwbAdaptor::init(LSHandle *sh) {
@@ -128,10 +130,10 @@ bool UwbAdaptor::getRangingInfo(LSHandle *sh, LSMessage *message) {
     if (responseObj.isNull())
         return false;
 
-    if(!mUwbRangingInfo) {
-        mUwbRangingInfo = new UwbRangingInfo(m_connectionStatus, 1, "01", "Success", 30, 100);
+    if(!mSavedUwbRangingInfo) {
+        mSavedUwbRangingInfo = new UwbRangingInfo(m_connectionStatus, 1, "01", "Success", 30, 100);
     }
-    writeRangingInfo(responseObj, *mUwbRangingInfo);
+    writeRangingInfo(responseObj, *mSavedUwbRangingInfo);
 
     responseObj.put("returnValue", true);
     responseObj.put("subscribed", isSubscription);
@@ -285,25 +287,26 @@ void UwbAdaptor::updateRangingInfo(int condition, string remoteDevAddr, int64_t 
     //TEMP code, service state = true
     updateServiceState(true);
 
-    UwbRangingInfo *rangingInfo = new UwbRangingInfo();
+    //UwbRangingInfo *rangingInfo = new UwbRangingInfo();
+    mRangingInfo = new UwbRangingInfo();
 
-    rangingInfo->setRemoteDevAddr(remoteDevAddr);
-    rangingInfo->setCondition(condition);
+    mRangingInfo->setRemoteDevAddr(remoteDevAddr);
+    mRangingInfo->setCondition(condition);
 
-    rangingInfo->getData()->setDistance(distance);
-    rangingInfo->getData()->setAngle(angle);
+    mRangingInfo->getData()->setDistance(distance);
+    mRangingInfo->getData()->setAngle(angle);
 
     //If this API is called, it means that the UWB module is working well and also ranging is successfully received.
     //TEMP code, to trigger connectionStatus
-    rangingInfo->setConnectionStatus(true);
-    rangingInfo->getData()->setStatus("Success");
+    mRangingInfo->setConnectionStatus(true);
+    mRangingInfo->getData()->setStatus("Success");
 
     m_sessionId++;
-    mUwbRangingInfo = rangingInfo;
-    notifySubscriberRangingInfo(*rangingInfo);
+    mSavedUwbRangingInfo = mRangingInfo;
+    notifySubscriberRangingInfo(*mRangingInfo);
 
     //Need to single tone obj and remove the below line
-    //delete rangingInfo;
+    //delete mRangingInfo;
 }
 
 void UwbAdaptor::updateDisconnectedDevice(uint16_t deviceID) {
@@ -314,12 +317,13 @@ void UwbAdaptor::updateDisconnectedDevice(uint16_t deviceID) {
 
     //If this API is called, it means that the UWB Tag (DeviceID) is disconnected and also ranging can be not received.
     //TEMP code, to trigger connectionStatus
-    UwbRangingInfo *rangingInfo = new UwbRangingInfo();
-    rangingInfo->setConnectionStatus(false);
-    rangingInfo->getData()->setStatus("OutOfRange");
-    rangingInfo->setCondition(255); // 255 : invalid ranging info, (0 : valid)
-    mUwbRangingInfo = rangingInfo; // for saving up-to-date ranging data
-    notifySubscriberRangingInfo(*rangingInfo);
+    //UwbRangingInfo *rangingInfo = new UwbRangingInfo();
+    disConnRangingInfo = new UwbRangingInfo();
+    disConnRangingInfo->setConnectionStatus(false);
+    disConnRangingInfo->getData()->setStatus("OutOfRange");
+    disConnRangingInfo->setCondition(255); // 255 : invalid ranging info, (0 : valid)
+    mSavedUwbRangingInfo = disConnRangingInfo; // for saving up-to-date ranging data
+    notifySubscriberRangingInfo(*disConnRangingInfo);
     //Need to single tone obj and remove the below line
     //delete rangingInfo;
 

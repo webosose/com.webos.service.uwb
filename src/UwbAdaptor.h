@@ -54,7 +54,9 @@ private:
     bool m_isServiceAvailable{false};
     bool m_connectionStatus{false};
     int64_t m_sessionId{0};
-    UwbRangingInfo *mUwbRangingInfo = nullptr;
+    UwbRangingInfo *mSavedUwbRangingInfo = nullptr; // for saving up-to-date rangingInfo
+    UwbRangingInfo *mRangingInfo = nullptr;
+    UwbRangingInfo *disConnRangingInfo = nullptr;
 
 };
 
