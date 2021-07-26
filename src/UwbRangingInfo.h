@@ -95,6 +95,6 @@ private:
     bool m_connectionStatus;
     int m_condition;
     string m_remoteDevAddr;
-    RangingData* m_receivedData;
+    RangingData* m_receivedData = nullptr;
 
 };
