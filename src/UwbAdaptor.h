@@ -48,7 +48,7 @@ public:
 
 private:
     UwbAdaptor();
-    LSHandle *mLSHandle;
+    LSHandle *mLSHandle = nullptr;
     static UwbAdaptor *mUwbAdaptor;
     static UwbSpecInfo *mUwbSpecInfo;
     bool m_isServiceAvailable{false};

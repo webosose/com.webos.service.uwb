@@ -41,18 +41,23 @@ public:
         }
     private:
         string m_status;
-        int64_t m_angle;
-        int64_t m_distance;
+        int64_t m_angle{0};
+        int64_t m_distance{0};
     };
 
 
     UwbRangingInfo();
 
-    UwbRangingInfo(bool connectionStatus, int condition, string remoteDevAddr, string status, int64_t angle, int64_t distance) {
+    UwbRangingInfo(uint16_t sessionId, bool connectionStatus, int condition, string remoteDevAddr, string status, int64_t angle, int64_t distance) {
+        m_sessionId = sessionId;
         m_connectionStatus = connectionStatus;
         m_condition = condition;
         m_remoteDevAddr = remoteDevAddr;
         m_receivedData = new RangingData(status, angle, distance);
+    }
+
+    uint16_t getSessionId() {
+        return m_sessionId;
     }
 
     bool getConnectionStatus() {
@@ -71,6 +76,10 @@ public:
         return m_receivedData;
     }
 
+    void setSessionId(uint16_t sessionId) {
+        m_sessionId = sessionId;
+    }
+
     void setConnectionStatus(bool connectionStatus) {
         m_connectionStatus = connectionStatus;
     }
@@ -87,13 +96,11 @@ public:
         m_receivedData = data;
     }
 
-
-
 private:
 
-    uint16_t m_sessionId;
-    bool m_connectionStatus;
-    int m_condition;
+    uint16_t m_sessionId{0};
+    bool m_connectionStatus{true};
+    int m_condition{0};
     string m_remoteDevAddr;
     RangingData* m_receivedData = nullptr;
 

@@ -31,7 +31,7 @@ enum {
 };
 */
 
-void print_bytes(int type, int length, unsigned char *buffer)
+void print_bytes(int type, int length, const char *buffer)
 {
     int i;
     char temp[NUM_PRINT_BYTES] = {0,};
@@ -59,8 +59,8 @@ void *serial_rx(void *arg)
     t_flag = 1;
 
     do {
-        unsigned char rx_bin[128] = {0,};
-        unsigned char rx_hex[256] = {0,};
+        char rx_bin[128] = {0,};
+        char rx_hex[256] = {0,};
         int rx_length = 0;
 
         //Read up to 127 characters from the port if they are there
@@ -207,11 +207,12 @@ int rx_thread_create(void)
     return ret;
 }
 
+/* We not use Tx_Loop (Start)
 //HOST_ACK should be added?
 int tx_loop(void)
 {
-    unsigned char tx_hex[256] = {0,};
-    unsigned char tx_bin[128] = {0,};
+    char tx_hex[256] = {0,};
+    char tx_bin[128] = {0,};
     int count = 0;
 
     do {
@@ -223,7 +224,7 @@ int tx_loop(void)
         //printf("  binary : ");
         //print_bytes(BINARY, strlen(tx_hex) / 2, tx_bin);
 
-        /* Filestrean, bytes to write, number of bytes to write */
+        // Filestrean, bytes to write, number of bytes to write
         count = write(uart_fd, &tx_bin[0], strlen(tx_hex) / 2);
         if (count < 0) {
             printf("UART TX error\n");
@@ -236,6 +237,7 @@ int tx_loop(void)
     //temp return 0; TBC
     return 0;
 }
+We not use Tx_Loop (End) */ 
 
 speed_t set_baudrate(const int speed)
 {
@@ -281,7 +283,7 @@ speed_t set_baudrate(const int speed)
   return myBaud;
 }
 
-int uart_start(void)
+void *uart_start(void *data)
 {
     mUwbAdaptor = UwbAdaptor::getInstance();
 
@@ -301,7 +303,7 @@ int uart_start(void)
         printf("uart open fd = %d \n", uart_fd);
 
         //fd control to be adjusted
-        fcntl(uart_fd, F_SETFL, 0);
+        int ret_f = fcntl(uart_fd, F_SETFL, 0);
         if (uart_fd == -1) {
             printf("Error - Unable to open UART\n");
             //close(uart_fd);
@@ -313,7 +315,7 @@ int uart_start(void)
     speed_t setBaudRate = set_baudrate(speed);
     if (setBaudRate == -2) {
         printf("Error - Please do not use the speed!!! \n");
-        return -1;
+        return NULL;
     }
     printf("UART Baud Rate is set as [%d] \n", speed);
 
@@ -336,14 +338,14 @@ int uart_start(void)
         usleep(10000);
     }
 
-    /* TX */
-    ret = tx_loop();
-    if (ret < 0)
-        return -1;
+    /* TX (We not use Tx Loop) */
+    // ret = tx_loop();
+    // if (ret < 0)
+    //     return;
 
     //Need to check for res. what is this?
     pthread_join(tid, &res);
 
     close(uart_fd);
-    return 0;
+    return NULL;
 }

@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    ret = pthread_create(&tid, &attr, &uart_start, NULL);
+    ret = pthread_create(&tid, &attr, uart_start, NULL);
     if (ret != 0) {
         perror("pthread_create failed");
         return -1;
