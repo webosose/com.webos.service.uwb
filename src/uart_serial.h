@@ -5,7 +5,7 @@
 
 #include "UwbAdaptor.h"
 
-int uart_start(void);
+void *uart_start(void *data);
 
 // To update the data received from UWB Module (H/W) into UWB Adaptor in Service Core
 static UwbAdaptor *mUwbAdaptor;

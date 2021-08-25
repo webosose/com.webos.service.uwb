@@ -131,7 +131,7 @@ bool UwbAdaptor::getRangingInfo(LSHandle *sh, LSMessage *message) {
         return false;
 
     if(!mSavedUwbRangingInfo) {
-        mSavedUwbRangingInfo = new UwbRangingInfo(m_connectionStatus, 1, "01", "Success", 30, 100);
+        mSavedUwbRangingInfo = new UwbRangingInfo(m_sessionId, m_connectionStatus, 1, "01", "Success", 30, 100);
     }
     writeRangingInfo(responseObj, *mSavedUwbRangingInfo);
 
@@ -302,6 +302,8 @@ void UwbAdaptor::updateRangingInfo(int condition, string remoteDevAddr, int64_t 
     mRangingInfo->getData()->setStatus("Success");
 
     m_sessionId++;
+    mRangingInfo->setSessionId(m_sessionId);
+
     mSavedUwbRangingInfo = mRangingInfo;
     notifySubscriberRangingInfo(*mRangingInfo);
 
@@ -322,11 +324,12 @@ void UwbAdaptor::updateDisconnectedDevice(uint16_t deviceID) {
     disConnRangingInfo->setConnectionStatus(false);
     disConnRangingInfo->getData()->setStatus("OutOfRange");
     disConnRangingInfo->setCondition(255); // 255 : invalid ranging info, (0 : valid)
+    m_sessionId = 0;
+    disConnRangingInfo->setSessionId(m_sessionId);
     mSavedUwbRangingInfo = disConnRangingInfo; // for saving up-to-date ranging data
     notifySubscriberRangingInfo(*disConnRangingInfo);
     //Need to single tone obj and remove the below line
     //delete rangingInfo;
 
     //m_connectionStatus = isDisconnected;
-    m_sessionId = 0;
 }

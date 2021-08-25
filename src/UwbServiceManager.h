@@ -1,7 +1,6 @@
 #ifndef H_UwbServiceManager
 #define H_UwbServiceManager
 
-#include "UwbServiceManager.h"
 #include "UwbLogging.h"
 #include "UwbAdaptor.h"
 #include "UwbSessionControl.h"
@@ -36,7 +35,7 @@ private:
     UWB_SERVICE_METHOD(getUwbSpecificInfo);
     UWB_SERVICE_METHOD(getRangingInfo);
 
-    LSHandle *mServiceHandle;
+    LSHandle *mServiceHandle = nullptr;
     GMainLoop *mMainLoop;
     static UwbServiceManager *mUwbServiceMgr;
     static UwbAdaptor *mUwbAdaptor;
