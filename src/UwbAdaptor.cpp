@@ -227,44 +227,26 @@ void UwbAdaptor::writeSpecificInfo(pbnjson::JValue &responseObj, UwbSpecInfo &in
 
 void UwbAdaptor::writeRangingInfo(pbnjson::JValue &responseObj, UwbRangingInfo& rangingInfo) {
     UWB_LOG_INFO("writeRangingInfo");
-
-    pbnjson::JValue rangingInfoArray = pbnjson::Array();
-    pbnjson::JValue rangingInfoLgeAirCondObj = pbnjson::Object();
-
-    pbnjson::JValue lgeAirCondArray = pbnjson::Array();
-    pbnjson::JValue lgeAirCondData = pbnjson::Object();
-
-    pbnjson::JValue lgeAirCondRangingData = pbnjson::Object();
-    pbnjson::JValue lgeAirCondRangingArray = pbnjson::Array();
-
     responseObj.put("sessionId", m_sessionId);
-    responseObj.put("rangingInfo", rangingInfoArray);
 
-    rangingInfoArray.append(rangingInfoLgeAirCondObj);
-    rangingInfoLgeAirCondObj.put("rangingDataLgeAirCond", lgeAirCondArray);
+    pbnjson::JValue receivedDataObj = pbnjson::Object();
+    receivedDataObj.put("status", rangingInfo.getData()->getStatus());
+    receivedDataObj.put("distance", rangingInfo.getData()->getDistance());
+    receivedDataObj.put("angle", rangingInfo.getData()->getAngle());
 
-    lgeAirCondArray.append(lgeAirCondData);
-    lgeAirCondData.put("remoteDeviceAddress", rangingInfo.getRemoteDevAddr());
-
-    UWB_LOG_INFO("writeRangingInfo : rangingInfo.getConnectionStatus() = [%d]", (int)(rangingInfo.getConnectionStatus()));
+    pbnjson::JValue rangingInfoObj = pbnjson::Object();
+    rangingInfoObj.put("remoteDeviceAddress", rangingInfo.getRemoteDevAddr());
     int comp_connStatus = (int)(rangingInfo.getConnectionStatus());
-    UWB_LOG_INFO("writeRangingInfo : comp_connStatus = [%d]", (int)(comp_connStatus));
-
     if( comp_connStatus == 0 ) {
-        lgeAirCondData.put("connectionStatus", false);
+        rangingInfoObj.put("connectionStatus", false);
     }
     else {
-        lgeAirCondData.put("connectionStatus", true);
+        rangingInfoObj.put("connectionStatus", true);
     }
+    rangingInfoObj.put("condition", rangingInfo.getCondition());
+    rangingInfoObj.put("receivedData", receivedDataObj);
 
-    UWB_LOG_INFO("writeRangingInfo : rangingInfo.getCondition() = [%d]", rangingInfo.getCondition());
-    lgeAirCondData.put("condition", rangingInfo.getCondition());
-    lgeAirCondData.put("receivedData", lgeAirCondRangingArray);
-
-    lgeAirCondRangingArray.append(lgeAirCondRangingData);
-    lgeAirCondRangingData.put("status", rangingInfo.getData()->getStatus());
-    lgeAirCondRangingData.put("distance", rangingInfo.getData()->getDistance());
-    lgeAirCondRangingData.put("angle", rangingInfo.getData()->getAngle());
+    responseObj.put("rangingInfo", rangingInfoObj);
 }
 
 void UwbAdaptor::updateServiceState(bool isServiceAvailable) {
