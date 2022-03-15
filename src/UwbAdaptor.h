@@ -6,6 +6,7 @@
 #include <luna-service2/lunaservice.hpp>
 #include <pthread.h>
 #include <string>
+#include <memory>
 #include "UwbSpecInfo.h"
 #include "UwbRangingInfo.h"
 
@@ -36,11 +37,11 @@ public:
 
     void notifySubscriberServiceState(bool isServiceAvailable);
     void notifySubscriberSpecificInfo(UwbSpecInfo& info);
-    void notifySubscriberRangingInfo(UwbRangingInfo& rangingInfo);
+    void notifySubscriberRangingInfo(std::unique_ptr<UwbRangingInfo>& rangingInfo);
 
     void writeServiceState(pbnjson::JValue &responseObj, bool isServiceAvailable);
     void writeSpecificInfo(pbnjson::JValue &responseObj, UwbSpecInfo &info);
-    void writeRangingInfo(pbnjson::JValue &responseObj, UwbRangingInfo& rangingInfo);
+    void writeRangingInfo(pbnjson::JValue &responseObj, std::unique_ptr<UwbRangingInfo>& rangingInfo);
 
     void setServiceState(bool serviceState) {
         m_isServiceAvailable = serviceState;
@@ -54,9 +55,7 @@ private:
     bool m_isServiceAvailable{false};
     bool m_connectionStatus{false};
     int64_t m_sessionId{0};
-    UwbRangingInfo *mSavedUwbRangingInfo = nullptr; // for saving up-to-date rangingInfo
-    UwbRangingInfo *mRangingInfo = nullptr;
-    UwbRangingInfo *disConnRangingInfo = nullptr;
+    std::unique_ptr<UwbRangingInfo> mSavedUwbRangingInfo; // for saving up-to-date rangingInfo
 
 };
 
