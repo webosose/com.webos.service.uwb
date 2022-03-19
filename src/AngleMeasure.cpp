@@ -5,6 +5,11 @@ AngleMeasure::AngleMeasure():mRadians(0.0), mErrorRadians(0.0), mConfidenceLevel
 	
 }
 
+AngleMeasure::AngleMeasure(double radians, double errorRadians, double confidenceLevel):
+mRadians(radians), mErrorRadians(errorRadians), mConfidenceLevel(confidenceLevel) {
+	
+}
+
 double AngleMeasure::getRadians() const{
 	return mRadians;
 }

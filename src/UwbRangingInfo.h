@@ -1,5 +1,9 @@
 #include <cstdint>
 #include <string>
+#include <memory>
+
+#include "DistanceMeasure.h"
+#include "AngleMeasure.h"
 
 using namespace std;
 
@@ -96,12 +100,34 @@ public:
         m_receivedData = data;
     }
 
+    void setDistanceMeasure(std::unique_ptr<DistanceMeasure> distanceMeasure) {
+        mDistanceMeasure = std::move(distanceMeasure);
+    }
+
+    std::unique_ptr<DistanceMeasure>& getDistanceMeasure() {
+        return mDistanceMeasure;
+    }
+
+    void setAngleMeasure(std::unique_ptr<AngleMeasure> angleMeasure) {
+        mAngleMeasure = std::move(angleMeasure);
+    }
+
+    void setElapsedTime(uint32_t elapsedTime) {
+        mElapsedTime = elapsedTime;
+    }
+
+    uint32_t getElapsedTime() const{
+        return mElapsedTime;
+    }
+
 private:
 
     uint16_t m_sessionId{0};
     bool m_connectionStatus{true};
     int m_condition{0};
-    string m_remoteDevAddr;
+    string m_remoteDevAddr{};
     RangingData* m_receivedData = nullptr;
-
+    uint32_t mElapsedTime{0};
+    std::unique_ptr<DistanceMeasure> mDistanceMeasure;
+    std::unique_ptr<AngleMeasure> mAngleMeasure;
 };

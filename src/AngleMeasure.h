@@ -9,6 +9,7 @@ private:
 	
 public:
 	AngleMeasure();
+	AngleMeasure(double radians, double errorRadians, double confidenceLevel);
 	~AngleMeasure() = default;
 	
 	double getRadians() const;

@@ -231,6 +231,8 @@ void UwbAdaptor::writeRangingInfo(pbnjson::JValue &responseObj, std::unique_ptr<
     receivedDataObj.put("status", rangingInfo->getData()->getStatus());
     receivedDataObj.put("distance", rangingInfo->getData()->getDistance());
     receivedDataObj.put("angle", rangingInfo->getData()->getAngle());
+	
+	cout << "meters: " << rangingInfo->getDistanceMeasure()->getMeters() << endl;
 
     pbnjson::JValue rangingInfoObj = pbnjson::Object();
     rangingInfoObj.put("remoteDeviceAddress", rangingInfo->getRemoteDevAddr());
@@ -268,6 +270,12 @@ void UwbAdaptor::updateRangingInfo(int condition, string remoteDevAddr, int64_t 
     updateServiceState(true);
 
     auto rangingInfo = std::make_unique<UwbRangingInfo>();
+    auto distanceMeasure = std::make_unique<DistanceMeasure>(distance, 1.0, 1.0);
+    auto angleMeasure = std::make_unique<AngleMeasure>(angle, 1.0, 1.0);
+	
+    rangingInfo->setDistanceMeasure(std::move(distanceMeasure));
+    rangingInfo->setAngleMeasure(std::move(angleMeasure));
+    rangingInfo->setElapsedTime(1000);
 
     rangingInfo->setRemoteDevAddr(remoteDevAddr);
     rangingInfo->setCondition(condition);
