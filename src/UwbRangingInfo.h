@@ -1,3 +1,6 @@
+#ifndef _UWBRANGINGINFO_H
+#define _UWBRANGINGINFO_H
+
 #include <cstdint>
 #include <string>
 #include <memory>
@@ -111,12 +114,16 @@ public:
     void setAngleMeasure(std::unique_ptr<AngleMeasure> angleMeasure) {
         mAngleMeasure = std::move(angleMeasure);
     }
+    
+    std::unique_ptr<AngleMeasure>& getAngleMeasure() {
+        return mAngleMeasure;
+    }
 
-    void setElapsedTime(uint32_t elapsedTime) {
+    void setElapsedTime(int32_t elapsedTime) {
         mElapsedTime = elapsedTime;
     }
 
-    uint32_t getElapsedTime() const{
+    int32_t getElapsedTime() const{
         return mElapsedTime;
     }
 
@@ -127,7 +134,8 @@ private:
     int m_condition{0};
     string m_remoteDevAddr{};
     RangingData* m_receivedData = nullptr;
-    uint32_t mElapsedTime{0};
+    int32_t mElapsedTime{0};
     std::unique_ptr<DistanceMeasure> mDistanceMeasure;
     std::unique_ptr<AngleMeasure> mAngleMeasure;
 };
+#endif

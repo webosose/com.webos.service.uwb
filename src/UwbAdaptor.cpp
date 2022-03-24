@@ -1,6 +1,7 @@
 #include "UwbAdaptor.h"
 #include "UwbLogging.h"
 #include "LunaUwbServiceUtil.h"
+#include "UwbResponseBuilder.h"
 
 UwbAdaptor* UwbAdaptor::mUwbAdaptor = nullptr;
 UwbSpecInfo* UwbAdaptor::mUwbSpecInfo = nullptr;
@@ -129,10 +130,22 @@ bool UwbAdaptor::getRangingInfo(LSHandle *sh, LSMessage *message) {
         return false;
 
     if(!mSavedUwbRangingInfo) {
-        mSavedUwbRangingInfo = std::make_unique<UwbRangingInfo>(m_sessionId, m_connectionStatus, 1, "01", "Success", 30, 100);
+    //    mSavedUwbRangingInfo = std::make_unique<UwbRangingInfo>(m_sessionId, m_connectionStatus, 1, "01", "Success", 30, 100);
+    
+        mSavedUwbRangingInfo = std::make_unique<UwbRangingInfo>();
+        auto distanceMeasure = std::make_unique<DistanceMeasure>(100, 1.0, 1.0);    
+        auto angleMeasure = std::make_unique<AngleMeasure>(30, 1.0, 1.0);
+        mSavedUwbRangingInfo->setDistanceMeasure(std::move(distanceMeasure));
+        mSavedUwbRangingInfo->setAngleMeasure(std::move(angleMeasure));
+        mSavedUwbRangingInfo->setElapsedTime(1000);
+        mSavedUwbRangingInfo->setRemoteDevAddr("01");
+        mSavedUwbRangingInfo->setCondition(1);
+        mSavedUwbRangingInfo->setConnectionStatus(m_connectionStatus);
     }
-    writeRangingInfo(responseObj, mSavedUwbRangingInfo);
-
+ //   writeRangingInfo(responseObj, mSavedUwbRangingInfo);
+    std::unique_ptr<IResponseBuilder> responseBuilder = std::make_unique<UwbResponseBuilder>();
+    responseBuilder->buildRangingInfo(responseObj, mSavedUwbRangingInfo);
+    responseObj.put("sessionId", m_sessionId);
     responseObj.put("returnValue", true);
     responseObj.put("subscribed", isSubscription);
 
@@ -195,7 +208,10 @@ void UwbAdaptor::notifySubscriberRangingInfo(std::unique_ptr<UwbRangingInfo>& ra
     LSErrorInit(&lserror);
 
     pbnjson::JValue responseObj = pbnjson::Object();
-    writeRangingInfo(responseObj, rangingInfo);
+    responseObj.put("sessionId", m_sessionId);
+//    writeRangingInfo(responseObj, rangingInfo);
+    std::unique_ptr<IResponseBuilder> responseBuilder = std::make_unique<UwbResponseBuilder>();
+    responseBuilder->buildRangingInfo(responseObj, rangingInfo);
     responseObj.put("returnValue", true);
     responseObj.put("subscribed", true);
 
