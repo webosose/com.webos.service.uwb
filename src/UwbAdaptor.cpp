@@ -129,20 +129,10 @@ bool UwbAdaptor::getRangingInfo(LSHandle *sh, LSMessage *message) {
     if (responseObj.isNull())
         return false;
 
-    if(!mSavedUwbRangingInfo) {
-    //    mSavedUwbRangingInfo = std::make_unique<UwbRangingInfo>(m_sessionId, m_connectionStatus, 1, "01", "Success", 30, 100);
-    
+    if(!mSavedUwbRangingInfo) {    
         mSavedUwbRangingInfo = std::make_unique<UwbRangingInfo>();
-        auto distanceMeasure = std::make_unique<DistanceMeasure>(100, 1.0, 1.0);    
-        auto angleMeasure = std::make_unique<AngleMeasure>(30, 1.0, 1.0);
-        mSavedUwbRangingInfo->setDistanceMeasure(std::move(distanceMeasure));
-        mSavedUwbRangingInfo->setAngleMeasure(std::move(angleMeasure));
-        mSavedUwbRangingInfo->setElapsedTime(1000);
-        mSavedUwbRangingInfo->setRemoteDevAddr("01");
-        mSavedUwbRangingInfo->setCondition(1);
-        mSavedUwbRangingInfo->setConnectionStatus(m_connectionStatus);
     }
- //   writeRangingInfo(responseObj, mSavedUwbRangingInfo);
+
     std::unique_ptr<IResponseBuilder> responseBuilder = std::make_unique<UwbResponseBuilder>();
     responseBuilder->buildRangingInfo(responseObj, mSavedUwbRangingInfo);
     responseObj.put("sessionId", m_sessionId);
@@ -209,7 +199,6 @@ void UwbAdaptor::notifySubscriberRangingInfo(std::unique_ptr<UwbRangingInfo>& ra
 
     pbnjson::JValue responseObj = pbnjson::Object();
     responseObj.put("sessionId", m_sessionId);
-//    writeRangingInfo(responseObj, rangingInfo);
     std::unique_ptr<IResponseBuilder> responseBuilder = std::make_unique<UwbResponseBuilder>();
     responseBuilder->buildRangingInfo(responseObj, rangingInfo);
     responseObj.put("returnValue", true);
@@ -239,32 +228,6 @@ void UwbAdaptor::writeSpecificInfo(pbnjson::JValue &responseObj, UwbSpecInfo &in
     responseObj.put("fwCrc", info.getFwCrc());
 }
 
-void UwbAdaptor::writeRangingInfo(pbnjson::JValue &responseObj, std::unique_ptr<UwbRangingInfo>& rangingInfo) {
-    UWB_LOG_INFO("writeRangingInfo");
-    responseObj.put("sessionId", m_sessionId);
-
-    pbnjson::JValue receivedDataObj = pbnjson::Object();
-    receivedDataObj.put("status", rangingInfo->getData()->getStatus());
-    receivedDataObj.put("distance", rangingInfo->getData()->getDistance());
-    receivedDataObj.put("angle", rangingInfo->getData()->getAngle());
-	
-	cout << "meters: " << rangingInfo->getDistanceMeasure()->getMeters() << endl;
-
-    pbnjson::JValue rangingInfoObj = pbnjson::Object();
-    rangingInfoObj.put("remoteDeviceAddress", rangingInfo->getRemoteDevAddr());
-    int comp_connStatus = (int)(rangingInfo->getConnectionStatus());
-    if( comp_connStatus == 0 ) {
-        rangingInfoObj.put("connectionStatus", false);
-    }
-    else {
-        rangingInfoObj.put("connectionStatus", true);
-    }
-    rangingInfoObj.put("condition", rangingInfo->getCondition());
-    rangingInfoObj.put("receivedData", receivedDataObj);
-
-    responseObj.put("rangingInfo", rangingInfoObj);
-}
-
 void UwbAdaptor::updateServiceState(bool isServiceAvailable) {
     m_isServiceAvailable = isServiceAvailable;
     notifySubscriberServiceState(m_isServiceAvailable);
@@ -288,30 +251,23 @@ void UwbAdaptor::updateRangingInfo(int condition, string remoteDevAddr, int64_t 
     auto rangingInfo = std::make_unique<UwbRangingInfo>();
     auto distanceMeasure = std::make_unique<DistanceMeasure>(distance, 1.0, 1.0);
     auto angleMeasure = std::make_unique<AngleMeasure>(angle, 1.0, 1.0);
-	
+    //TODO: Add altitudeAngle measurement.
     rangingInfo->setDistanceMeasure(std::move(distanceMeasure));
-    rangingInfo->setAngleMeasure(std::move(angleMeasure));
+    rangingInfo->setAzimuthAngleMeasure(std::move(angleMeasure));
     rangingInfo->setElapsedTime(1000);
 
     rangingInfo->setRemoteDevAddr(remoteDevAddr);
     rangingInfo->setCondition(condition);
 
-    rangingInfo->getData()->setDistance(distance);
-    rangingInfo->getData()->setAngle(angle);
-
     //If this API is called, it means that the UWB module is working well and also ranging is successfully received.
     //TEMP code, to trigger connectionStatus
     rangingInfo->setConnectionStatus(true);
-    rangingInfo->getData()->setStatus("Success");
 
     m_sessionId++;
     rangingInfo->setSessionId(m_sessionId);
 
     notifySubscriberRangingInfo(rangingInfo);
     mSavedUwbRangingInfo = std::move(rangingInfo);
-
-    //Need to single tone obj and remove the below line
-    //delete mRangingInfo;
 }
 
 void UwbAdaptor::updateDisconnectedDevice(uint16_t deviceID) {
@@ -326,15 +282,12 @@ void UwbAdaptor::updateDisconnectedDevice(uint16_t deviceID) {
 
     auto disConnRangingInfo = std::make_unique<UwbRangingInfo>();
     disConnRangingInfo->setConnectionStatus(false);
-    disConnRangingInfo->getData()->setStatus("OutOfRange");
     disConnRangingInfo->setCondition(255); // 255 : invalid ranging info, (0 : valid)
     m_sessionId = 0;
     disConnRangingInfo->setSessionId(m_sessionId);
 
     notifySubscriberRangingInfo(disConnRangingInfo);
     mSavedUwbRangingInfo = std::move(disConnRangingInfo); // for saving up-to-date ranging data
-    //Need to single tone obj and remove the below line
-    //delete rangingInfo;
 
     //m_connectionStatus = isDisconnected;
 }

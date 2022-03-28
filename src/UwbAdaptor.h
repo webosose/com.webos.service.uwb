@@ -41,7 +41,6 @@ public:
 
     void writeServiceState(pbnjson::JValue &responseObj, bool isServiceAvailable);
     void writeSpecificInfo(pbnjson::JValue &responseObj, UwbSpecInfo &info);
-    void writeRangingInfo(pbnjson::JValue &responseObj, std::unique_ptr<UwbRangingInfo>& rangingInfo);
 
     void setServiceState(bool serviceState) {
         m_isServiceAvailable = serviceState;
