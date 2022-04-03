@@ -1,3 +1,5 @@
+#ifndef _UWBSPECIFICINFO_H
+#define _UWBSPECIFICINFO_H
 #include <string>
 
 using namespace std;
@@ -40,3 +42,4 @@ private:
     string m_fwVersion;
     string m_fwCrc;
 };
+#endif

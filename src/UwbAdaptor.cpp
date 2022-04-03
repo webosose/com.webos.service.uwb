@@ -1,7 +1,6 @@
 #include "UwbAdaptor.h"
 #include "UwbLogging.h"
 #include "LunaUwbServiceUtil.h"
-#include "UwbResponseBuilder.h"
 
 UwbAdaptor* UwbAdaptor::mUwbAdaptor = nullptr;
 UwbSpecInfo* UwbAdaptor::mUwbSpecInfo = nullptr;
@@ -11,7 +10,7 @@ UwbAdaptor* UwbAdaptor::getInstance() {
     return mUwbAdaptor;
 }
 
-UwbAdaptor::UwbAdaptor() {
+UwbAdaptor::UwbAdaptor():mResponseBuilder(std::make_unique<UwbResponseBuilder>()) {
     UWB_LOG_INFO("UwbAdaptor Constructor");
 }
 
@@ -50,7 +49,7 @@ bool UwbAdaptor::getUwbServiceState(LSHandle *sh, LSMessage *message) {
 
     if (responseObj.isNull())
             return false;
-    writeServiceState(responseObj, m_isServiceAvailable);
+    mResponseBuilder->buildServiceState(responseObj, m_isServiceAvailable);
     responseObj.put("returnValue", true);
     responseObj.put("subscribed", isSubscription);
 
@@ -89,7 +88,7 @@ bool UwbAdaptor::getUwbSpecificInfo(LSHandle *sh, LSMessage *message) {
             return false;
 
     mUwbSpecInfo = UwbSpecInfo::getInstance();
-    writeSpecificInfo(responseObj, *mUwbSpecInfo);
+    mResponseBuilder->buildSpecificInfo(responseObj, *mUwbSpecInfo);
 
     responseObj.put("returnValue", true);
     responseObj.put("subscribed", isSubscription);
@@ -133,8 +132,7 @@ bool UwbAdaptor::getRangingInfo(LSHandle *sh, LSMessage *message) {
         mSavedUwbRangingInfo = std::make_unique<UwbRangingInfo>();
     }
 
-    std::unique_ptr<IResponseBuilder> responseBuilder = std::make_unique<UwbResponseBuilder>();
-    responseBuilder->buildRangingInfo(responseObj, mSavedUwbRangingInfo);
+    mResponseBuilder->buildRangingInfo(responseObj, mSavedUwbRangingInfo);
     responseObj.put("sessionId", m_sessionId);
     responseObj.put("returnValue", true);
     responseObj.put("subscribed", isSubscription);
@@ -156,7 +154,7 @@ void UwbAdaptor::notifySubscriberServiceState(bool isServiceAvailable) {
     LSErrorInit(&lserror);
 
     pbnjson::JValue responseObj = pbnjson::Object();
-    writeServiceState(responseObj, isServiceAvailable );
+    mResponseBuilder->buildServiceState(responseObj, isServiceAvailable);
     responseObj.put("subscribed", true);
     responseObj.put("returnValue", true);
 
@@ -177,7 +175,7 @@ void UwbAdaptor::notifySubscriberSpecificInfo(UwbSpecInfo& info) {
 
     pbnjson::JValue responseObj = pbnjson::Object();
 
-    writeSpecificInfo(responseObj, info);
+    mResponseBuilder->buildSpecificInfo(responseObj, info);
     responseObj.put("returnValue", true);
     responseObj.put("subscribed", true);
 
@@ -199,8 +197,7 @@ void UwbAdaptor::notifySubscriberRangingInfo(std::unique_ptr<UwbRangingInfo>& ra
 
     pbnjson::JValue responseObj = pbnjson::Object();
     responseObj.put("sessionId", m_sessionId);
-    std::unique_ptr<IResponseBuilder> responseBuilder = std::make_unique<UwbResponseBuilder>();
-    responseBuilder->buildRangingInfo(responseObj, rangingInfo);
+    mResponseBuilder->buildRangingInfo(responseObj, rangingInfo);
     responseObj.put("returnValue", true);
     responseObj.put("subscribed", true);
 
@@ -213,19 +210,6 @@ void UwbAdaptor::notifySubscriberRangingInfo(std::unique_ptr<UwbRangingInfo>& ra
 
     LSErrorFree(&lserror);
     return;
-}
-
-void UwbAdaptor::writeServiceState(pbnjson::JValue &responseObj, bool isServiceAvailable) {
-    UWB_LOG_INFO("writeServiceState");
-    responseObj.put("serviceAvailability", isServiceAvailable);
-}
-
-void UwbAdaptor::writeSpecificInfo(pbnjson::JValue &responseObj, UwbSpecInfo &info) {
-    UWB_LOG_INFO("writeSpecificInfo");
-
-    responseObj.put("modState",info.getModState());
-    responseObj.put("fwVersion", info.getFwVersion());
-    responseObj.put("fwCrc", info.getFwCrc());
 }
 
 void UwbAdaptor::updateServiceState(bool isServiceAvailable) {

@@ -9,6 +9,7 @@
 #include <memory>
 #include "UwbSpecInfo.h"
 #include "UwbRangingInfo.h"
+#include "UwbResponseBuilder.h"
 
 using namespace std;
 
@@ -39,9 +40,6 @@ public:
     void notifySubscriberSpecificInfo(UwbSpecInfo& info);
     void notifySubscriberRangingInfo(std::unique_ptr<UwbRangingInfo>& rangingInfo);
 
-    void writeServiceState(pbnjson::JValue &responseObj, bool isServiceAvailable);
-    void writeSpecificInfo(pbnjson::JValue &responseObj, UwbSpecInfo &info);
-
     void setServiceState(bool serviceState) {
         m_isServiceAvailable = serviceState;
     }
@@ -55,6 +53,7 @@ private:
     bool m_connectionStatus{false};
     int64_t m_sessionId{0};
     std::unique_ptr<UwbRangingInfo> mSavedUwbRangingInfo; // for saving up-to-date rangingInfo
+    std::unique_ptr<IResponseBuilder> mResponseBuilder;
 
 };
 
