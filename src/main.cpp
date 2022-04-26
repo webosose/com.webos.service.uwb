@@ -1,9 +1,10 @@
 #include <glib.h>
 #include <string>
+#include <memory>
 #include <pbnjson.hpp>
 #include "UwbLogging.h"
 #include "UwbServiceManager.h"
-#include "uart_serial.h"
+#include "UartSerial.h"
 
 PmLogContext gUwbLogContext;
 static const char* const logContextName = "webos-uwb-service";
@@ -39,28 +40,9 @@ int main(int argc, char *argv[]) {
     }
 
     //Start uart communication, To be modified in refactoring step
-    int ret = 0;
-    pthread_t tid;
-
-    pthread_attr_t attr;
-
-    ret = pthread_attr_init(&attr);
-    if (ret != 0) {
-        perror("pthread_attr_init failed");
-        return -1;
-    }
-
-    ret = pthread_create(&tid, &attr, uart_start, NULL);
-    if (ret != 0) {
-        perror("pthread_create failed");
-        return -1;
-    }
-
-    ret = pthread_attr_destroy(&attr);
-    if (ret != 0) {
-        perror("pthread_attr_destroy failed");
-        return -1;
-    }
+    auto uartSerial = std::make_shared<UartSerial>();
+    std::thread uartThread(&UartSerial::InitializeUart, uartSerial, "Init Uart");
+    
     //End of start uart communication
 
     UWB_LOG_INFO("UWB service started.");

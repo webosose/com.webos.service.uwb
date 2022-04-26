@@ -35,10 +35,10 @@ public:
 
 private:
     uint16_t m_sessionId{0};
-    bool m_connectionStatus{true};
-    int m_condition{0};
+    int m_condition{0};        
     string m_remoteDevAddr{""};
     int32_t mElapsedTime{0};
+    bool m_connectionStatus{true};
     std::unique_ptr<DistanceMeasure> mDistanceMeasure;
     std::unique_ptr<AngleMeasure> mAzimuthAngleMeasure;
     std::unique_ptr<AngleMeasure> mAltitudeAngleMeasure;
