@@ -10,7 +10,7 @@
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include "UwbAdaptor.h"
+#include <cstring>
 
 #define NUM_PRINT_BYTES  16
 enum {
@@ -18,6 +18,7 @@ enum {
     BINARY,
 };
 
+template <class T>
 class UartSerial {
 public:
     void InitializeUart(std::string param);
@@ -27,7 +28,7 @@ private:
     bool rxFlag = false;
     bool exitFlag = false;
     std::thread rxThreadId;
-    UwbAdaptor *mUwbAdaptor;
+    T& mUwbAdaptor = T::getInstance();
     
     void configureUart();
     speed_t setBaudrate(const int speed);

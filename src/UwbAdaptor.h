@@ -22,9 +22,11 @@ class UwbAdaptor {
 
 public:
 
-    static UwbAdaptor *getInstance();
-
-    ~UwbAdaptor();
+    static UwbAdaptor& getInstance() {
+        static UwbAdaptor instance; 
+        return instance;
+    }    
+ 
     bool init(LSHandle *sh);
 
     bool getUwbServiceState(LSHandle *sh, LSMessage *message);
@@ -46,8 +48,11 @@ public:
 
 private:
     UwbAdaptor();
+    ~UwbAdaptor()= default;
+    UwbAdaptor(const UwbAdaptor&)= delete;
+    UwbAdaptor& operator=(const UwbAdaptor&)= delete;
+    
     LSHandle *mLSHandle = nullptr;
-    static UwbAdaptor *mUwbAdaptor;
     static UwbSpecInfo *mUwbSpecInfo;
     bool m_isServiceAvailable{false};
     bool m_connectionStatus{false};

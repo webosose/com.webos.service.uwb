@@ -17,6 +17,7 @@
         return ((UwbServiceManager*)data)->name(sh, message, NULL); \
     }
 
+template <class T>
 class UwbServiceManager
 {
 public:
@@ -37,10 +38,9 @@ private:
 
     LSHandle *mServiceHandle = nullptr;
     GMainLoop *mMainLoop;
-    static UwbServiceManager *mUwbServiceMgr;
-    static UwbAdaptor *mUwbAdaptor;
+    inline static UwbServiceManager *mUwbServiceMgr{nullptr};
+    inline static T& mUwbAdaptor = T::getInstance();
     UwbSessionControl *mUwbSessionCtl;
-
 };
 
 

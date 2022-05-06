@@ -4,7 +4,10 @@
 #include <pbnjson.hpp>
 #include "UwbLogging.h"
 #include "UwbServiceManager.h"
+#include "UwbServiceManager.cpp"
 #include "UartSerial.h"
+#include "UwbAdaptor.h"
+#include "UartSerial.cpp"
 
 PmLogContext gUwbLogContext;
 static const char* const logContextName = "webos-uwb-service";
@@ -31,7 +34,7 @@ int main(int argc, char *argv[]) {
     }
 
     UWB_LOG_INFO("UwbService Main : start com.webos.service.uwb-2");
-    UwbServiceManager *uwbService = UwbServiceManager::getInstance();
+    UwbServiceManager<UwbAdaptor> *uwbService = UwbServiceManager<UwbAdaptor>::getInstance();
 
     if (uwbService->init(mainLoop) == false) {
         UWB_LOG_INFO("UwbService Main : start com.webos.service.uwb-3");
@@ -40,8 +43,8 @@ int main(int argc, char *argv[]) {
     }
 
     //Start uart communication, To be modified in refactoring step
-    auto uartSerial = std::make_shared<UartSerial>();
-    std::thread uartThread(&UartSerial::InitializeUart, uartSerial, "Init Uart");
+    auto uartSerial = std::make_shared<UartSerial<UwbAdaptor>>();
+    std::thread uartThread(&UartSerial<UwbAdaptor>::InitializeUart, uartSerial, "Init Uart");
     
     //End of start uart communication
 

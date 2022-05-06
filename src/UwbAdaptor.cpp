@@ -2,20 +2,10 @@
 #include "UwbLogging.h"
 #include "LunaUwbServiceUtil.h"
 
-UwbAdaptor* UwbAdaptor::mUwbAdaptor = nullptr;
 UwbSpecInfo* UwbAdaptor::mUwbSpecInfo = nullptr;
-
-UwbAdaptor* UwbAdaptor::getInstance() {
-    if(mUwbAdaptor == nullptr) mUwbAdaptor = new UwbAdaptor();
-    return mUwbAdaptor;
-}
 
 UwbAdaptor::UwbAdaptor():mResponseBuilder(std::make_unique<UwbResponseBuilder>()) {
     UWB_LOG_INFO("UwbAdaptor Constructor");
-}
-
-UwbAdaptor::~UwbAdaptor() {
-
 }
 
 bool UwbAdaptor::init(LSHandle *sh) {

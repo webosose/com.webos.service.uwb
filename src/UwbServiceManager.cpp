@@ -2,33 +2,34 @@
 #include "LunaUwbServiceUtil.h"
 #include <pbnjson.hpp>
 
-LSMethod UwbServiceManager::serviceMethods[] = {
-    { "getUwbServiceState", UwbServiceManager::_getUwbServiceState },
-    { "getUwbSpecificInfo", UwbServiceManager::_getUwbSpecificInfo },
-    { "getRangingInfo",     UwbServiceManager::_getRangingInfo     },
+template <class T>
+LSMethod UwbServiceManager<T>::serviceMethods[] = {
+    { "getUwbServiceState", UwbServiceManager<T>::_getUwbServiceState },
+    { "getUwbSpecificInfo", UwbServiceManager<T>::_getUwbSpecificInfo },
+    { "getRangingInfo",     UwbServiceManager<T>::_getRangingInfo     },
     { 0               ,      0                 }
 };
 
-UwbAdaptor* UwbServiceManager::mUwbAdaptor = nullptr;
-UwbServiceManager* UwbServiceManager::mUwbServiceMgr = nullptr;
-
-UwbServiceManager *UwbServiceManager::getInstance() {
-    if(mUwbServiceMgr == nullptr) mUwbServiceMgr = new UwbServiceManager();
+template <class T>
+UwbServiceManager<T> *UwbServiceManager<T>::getInstance() {
+    if(mUwbServiceMgr == nullptr) mUwbServiceMgr = new UwbServiceManager<T>();
     return mUwbServiceMgr;
 }
 
-UwbServiceManager::UwbServiceManager():
+template <class T>
+UwbServiceManager<T>::UwbServiceManager():
         mMainLoop(nullptr),
         mUwbSessionCtl(nullptr) {
 
 }
 
-UwbServiceManager::~UwbServiceManager(){
-    delete mUwbAdaptor;
+template <class T>
+UwbServiceManager<T>::~UwbServiceManager(){
     delete mUwbSessionCtl;
 }
 
-bool UwbServiceManager::init(GMainLoop *mainLoop) {
+template <class T>
+bool UwbServiceManager<T>::init(GMainLoop *mainLoop) {
 
     if (UwbServiceRegister(UWB_SERVICE_NAME, mainLoop, &mServiceHandle) == false) {
         UWB_LOG_ERROR("com.webos.service.uwb service registration failed");
@@ -37,16 +38,14 @@ bool UwbServiceManager::init(GMainLoop *mainLoop) {
 
     UWB_LOG_DEBUG("mServiceHandle =%p", mServiceHandle);
 
-    mUwbAdaptor = UwbAdaptor::getInstance();
-
     UWB_LOG_INFO("uwbServiceManager this = %p", this );
-    mUwbAdaptor->init(mServiceHandle);
-    UWB_LOG_INFO("mUwbAdaptor2 = %p", mUwbAdaptor );
+    mUwbAdaptor.init(mServiceHandle);
 
     return true;
 }
 
-bool UwbServiceManager::UwbServiceRegister(const char *srvcname, GMainLoop *mainLoop, LSHandle **mServiceHandle) {
+template <class T>
+bool UwbServiceManager<T>::UwbServiceRegister(const char *srvcname, GMainLoop *mainLoop, LSHandle **mServiceHandle) {
 
     LSError mLSError;
     LSErrorInit(&mLSError);
@@ -79,41 +78,34 @@ bool UwbServiceManager::UwbServiceRegister(const char *srvcname, GMainLoop *main
     return true;
 }
 
-bool UwbServiceManager::deinit() {
+template <class T>
+bool UwbServiceManager<T>::deinit() {
     return true;
 }
 
-bool UwbServiceManager::getUwbServiceState(LSHandle *sh, LSMessage *message, void *data) {
+template <class T>
+bool UwbServiceManager<T>::getUwbServiceState(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
 
-    if(mUwbAdaptor != nullptr) {
-        mUwbAdaptor->getUwbServiceState(sh, message);
-    } else {
-        UWB_LOG_INFO("getUwbServiceState, mUwbAdaptor null");
-    }
+    mUwbAdaptor.getUwbServiceState(sh, message);
+
     return true;
 }
 
-bool UwbServiceManager::getUwbSpecificInfo(LSHandle *sh, LSMessage *message, void *data) {
+template <class T>
+bool UwbServiceManager<T>::getUwbSpecificInfo(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
 
-    if(mUwbAdaptor != nullptr) {
-        mUwbAdaptor->getUwbSpecificInfo(sh, message);
-    } else {
-        UWB_LOG_INFO("getUwbSpecificInfo, mUwbAdaptor null");
-    }
+    mUwbAdaptor.getUwbSpecificInfo(sh, message);
+   
     return true;
 }
 
-bool UwbServiceManager::getRangingInfo(LSHandle *sh, LSMessage *message, void *data) {
+template <class T>
+bool UwbServiceManager<T>::getRangingInfo(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
 
-    if(mUwbAdaptor != nullptr) {
-        UWB_LOG_INFO("getRangingInfo, mUwbAdaptor not null");
-        mUwbAdaptor->getRangingInfo(sh, message);
-    } else {
-        UWB_LOG_INFO("getRangingInfo, mUwbAdaptor null");
-        return false;
-    }
+    mUwbAdaptor.getRangingInfo(sh, message);
+    
     return true;
 }
