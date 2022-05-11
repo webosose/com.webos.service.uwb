@@ -6,7 +6,17 @@ template <class T>
 LSMethod UwbServiceManager<T>::serviceMethods[] = {
     { "getUwbServiceState", UwbServiceManager<T>::_getUwbServiceState },
     { "getUwbSpecificInfo", UwbServiceManager<T>::_getUwbSpecificInfo },
-    { "getRangingInfo",     UwbServiceManager<T>::_getRangingInfo     },
+    { "getRangingInfo",     UwbServiceManager<T>::_getRangingInfo },
+    { "setUwbModuleState", UwbServiceManager<T>::_setUwbModuleState },
+    { "getUwbStatus", UwbServiceManager<T>::_getUwbStatus },
+    { "getPairedSessions",     UwbServiceManager<T>::_getPairedSessions },
+    { "setState",     UwbServiceManager<T>::_setState },
+    { "startDiscovery",     UwbServiceManager<T>::_startDiscovery },
+    { "stopDiscovery", UwbServiceManager<T>::_stopDiscovery },
+    { "openSession", UwbServiceManager<T>::_openSession },
+    { "closeSession",     UwbServiceManager<T>::_closeSession },
+    { "startRanging", UwbServiceManager<T>::_startRanging },
+    { "stopRanging", UwbServiceManager<T>::_stopRanging },  
     { 0               ,      0                 }
 };
 
@@ -106,6 +116,132 @@ bool UwbServiceManager<T>::getRangingInfo(LSHandle *sh, LSMessage *message, void
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
 
     mUwbAdaptor.getRangingInfo(sh, message);
+    
+    return true;
+}
+
+template <class T>
+bool UwbServiceManager<T>::startDiscovery(LSHandle *sh, LSMessage *message, void *data) {
+    UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
+    
+    UWB_LOG_INFO("UwbAdaptor::startDiscovery");
+    LSError lsError;
+    bool isSubscription = false;
+    pbnjson::JValue responseObj = pbnjson::Object();
+
+    LSErrorInit(&lsError);
+    
+    if (LSMessageIsSubscription(message)) {
+        isSubscription = true;
+        if (LSSubscriptionAdd(sh, "startDiscovery", message, &lsError) == false) {
+            UWB_LOG_ERROR("Failed to add startDiscovery to subscription");
+
+            responseObj.put("returnValue", false);
+            responseObj.put("errorCode", UWB_UNKNOWN_ERROR);
+            responseObj.put("errorText", "Unknwon");
+            LSMessageReply(sh,message, responseObj.stringify().c_str() , &lsError );
+            return true;
+        }
+    }
+    
+    if (responseObj.isNull())
+        return false;
+    
+    mUwbAdaptor.startDiscovery(message);
+    
+    //TODO: if mUwbAdaptor.startDiscovery returns error, post it to client and return
+    
+    responseObj.put("returnValue", true);
+    responseObj.put("subscribed", isSubscription);
+
+    if (!LSMessageReply(sh, message, responseObj.stringify().c_str(), &lsError))
+    {
+        UWB_LOG_ERROR("HANDLE_startDiscovery Message reply error!!");
+        LSErrorPrint(&lsError, stdout);
+
+        return false;
+    }
+
+    return true; 
+}
+
+template <class T>
+bool UwbServiceManager<T>::setUwbModuleState(LSHandle *sh, LSMessage *message, void *data) {
+    UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
+
+    mUwbAdaptor.setUwbModuleState(message);
+    
+    return true;
+}
+
+template <class T>
+bool UwbServiceManager<T>::getUwbStatus(LSHandle *sh, LSMessage *message, void *data) {
+    UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
+
+    mUwbAdaptor.getUwbStatus(message);
+    
+    return true;
+}
+
+template <class T>
+bool UwbServiceManager<T>::getPairedSessions(LSHandle *sh, LSMessage *message, void *data) {
+    UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
+
+    mUwbAdaptor.getPairedSessions(message);
+    
+    return true;
+}
+
+template <class T>
+bool UwbServiceManager<T>::setState(LSHandle *sh, LSMessage *message, void *data) {
+    UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
+
+    mUwbAdaptor.setState(message);
+    
+    return true;
+}
+
+template <class T>
+bool UwbServiceManager<T>::stopDiscovery(LSHandle *sh, LSMessage *message, void *data) {
+    UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
+
+    mUwbAdaptor.stopDiscovery(message);
+    
+    return true;
+}
+
+template <class T>
+bool UwbServiceManager<T>::openSession(LSHandle *sh, LSMessage *message, void *data) {
+    UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
+
+    mUwbAdaptor.openSession(message);
+    
+    return true;
+}
+
+template <class T>
+bool UwbServiceManager<T>::closeSession(LSHandle *sh, LSMessage *message, void *data) {
+    UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
+
+    mUwbAdaptor.closeSession(message);
+    
+    return true;
+}
+
+template <class T>
+bool UwbServiceManager<T>::startRanging(LSHandle *sh, LSMessage *message, void *data) {
+    UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
+
+    mUwbAdaptor.startRanging(message);
+    
+    return true;
+}
+
+template <class T>
+bool UwbServiceManager<T>::stopRanging(LSHandle *sh, LSMessage *message, void *data) {
+    UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
+
+    mUwbAdaptor.stopRanging(message);
     
     return true;
 }

@@ -32,6 +32,16 @@ public:
     bool getUwbServiceState(LSHandle *sh, LSMessage *message);
     bool getUwbSpecificInfo(LSHandle *sh, LSMessage *message);
     bool getRangingInfo(LSHandle *sh, LSMessage *message);
+    bool setUwbModuleState(LSMessage *message);
+    bool getUwbStatus(LSMessage *message);
+    bool getPairedSessions(LSMessage *message);
+    bool setState(LSMessage *message);
+    bool startDiscovery(LSMessage *message);
+    bool stopDiscovery(LSMessage *message);
+    bool openSession(LSMessage *message);
+    bool closeSession(LSMessage *message);
+    bool startRanging(LSMessage *message);
+    bool stopRanging(LSMessage *message);
 
     void updateServiceState(bool isServiceAvailable); //Not supported currently
     void updateSpecificInfo(bool modState, string fwVersion, string fwCrc);

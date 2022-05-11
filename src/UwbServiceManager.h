@@ -34,7 +34,17 @@ private:
 
     UWB_SERVICE_METHOD(getUwbServiceState);
     UWB_SERVICE_METHOD(getUwbSpecificInfo);
-    UWB_SERVICE_METHOD(getRangingInfo);
+    UWB_SERVICE_METHOD(getRangingInfo);    
+    UWB_SERVICE_METHOD(setUwbModuleState);
+    UWB_SERVICE_METHOD(getUwbStatus);
+    UWB_SERVICE_METHOD(getPairedSessions);
+    UWB_SERVICE_METHOD(setState);
+    UWB_SERVICE_METHOD(startDiscovery);
+    UWB_SERVICE_METHOD(stopDiscovery);
+    UWB_SERVICE_METHOD(openSession);
+    UWB_SERVICE_METHOD(closeSession);
+    UWB_SERVICE_METHOD(startRanging);
+    UWB_SERVICE_METHOD(stopRanging);
 
     LSHandle *mServiceHandle = nullptr;
     GMainLoop *mMainLoop;

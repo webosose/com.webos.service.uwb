@@ -16,7 +16,7 @@ bool UwbAdaptor::init(LSHandle *sh) {
 }
 
 bool UwbAdaptor::getUwbServiceState(LSHandle *sh, LSMessage *message) {
-    UWB_LOG_INFO("UwbAdaptor::getRangingInfo");
+    UWB_LOG_INFO("UwbAdaptor::getUwbServiceState");
 
     LSError mLSError;
     bool isSubscription = false;
@@ -54,7 +54,7 @@ bool UwbAdaptor::getUwbServiceState(LSHandle *sh, LSMessage *message) {
 }
 
 bool UwbAdaptor::getUwbSpecificInfo(LSHandle *sh, LSMessage *message) {
-    UWB_LOG_INFO("UwbAdaptor::getRangingInfo");
+    UWB_LOG_INFO("UwbAdaptor::getUwbSpecificInfo");
     LSError mLSError;
     bool isSubscription = false;
     pbnjson::JValue responseObj = pbnjson::Object();
@@ -135,6 +135,66 @@ bool UwbAdaptor::getRangingInfo(LSHandle *sh, LSMessage *message) {
         return false;
     }
 
+    return true;
+}
+
+bool UwbAdaptor::startDiscovery(LSMessage *message) {
+    UWB_LOG_INFO("UwbAdaptor::startDiscovery");
+    //TODO: Add call to driver API to start discovery
+    return true;
+}
+
+bool UwbAdaptor::stopDiscovery(LSMessage *message) {
+    UWB_LOG_INFO("UwbAdaptor::stopDiscovery");
+    //TODO: Add call to driver API
+    return true;
+}
+
+bool UwbAdaptor::setUwbModuleState(LSMessage *message) {
+    UWB_LOG_INFO("UwbAdaptor::setUwbModuleState");
+    //TODO: Add call to driver API
+    return true;
+}
+
+bool UwbAdaptor::getUwbStatus(LSMessage *message) {
+    UWB_LOG_INFO("UwbAdaptor::getUwbStatus");
+    //TODO: Add call to driver API
+    return true;
+}
+
+bool UwbAdaptor::getPairedSessions(LSMessage *message) {
+    UWB_LOG_INFO("UwbAdaptor::getPairedSessions");
+    //TODO: Add call to driver API
+    return true;
+}
+
+bool UwbAdaptor::setState(LSMessage *message) {
+    UWB_LOG_INFO("UwbAdaptor::setState");
+    //TODO: Add call to driver API
+    return true;
+}
+
+bool UwbAdaptor::openSession(LSMessage *message) {
+    UWB_LOG_INFO("UwbAdaptor::openSession");
+    //TODO: Add call to driver API
+    return true;
+}
+
+bool UwbAdaptor::closeSession(LSMessage *message) {
+    UWB_LOG_INFO("UwbAdaptor::closeSession");
+    //TODO: Add call to driver API
+    return true;
+}
+
+bool UwbAdaptor::startRanging(LSMessage *message) {
+    UWB_LOG_INFO("UwbAdaptor::startRanging");
+    //TODO: Add call to driver API
+    return true;
+}
+
+bool UwbAdaptor::stopRanging(LSMessage *message) {
+    UWB_LOG_INFO("UwbAdaptor::stopRanging");
+    //TODO: Add call to driver API
     return true;
 }
 
