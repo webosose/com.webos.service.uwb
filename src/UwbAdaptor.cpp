@@ -178,10 +178,20 @@ bool UwbAdaptor::getPairedSessions(LSMessage *message) {
     return true;
 }
 
-bool UwbAdaptor::setState(LSMessage *message) {
+UwbErrorCodes UwbAdaptor::setState(const std::string& deviceType) {
     UWB_LOG_INFO("UwbAdaptor::setState");
-    //TODO: Add call to driver API
-    return true;
+    UwbErrorCodes error = UWB_ERROR_NONE;
+    if(deviceType == "controller") {
+        //TODO:Call HOST_SET_DEVICE_TYPE(0)
+    }
+    else if(deviceType == "controlee") {
+        //TODO:Call HOST_SET_DEVICE_TYPE(1)
+    }
+    else {
+        error = UWB_ERR_NOT_VALID_INPUT;
+    }
+
+    return error;
 }
 
 bool UwbAdaptor::openSession(LSMessage *message) {

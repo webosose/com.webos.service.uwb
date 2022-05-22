@@ -36,7 +36,7 @@ public:
     UwbErrorCodes setUwbModuleState(const std::string& moduleState);
     bool getUwbStatus(LSMessage *message);
     bool getPairedSessions(LSMessage *message);
-    bool setState(LSMessage *message);
+    UwbErrorCodes setState(const std::string& deviceType);
     bool startDiscovery(LSMessage *message);
     bool stopDiscovery(LSMessage *message);
     bool openSession(LSMessage *message);
