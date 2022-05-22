@@ -150,10 +150,20 @@ bool UwbAdaptor::stopDiscovery(LSMessage *message) {
     return true;
 }
 
-bool UwbAdaptor::setUwbModuleState(LSMessage *message) {
+UwbErrorCodes UwbAdaptor::setUwbModuleState(const std::string& moduleState) {
     UWB_LOG_INFO("UwbAdaptor::setUwbModuleState");
-    //TODO: Add call to driver API
-    return true;
+    UwbErrorCodes error = UWB_ERROR_NONE;
+    if(moduleState == "start") {
+        //TODO:Call HOST_REQ_MODULE_START
+    }
+    else if(moduleState == "stop") {
+        //TODO:Call HOST_CMD_MODULE_STOP
+    }
+    else {
+        error = UWB_ERR_NOT_VALID_INPUT;
+    }
+
+    return error;
 }
 
 bool UwbAdaptor::getUwbStatus(LSMessage *message) {

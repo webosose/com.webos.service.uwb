@@ -10,6 +10,7 @@
 #include "UwbSpecInfo.h"
 #include "UwbRangingInfo.h"
 #include "UwbResponseBuilder.h"
+#include "UwbErrors.h"
 
 using namespace std;
 
@@ -32,7 +33,7 @@ public:
     bool getUwbServiceState(LSHandle *sh, LSMessage *message);
     bool getUwbSpecificInfo(LSHandle *sh, LSMessage *message);
     bool getRangingInfo(LSHandle *sh, LSMessage *message);
-    bool setUwbModuleState(LSMessage *message);
+    UwbErrorCodes setUwbModuleState(const std::string& moduleState);
     bool getUwbStatus(LSMessage *message);
     bool getPairedSessions(LSMessage *message);
     bool setState(LSMessage *message);

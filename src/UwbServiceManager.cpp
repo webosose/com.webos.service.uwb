@@ -168,8 +168,40 @@ bool UwbServiceManager<T>::startDiscovery(LSHandle *sh, LSMessage *message, void
 template <class T>
 bool UwbServiceManager<T>::setUwbModuleState(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
+    LS::Message request(message);
+	pbnjson::JValue requestObj;
+	int parseError = 0;
 
-    mUwbAdaptor.setUwbModuleState(message);
+    const std::string schema = STRICT_SCHEMA(PROPS_1(PROP(moduleState, string)) REQUIRED_1(moduleState));
+
+	if (!LSUtils::parsePayload(request.getPayload(), requestObj, schema, &parseError))
+	{
+		if (parseError == JSON_PARSE_SCHEMA_ERROR)
+			LSUtils::respondWithError(request, UWB_ERR_SCHEMA_VALIDATION_FAIL);
+		else
+			LSUtils::respondWithError(request, UWB_ERR_BAD_JSON);
+		return true;
+	}
+
+    if (requestObj.hasKey("moduleState"))
+	{
+		std::string moduleState = requestObj["moduleState"].asString();
+
+		UwbErrorCodes error = UWB_ERROR_NONE;
+        UWB_LOG_INFO("setUwbModuleState : moduleState [%s]", moduleState.c_str());
+
+        error = mUwbAdaptor.setUwbModuleState(moduleState);
+
+		if (error != UWB_ERROR_NONE)
+		{
+			LSUtils::respondWithError(request, error);
+			return true;
+		}
+	}
+
+    pbnjson::JValue responseObj = pbnjson::Object();
+    responseObj.put("returnValue", true);
+    LSUtils::postToClient(request, responseObj);
     
     return true;
 }

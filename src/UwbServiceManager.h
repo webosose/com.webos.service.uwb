@@ -4,6 +4,7 @@
 #include "UwbLogging.h"
 #include "UwbAdaptor.h"
 #include "UwbSessionControl.h"
+#include "ls2utils.h"
 #include <lunaservice.h>
 #include <luna-service2/lunaservice.hpp>
 #include <glib.h>
