@@ -37,7 +37,7 @@ public:
     bool getUwbStatus(LSMessage *message);
     bool getPairedSessions(LSMessage *message);
     UwbErrorCodes setState(const std::string& deviceType);
-    bool startDiscovery(LSMessage *message);
+    UwbErrorCodes startDiscovery(int32_t discoveryTimeout);
     bool stopDiscovery(LSMessage *message);
     bool openSession(LSMessage *message);
     bool closeSession(LSMessage *message);
@@ -70,7 +70,6 @@ private:
     int64_t m_sessionId{0};
     std::unique_ptr<UwbRangingInfo> mSavedUwbRangingInfo; // for saving up-to-date rangingInfo
     std::unique_ptr<IResponseBuilder> mResponseBuilder;
-
 };
 
 #endif//H_UwbAdaptor

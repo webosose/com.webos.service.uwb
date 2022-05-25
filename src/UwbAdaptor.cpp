@@ -138,10 +138,11 @@ bool UwbAdaptor::getRangingInfo(LSHandle *sh, LSMessage *message) {
     return true;
 }
 
-bool UwbAdaptor::startDiscovery(LSMessage *message) {
+UwbErrorCodes UwbAdaptor::startDiscovery(int32_t discoveryTimeout) {
     UWB_LOG_INFO("UwbAdaptor::startDiscovery");
+    UwbErrorCodes error = UWB_ERROR_NONE;
     //TODO: Add call to driver API to start discovery
-    return true;
+    return error;
 }
 
 bool UwbAdaptor::stopDiscovery(LSMessage *message) {

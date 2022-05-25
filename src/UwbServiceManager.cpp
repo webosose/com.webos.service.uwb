@@ -123,16 +123,41 @@ bool UwbServiceManager<T>::getRangingInfo(LSHandle *sh, LSMessage *message, void
 template <class T>
 bool UwbServiceManager<T>::startDiscovery(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
+    LS::Message request(message);
+	pbnjson::JValue requestObj;
+	int parseError = 0;
+
+    const std::string schema = STRICT_SCHEMA(PROPS_2(PROP(discoveryTimeout, integer), PROP(subscribe, boolean)) REQUIRED_1(subscribe));
+
+    if(!LSUtils::parsePayload(request.getPayload(),requestObj,schema,&parseError))
+	{
+		if(parseError != JSON_PARSE_SCHEMA_ERROR)
+			LSUtils::respondWithError(request, UWB_ERR_BAD_JSON);
+		else if (!request.isSubscription())
+			LSUtils::respondWithError(request, UWB_ERR_MTHD_NOT_SUBSCRIBED);
+		else
+			LSUtils::respondWithError(request,UWB_ERR_SCHEMA_VALIDATION_FAIL);
+
+		return true;
+	}
+
+    int32_t discoveryTimeout = 0;
+    if (requestObj.hasKey("discoveryTimeout"))
+	{
+		discoveryTimeout = requestObj["discoveryTimeout"].asNumber<int32_t>();
+        if (discoveryTimeout < 0)
+        {
+                LSUtils::respondWithError(request, retrieveErrorText(UWB_ERR_DISCOVERY_TO_NEG_VALUE) + std::to_string(discoveryTimeout), UWB_ERR_DISCOVERY_TO_NEG_VALUE);
+                return true;
+        }
+    }
     
-    UWB_LOG_INFO("UwbAdaptor::startDiscovery");
     LSError lsError;
     bool isSubscription = false;
     pbnjson::JValue responseObj = pbnjson::Object();
-
-    LSErrorInit(&lsError);
     
-    if (LSMessageIsSubscription(message)) {
-        isSubscription = true;
+    if (request.isSubscription())
+    {
         if (LSSubscriptionAdd(sh, "startDiscovery", message, &lsError) == false) {
             UWB_LOG_ERROR("Failed to add startDiscovery to subscription");
 
@@ -142,27 +167,24 @@ bool UwbServiceManager<T>::startDiscovery(LSHandle *sh, LSMessage *message, void
             LSMessageReply(sh,message, responseObj.stringify().c_str() , &lsError );
             return true;
         }
+        isSubscription = true;
     }
     
-    if (responseObj.isNull())
-        return false;
-    
-    mUwbAdaptor.startDiscovery(message);
-    
-    //TODO: if mUwbAdaptor.startDiscovery returns error, post it to client and return
+    UwbErrorCodes error = UWB_ERROR_NONE;
+
+    error = mUwbAdaptor.startDiscovery(discoveryTimeout);
+
+    if (error != UWB_ERROR_NONE)
+    {
+        LSUtils::respondWithError(request, UWB_ERR_START_DISC_FAIL);
+        return true;
+    }
     
     responseObj.put("returnValue", true);
     responseObj.put("subscribed", isSubscription);
+    LSUtils::postToClient(request, responseObj);
 
-    if (!LSMessageReply(sh, message, responseObj.stringify().c_str(), &lsError))
-    {
-        UWB_LOG_ERROR("HANDLE_startDiscovery Message reply error!!");
-        LSErrorPrint(&lsError, stdout);
-
-        return false;
-    }
-
-    return true; 
+    return true;
 }
 
 template <class T>
