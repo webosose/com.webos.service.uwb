@@ -8,11 +8,20 @@ UwbAdaptor::UwbAdaptor():mResponseBuilder(std::make_unique<UwbResponseBuilder>()
     UWB_LOG_INFO("UwbAdaptor Constructor");
 }
 
+UwbAdaptor::~UwbAdaptor() {
+
+}
+
 bool UwbAdaptor::init(LSHandle *sh) {
     UWB_LOG_INFO("UwbAdaptor Init");
     mLSHandle = sh;
 
     return true;
+}
+
+void UwbAdaptor::setDeviceInterface(std::shared_ptr<UartSerial> uartSerial) {
+    mUartSerial = uartSerial;
+    mUartSerial->setAdaptor(shared_from_this());
 }
 
 bool UwbAdaptor::getUwbServiceState(LSHandle *sh, LSMessage *message) {

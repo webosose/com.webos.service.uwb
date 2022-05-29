@@ -2,8 +2,12 @@
 
 using namespace std;
 
-template <class T>
-void UartSerial<T>::InitializeUart(std::string param) {
+void UartSerial::setAdaptor(shared_ptr<CallbackInterface> adapter) {
+    dataCount = 0;
+    mUwbAdaptor = adapter;
+}
+
+void UartSerial::InitializeUart(std::string param) {
     std::cout << param << std::endl;    
     configureUart();
     
@@ -18,8 +22,7 @@ void UartSerial<T>::InitializeUart(std::string param) {
     return;
 }
 
-template <class T>
-void UartSerial<T>::configureUart() {
+void UartSerial::configureUart() {
     struct termios options;
     std::cout << "UART Serial Communicator for LGE UWB Module" << std::endl;
 
@@ -61,8 +64,7 @@ void UartSerial<T>::configureUart() {
     tcsetattr(mUartFd, TCSANOW, &options);    
 }
 
-template <class T>
-speed_t UartSerial<T>::setBaudrate(const int speed)
+speed_t UartSerial::setBaudrate(const int speed)
 {
     speed_t myBaud;
 
@@ -106,8 +108,7 @@ speed_t UartSerial<T>::setBaudrate(const int speed)
     return myBaud;
 }
 
-template <class T>
-void UartSerial<T>::serialDataRead() {
+void UartSerial::serialDataRead() {
     rxFlag = true;
     char rx_bin[128] = {0,};
 
@@ -182,8 +183,7 @@ void UartSerial<T>::serialDataRead() {
     return;
 }
 
-template <class T>
-void UartSerial<T>::printData(char *rx_bin, int rx_length) {
+void UartSerial::printData(char *rx_bin, int rx_length) {
     printf("UWB RX BUFFER (Length=%d) \n", rx_length);
     printf("Hexa String : ");
     printBytes(BINARY, rx_length, rx_bin);
@@ -196,10 +196,10 @@ void UartSerial<T>::printData(char *rx_bin, int rx_length) {
     printf("- Command: \t Hexa[%02x] \t Int[%d] \n", rx_bin[1], (int)(rx_bin[1]) );
     printf("- Device ID: \t Hexa[%02x] \t Int[%d] \n", rx_bin[2], (int)(rx_bin[2]) );
     printf("- Condition: \t Hexa[%02x] \t Int[%d] \n", rx_bin[7], (int)(rx_bin[7]) );
+    printf("dataCount:%d\n", ++dataCount);
 }
 
-template <class T>
-void UartSerial<T>::processModuleInfo(char *rx_bin) {
+void UartSerial::processModuleInfo(char *rx_bin) {
     //Need to data definition doc for UWB Module State
     printf("UWB Module State : rx_bin[2] = [%02x %d] \n", rx_bin[2], (int)(rx_bin[2]) );
     //Need to data definition doc for FW Version
@@ -227,11 +227,10 @@ void UartSerial<T>::processModuleInfo(char *rx_bin) {
     printf("FW CRC - str_fw_crc : [%02x %02x %02x %02x] \n",
             str_fw_crc[0], str_fw_crc[1], str_fw_crc[2], str_fw_crc[3]);
     //Update UWB Data to UWB Adaptor
-    mUwbAdaptor.updateSpecificInfo((int)(rx_bin[2]), std::string("LGE UWB FW Version 1.0"), std::string("LGE UWB FW CRC temp"));   
+    mUwbAdaptor->updateSpecificInfo((int)(rx_bin[2]), std::string("LGE UWB FW Version 1.0"), std::string("LGE UWB FW CRC temp"));   
 }
 
-template <class T>
-void UartSerial<T>::processRangingInfo(char *rx_bin) {
+void UartSerial::processRangingInfo(char *rx_bin) {
     //Reading for Little Endian, TBD : we should use Big-Endian that is generic in network protocols
     short angle = rx_bin[3] | rx_bin[4] << 8;
     short dist = rx_bin[5] | rx_bin[6] << 8;
@@ -246,17 +245,15 @@ void UartSerial<T>::processRangingInfo(char *rx_bin) {
     printf("Device ID = [%02x %d] Angle[3~4] = [%d], Dist_inch*10[5~6] = [%d], Dist_cm = [%f], Condition = [%d] \n",
             rx_bin[2], (int)(rx_bin[2]), angle, dist, dist_cm, (int)(rx_bin[7]) );
     //Update UWB Data to UWB Adaptor
-    mUwbAdaptor.updateRangingInfo((int)(rx_bin[7]), std::to_string( (int)(rx_bin[2]) ), (int)angle, (int)dist);
+    mUwbAdaptor->updateRangingInfo((int)(rx_bin[7]), std::to_string( (int)(rx_bin[2]) ), (int)angle, (int)dist);
 }
 
-template <class T>
-void UartSerial<T>::processDisconnectInfo(char *rx_bin) {
+void UartSerial::processDisconnectInfo(char *rx_bin) {
     printf("Device ID = [%02x %d] \n", rx_bin[2], (int)(rx_bin[2]));
-    mUwbAdaptor.updateDisconnectedDevice( (int)(rx_bin[2]) );
+    mUwbAdaptor->updateDisconnectedDevice( (int)(rx_bin[2]) );
 }
 
-template <class T>
-void UartSerial<T>::printBytes(int type, int length, const char *buffer)
+void UartSerial::printBytes(int type, int length, const char *buffer)
 {
     int i;
     char temp[NUM_PRINT_BYTES] = {0,};

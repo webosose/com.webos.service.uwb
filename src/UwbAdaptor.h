@@ -11,6 +11,10 @@
 #include "UwbRangingInfo.h"
 #include "UwbResponseBuilder.h"
 #include "UwbErrors.h"
+#include "UartSerial.h"
+#include "UwbAdapterInterface.h"
+#include "UwbServiceManager.h"
+#include "CallbackInterface.h"
 
 using namespace std;
 
@@ -19,17 +23,15 @@ namespace LS
     class Message;
 }
 
-class UwbAdaptor {
-
+class UwbAdaptor : public std::enable_shared_from_this<UwbAdaptor>, public UwbAdapterInterface, public CallbackInterface {
 public:
-
-    static UwbAdaptor& getInstance() {
-        static UwbAdaptor instance; 
-        return instance;
-    }    
+    UwbAdaptor();
+    ~UwbAdaptor();
+    UwbAdaptor(const UwbAdaptor&) = delete;
+    UwbAdaptor& operator=(const UwbAdaptor&) = delete;    
  
     bool init(LSHandle *sh);
-
+    void setDeviceInterface(std::shared_ptr<UartSerial> uartSerial);
     bool getUwbServiceState(LSHandle *sh, LSMessage *message);
     bool getUwbSpecificInfo(LSHandle *sh, LSMessage *message);
     bool getRangingInfo(LSHandle *sh, LSMessage *message);
@@ -43,6 +45,10 @@ public:
     bool closeSession(LSMessage *message);
     bool startRanging(LSMessage *message);
     bool stopRanging(LSMessage *message);
+    
+    void setServiceState(bool serviceState) {
+        m_isServiceAvailable = serviceState;
+    }
 
     void updateServiceState(bool isServiceAvailable); //Not supported currently
     void updateSpecificInfo(bool modState, string fwVersion, string fwCrc);
@@ -51,18 +57,9 @@ public:
 
     void notifySubscriberServiceState(bool isServiceAvailable);
     void notifySubscriberSpecificInfo(UwbSpecInfo& info);
-    void notifySubscriberRangingInfo(std::unique_ptr<UwbRangingInfo>& rangingInfo);
+    void notifySubscriberRangingInfo(std::unique_ptr<UwbRangingInfo>& rangingInfo);    
 
-    void setServiceState(bool serviceState) {
-        m_isServiceAvailable = serviceState;
-    }
-
-private:
-    UwbAdaptor();
-    ~UwbAdaptor()= default;
-    UwbAdaptor(const UwbAdaptor&)= delete;
-    UwbAdaptor& operator=(const UwbAdaptor&)= delete;
-    
+private:    
     LSHandle *mLSHandle = nullptr;
     static UwbSpecInfo *mUwbSpecInfo;
     bool m_isServiceAvailable{false};
@@ -70,6 +67,7 @@ private:
     int64_t m_sessionId{0};
     std::unique_ptr<UwbRangingInfo> mSavedUwbRangingInfo; // for saving up-to-date rangingInfo
     std::unique_ptr<IResponseBuilder> mResponseBuilder;
+    std::shared_ptr<UartSerial> mUartSerial;
 };
 
 #endif//H_UwbAdaptor

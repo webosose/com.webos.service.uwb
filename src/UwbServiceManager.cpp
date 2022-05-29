@@ -2,44 +2,39 @@
 #include "LunaUwbServiceUtil.h"
 #include <pbnjson.hpp>
 
-template <class T>
-LSMethod UwbServiceManager<T>::serviceMethods[] = {
-    { "getUwbServiceState", UwbServiceManager<T>::_getUwbServiceState },
-    { "getUwbSpecificInfo", UwbServiceManager<T>::_getUwbSpecificInfo },
-    { "getRangingInfo",     UwbServiceManager<T>::_getRangingInfo },
-    { "setUwbModuleState", UwbServiceManager<T>::_setUwbModuleState },
-    { "getUwbStatus", UwbServiceManager<T>::_getUwbStatus },
-    { "getPairedSessions",     UwbServiceManager<T>::_getPairedSessions },
-    { "setState",     UwbServiceManager<T>::_setState },
-    { "startDiscovery",     UwbServiceManager<T>::_startDiscovery },
-    { "stopDiscovery", UwbServiceManager<T>::_stopDiscovery },
-    { "openSession", UwbServiceManager<T>::_openSession },
-    { "closeSession",     UwbServiceManager<T>::_closeSession },
-    { "startRanging", UwbServiceManager<T>::_startRanging },
-    { "stopRanging", UwbServiceManager<T>::_stopRanging },  
+LSMethod UwbServiceManager::serviceMethods[] = {
+    { "getUwbServiceState", UwbServiceManager::_getUwbServiceState },
+    { "getUwbSpecificInfo", UwbServiceManager::_getUwbSpecificInfo },
+    { "getRangingInfo",     UwbServiceManager::_getRangingInfo },
+    { "setUwbModuleState", UwbServiceManager::_setUwbModuleState },
+    { "getUwbStatus", UwbServiceManager::_getUwbStatus },
+    { "getPairedSessions",     UwbServiceManager::_getPairedSessions },
+    { "setState",     UwbServiceManager::_setState },
+    { "startDiscovery",     UwbServiceManager::_startDiscovery },
+    { "stopDiscovery", UwbServiceManager::_stopDiscovery },
+    { "openSession", UwbServiceManager::_openSession },
+    { "closeSession",     UwbServiceManager::_closeSession },
+    { "startRanging", UwbServiceManager::_startRanging },
+    { "stopRanging", UwbServiceManager::_stopRanging },  
     { 0               ,      0                 }
 };
 
-template <class T>
-UwbServiceManager<T> *UwbServiceManager<T>::getInstance() {
-    if(mUwbServiceMgr == nullptr) mUwbServiceMgr = new UwbServiceManager<T>();
+UwbServiceManager *UwbServiceManager::getInstance() {
+    if(mUwbServiceMgr == nullptr) mUwbServiceMgr = new UwbServiceManager();
     return mUwbServiceMgr;
 }
 
-template <class T>
-UwbServiceManager<T>::UwbServiceManager():
+UwbServiceManager::UwbServiceManager():
         mMainLoop(nullptr),
         mUwbSessionCtl(nullptr) {
 
 }
 
-template <class T>
-UwbServiceManager<T>::~UwbServiceManager(){
+UwbServiceManager::~UwbServiceManager(){
     delete mUwbSessionCtl;
 }
 
-template <class T>
-bool UwbServiceManager<T>::init(GMainLoop *mainLoop) {
+bool UwbServiceManager::init(GMainLoop *mainLoop, std::shared_ptr<UwbAdapterInterface> adapter) {
 
     if (UwbServiceRegister(UWB_SERVICE_NAME, mainLoop, &mServiceHandle) == false) {
         UWB_LOG_ERROR("com.webos.service.uwb service registration failed");
@@ -47,15 +42,15 @@ bool UwbServiceManager<T>::init(GMainLoop *mainLoop) {
     }
 
     UWB_LOG_DEBUG("mServiceHandle =%p", mServiceHandle);
+    mUwbAdaptor = adapter;
 
     UWB_LOG_INFO("uwbServiceManager this = %p", this );
-    mUwbAdaptor.init(mServiceHandle);
+    mUwbAdaptor->init(mServiceHandle);
 
     return true;
 }
 
-template <class T>
-bool UwbServiceManager<T>::UwbServiceRegister(const char *srvcname, GMainLoop *mainLoop, LSHandle **mServiceHandle) {
+bool UwbServiceManager::UwbServiceRegister(const char *srvcname, GMainLoop *mainLoop, LSHandle **mServiceHandle) {
 
     LSError mLSError;
     LSErrorInit(&mLSError);
@@ -88,40 +83,35 @@ bool UwbServiceManager<T>::UwbServiceRegister(const char *srvcname, GMainLoop *m
     return true;
 }
 
-template <class T>
-bool UwbServiceManager<T>::deinit() {
+bool UwbServiceManager::deinit() {
     return true;
 }
 
-template <class T>
-bool UwbServiceManager<T>::getUwbServiceState(LSHandle *sh, LSMessage *message, void *data) {
+bool UwbServiceManager::getUwbServiceState(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
 
-    mUwbAdaptor.getUwbServiceState(sh, message);
+    mUwbAdaptor->getUwbServiceState(sh, message);
 
     return true;
 }
 
-template <class T>
-bool UwbServiceManager<T>::getUwbSpecificInfo(LSHandle *sh, LSMessage *message, void *data) {
+bool UwbServiceManager::getUwbSpecificInfo(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
 
-    mUwbAdaptor.getUwbSpecificInfo(sh, message);
+    mUwbAdaptor->getUwbSpecificInfo(sh, message);
    
     return true;
 }
 
-template <class T>
-bool UwbServiceManager<T>::getRangingInfo(LSHandle *sh, LSMessage *message, void *data) {
+bool UwbServiceManager::getRangingInfo(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
 
-    mUwbAdaptor.getRangingInfo(sh, message);
+    mUwbAdaptor->getRangingInfo(sh, message);
     
     return true;
 }
 
-template <class T>
-bool UwbServiceManager<T>::startDiscovery(LSHandle *sh, LSMessage *message, void *data) {
+bool UwbServiceManager::startDiscovery(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
     LS::Message request(message);
 	pbnjson::JValue requestObj;
@@ -172,7 +162,7 @@ bool UwbServiceManager<T>::startDiscovery(LSHandle *sh, LSMessage *message, void
     
     UwbErrorCodes error = UWB_ERROR_NONE;
 
-    error = mUwbAdaptor.startDiscovery(discoveryTimeout);
+    error = mUwbAdaptor->startDiscovery(discoveryTimeout);
 
     if (error != UWB_ERROR_NONE)
     {
@@ -187,8 +177,7 @@ bool UwbServiceManager<T>::startDiscovery(LSHandle *sh, LSMessage *message, void
     return true;
 }
 
-template <class T>
-bool UwbServiceManager<T>::setUwbModuleState(LSHandle *sh, LSMessage *message, void *data) {
+bool UwbServiceManager::setUwbModuleState(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
     LS::Message request(message);
 	pbnjson::JValue requestObj;
@@ -212,7 +201,7 @@ bool UwbServiceManager<T>::setUwbModuleState(LSHandle *sh, LSMessage *message, v
 		UwbErrorCodes error = UWB_ERROR_NONE;
         UWB_LOG_INFO("setUwbModuleState : moduleState [%s]", moduleState.c_str());
 
-        error = mUwbAdaptor.setUwbModuleState(moduleState);
+        error = mUwbAdaptor->setUwbModuleState(moduleState);
 
 		if (error != UWB_ERROR_NONE)
 		{
@@ -228,26 +217,23 @@ bool UwbServiceManager<T>::setUwbModuleState(LSHandle *sh, LSMessage *message, v
     return true;
 }
 
-template <class T>
-bool UwbServiceManager<T>::getUwbStatus(LSHandle *sh, LSMessage *message, void *data) {
+bool UwbServiceManager::getUwbStatus(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
 
-    mUwbAdaptor.getUwbStatus(message);
+    mUwbAdaptor->getUwbStatus(message);
     
     return true;
 }
 
-template <class T>
-bool UwbServiceManager<T>::getPairedSessions(LSHandle *sh, LSMessage *message, void *data) {
+bool UwbServiceManager::getPairedSessions(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
 
-    mUwbAdaptor.getPairedSessions(message);
+    mUwbAdaptor->getPairedSessions(message);
     
     return true;
 }
 
-template <class T>
-bool UwbServiceManager<T>::setState(LSHandle *sh, LSMessage *message, void *data) {
+bool UwbServiceManager::setState(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
     LS::Message request(message);
 	pbnjson::JValue requestObj;
@@ -271,7 +257,7 @@ bool UwbServiceManager<T>::setState(LSHandle *sh, LSMessage *message, void *data
 		UwbErrorCodes error = UWB_ERROR_NONE;
         UWB_LOG_INFO("setState : role [%s]", role.c_str());
 
-        error = mUwbAdaptor.setState(role);
+        error = mUwbAdaptor->setState(role);
 
 		if (error != UWB_ERROR_NONE)
 		{
@@ -287,47 +273,47 @@ bool UwbServiceManager<T>::setState(LSHandle *sh, LSMessage *message, void *data
     return true;
 }
 
-template <class T>
-bool UwbServiceManager<T>::stopDiscovery(LSHandle *sh, LSMessage *message, void *data) {
+bool UwbServiceManager::stopDiscovery(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
 
-    mUwbAdaptor.stopDiscovery(message);
+    mUwbAdaptor->stopDiscovery(message);
     
     return true;
 }
 
-template <class T>
-bool UwbServiceManager<T>::openSession(LSHandle *sh, LSMessage *message, void *data) {
+bool UwbServiceManager::openSession(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
 
-    mUwbAdaptor.openSession(message);
+    mUwbAdaptor->openSession(message);
     
     return true;
 }
 
-template <class T>
-bool UwbServiceManager<T>::closeSession(LSHandle *sh, LSMessage *message, void *data) {
+bool UwbServiceManager::closeSession(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
 
-    mUwbAdaptor.closeSession(message);
+    mUwbAdaptor->closeSession(message);
     
     return true;
 }
 
-template <class T>
-bool UwbServiceManager<T>::startRanging(LSHandle *sh, LSMessage *message, void *data) {
+bool UwbServiceManager::startRanging(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
 
-    mUwbAdaptor.startRanging(message);
+    mUwbAdaptor->startRanging(message);
     
     return true;
 }
 
-template <class T>
-bool UwbServiceManager<T>::stopRanging(LSHandle *sh, LSMessage *message, void *data) {
+bool UwbServiceManager::stopRanging(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
 
-    mUwbAdaptor.stopRanging(message);
+    mUwbAdaptor->stopRanging(message);
     
+    return true;
+}
+
+bool UwbServiceManager::notifyDiscoveryResult() {
+    UWB_LOG_INFO("notifyDiscoveryResult API Called %s", __FUNCTION__ );
     return true;
 }

@@ -2,13 +2,14 @@
 #define H_UwbServiceManager
 
 #include "UwbLogging.h"
-#include "UwbAdaptor.h"
+#include "UwbAdapterInterface.h"
 #include "UwbSessionControl.h"
 #include "ls2utils.h"
 #include <lunaservice.h>
 #include <luna-service2/lunaservice.hpp>
 #include <glib.h>
 #include <string>
+#include <memory>
 
 #define UWB_SERVICE_NAME           "com.webos.service.uwb"
 
@@ -18,17 +19,17 @@
         return ((UwbServiceManager*)data)->name(sh, message, NULL); \
     }
 
-template <class T>
 class UwbServiceManager
 {
 public:
     virtual ~UwbServiceManager();
-    bool init(GMainLoop *);
+    bool init(GMainLoop *, std::shared_ptr<UwbAdapterInterface> adapter);
     bool UwbServiceRegister(const char *srvcname, GMainLoop *mainLoop, LSHandle **mServiceHandle);
     bool deinit();
     static UwbServiceManager *getInstance();
 
     static LSMethod serviceMethods[];
+    bool notifyDiscoveryResult();
 
 private:
     UwbServiceManager();
@@ -50,7 +51,7 @@ private:
     LSHandle *mServiceHandle = nullptr;
     GMainLoop *mMainLoop;
     inline static UwbServiceManager *mUwbServiceMgr{nullptr};
-    inline static T& mUwbAdaptor = T::getInstance();
+    inline static std::shared_ptr<UwbAdapterInterface> mUwbAdaptor{}; //couldn't make it non-static because it's used in a static function
     UwbSessionControl *mUwbSessionCtl;
 };
 

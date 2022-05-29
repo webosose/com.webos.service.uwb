@@ -10,7 +10,9 @@
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <memory>
 #include <cstring>
+#include "CallbackInterface.h"
 
 #define NUM_PRINT_BYTES  16
 enum {
@@ -18,17 +20,18 @@ enum {
     BINARY,
 };
 
-template <class T>
 class UartSerial {
 public:
+    void setAdaptor(std::shared_ptr<CallbackInterface> adapter);
     void InitializeUart(std::string param);
 
 private:
+    uint32_t dataCount; //TODO: For testing. Can be removed.
     int mUartFd = -1;
     bool rxFlag = false;
     bool exitFlag = false;
     std::thread rxThreadId;
-    T& mUwbAdaptor = T::getInstance();
+    std::shared_ptr<CallbackInterface> mUwbAdaptor;
     
     void configureUart();
     speed_t setBaudrate(const int speed);
