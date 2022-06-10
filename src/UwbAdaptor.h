@@ -15,6 +15,7 @@
 #include "UwbAdapterInterface.h"
 #include "UwbServiceManager.h"
 #include "CallbackInterface.h"
+#include "UartConstants.h"
 
 using namespace std;
 
@@ -36,7 +37,7 @@ public:
     bool getUwbSpecificInfo(LSHandle *sh, LSMessage *message);
     bool getRangingInfo(LSHandle *sh, LSMessage *message);
     UwbErrorCodes setUwbModuleState(const std::string& moduleState);
-    bool getUwbStatus(LSMessage *message);
+    bool getStatus(LSMessage *message);
     bool getPairedSessions(LSMessage *message);
     UwbErrorCodes setState(const std::string& deviceType);
     UwbErrorCodes startDiscovery(int32_t discoveryTimeout);
@@ -54,10 +55,11 @@ public:
     void updateSpecificInfo(bool modState, string fwVersion, string fwCrc);
     void updateRangingInfo(int condition, string remoteDevAddr, int64_t angle, int64_t distance);
     void updateDisconnectedDevice(uint16_t deviceID);
+    void updateModuleStateChanged(bool moduleState);
 
     void notifySubscriberServiceState(bool isServiceAvailable);
     void notifySubscriberSpecificInfo(UwbSpecInfo& info);
-    void notifySubscriberRangingInfo(std::unique_ptr<UwbRangingInfo>& rangingInfo);    
+    void notifySubscriberRangingInfo(std::unique_ptr<UwbRangingInfo>& rangingInfo);
 
 private:    
     LSHandle *mLSHandle = nullptr;
@@ -67,7 +69,7 @@ private:
     int64_t m_sessionId{0};
     std::unique_ptr<UwbRangingInfo> mSavedUwbRangingInfo; // for saving up-to-date rangingInfo
     std::unique_ptr<IResponseBuilder> mResponseBuilder;
-    std::shared_ptr<UartSerial> mUartSerial;
+    std::shared_ptr<UartSerial> mUartSerial = nullptr;
 };
 
 #endif//H_UwbAdaptor

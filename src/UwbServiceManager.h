@@ -30,6 +30,7 @@ public:
 
     static LSMethod serviceMethods[];
     bool notifyDiscoveryResult();
+    void notifyModuleStateChanged(bool moduleState);
 
 private:
     UwbServiceManager();
@@ -38,7 +39,7 @@ private:
     UWB_SERVICE_METHOD(getUwbSpecificInfo);
     UWB_SERVICE_METHOD(getRangingInfo);    
     UWB_SERVICE_METHOD(setUwbModuleState);
-    UWB_SERVICE_METHOD(getUwbStatus);
+    UWB_SERVICE_METHOD(getStatus);
     UWB_SERVICE_METHOD(getPairedSessions);
     UWB_SERVICE_METHOD(setState);
     UWB_SERVICE_METHOD(startDiscovery);

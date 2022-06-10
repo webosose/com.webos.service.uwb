@@ -7,7 +7,7 @@ LSMethod UwbServiceManager::serviceMethods[] = {
     { "getUwbSpecificInfo", UwbServiceManager::_getUwbSpecificInfo },
     { "getRangingInfo",     UwbServiceManager::_getRangingInfo },
     { "setUwbModuleState", UwbServiceManager::_setUwbModuleState },
-    { "getUwbStatus", UwbServiceManager::_getUwbStatus },
+    { "getStatus", UwbServiceManager::_getStatus },
     { "getPairedSessions",     UwbServiceManager::_getPairedSessions },
     { "setState",     UwbServiceManager::_setState },
     { "startDiscovery",     UwbServiceManager::_startDiscovery },
@@ -217,10 +217,10 @@ bool UwbServiceManager::setUwbModuleState(LSHandle *sh, LSMessage *message, void
     return true;
 }
 
-bool UwbServiceManager::getUwbStatus(LSHandle *sh, LSMessage *message, void *data) {
+bool UwbServiceManager::getStatus(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
 
-    mUwbAdaptor->getUwbStatus(message);
+    mUwbAdaptor->getStatus(message);
     
     return true;
 }
@@ -316,4 +316,9 @@ bool UwbServiceManager::stopRanging(LSHandle *sh, LSMessage *message, void *data
 bool UwbServiceManager::notifyDiscoveryResult() {
     UWB_LOG_INFO("notifyDiscoveryResult API Called %s", __FUNCTION__ );
     return true;
+}
+
+
+void UwbServiceManager::notifyModuleStateChanged(bool moduleState) {
+
 }

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <thread>
+#include <vector>
 #include <iostream>
 #include <unistd.h>
 #include <fcntl.h>
@@ -13,6 +14,7 @@
 #include <memory>
 #include <cstring>
 #include "CallbackInterface.h"
+#include "UartConstants.h"
 
 #define NUM_PRINT_BYTES  16
 enum {
@@ -24,6 +26,7 @@ class UartSerial {
 public:
     void setAdaptor(std::shared_ptr<CallbackInterface> adapter);
     void InitializeUart(std::string param);
+    void setUwbModuleState(CommandId cmdId);
 
 private:
     uint32_t dataCount; //TODO: For testing. Can be removed.
@@ -41,6 +44,7 @@ private:
     void processModuleInfo(char *rx_bin);
     void processRangingInfo(char *rx_bin);
     void processDisconnectInfo(char *rx_bin);
+    void processCommandResponse(char *rx_bin);
 };
 
 

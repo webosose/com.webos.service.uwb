@@ -164,10 +164,10 @@ UwbErrorCodes UwbAdaptor::setUwbModuleState(const std::string& moduleState) {
     UWB_LOG_INFO("UwbAdaptor::setUwbModuleState");
     UwbErrorCodes error = UWB_ERROR_NONE;
     if(moduleState == "start") {
-        //TODO:Call HOST_REQ_MODULE_START
+        mUartSerial->setUwbModuleState(HOST_CMD_MODULE_START);
     }
     else if(moduleState == "stop") {
-        //TODO:Call HOST_CMD_MODULE_STOP
+        mUartSerial->setUwbModuleState(HOST_CMD_MODULE_STOP);
     }
     else {
         error = UWB_ERR_NOT_VALID_INPUT;
@@ -176,8 +176,8 @@ UwbErrorCodes UwbAdaptor::setUwbModuleState(const std::string& moduleState) {
     return error;
 }
 
-bool UwbAdaptor::getUwbStatus(LSMessage *message) {
-    UWB_LOG_INFO("UwbAdaptor::getUwbStatus");
+bool UwbAdaptor::getStatus(LSMessage *message) {
+    UWB_LOG_INFO("UwbAdaptor::getStatus");
     //TODO: Add call to driver API
     return true;
 }
@@ -354,4 +354,8 @@ void UwbAdaptor::updateDisconnectedDevice(uint16_t deviceID) {
     mSavedUwbRangingInfo = std::move(disConnRangingInfo); // for saving up-to-date ranging data
 
     //m_connectionStatus = isDisconnected;
+}
+
+void UwbAdaptor::updateModuleStateChanged(bool moduleState){
+    UwbServiceManager::getInstance()->notifyModuleStateChanged(moduleState);
 }

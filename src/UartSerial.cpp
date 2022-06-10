@@ -136,34 +136,84 @@ void UartSerial::serialDataRead() {
             
             //Preamble Code == 0xcc
             if( rx_bin[0] == 0xcc ) {
-            //Command Number
-                switch(rx_bin[1]) {
-                case 0x81 :{
-                    printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ \n");
-                    printf("HOST_EVT_UWB_MODULE_INFO (0x81) received. \n");
-                    processModuleInfo(rx_bin);                    
-                    break;
-                }
-                case 0x51 : {
-                    printf("HOST_STATUS_LOCATION_INFO (0x51) received. \n");                    
-                    processRangingInfo(rx_bin);                 
-                    break;
-                }
-                case 0x62 : {
-                    printf("-------------------------------------------------------------------------------------------------- \n");
-                    printf("HOST_STATUS_DISCONNECT (0x62) received. \n");
-                    processDisconnectInfo(rx_bin);
-                    break;
-                }
-                case 0xF0 : {
-                    printf("*************************************************************************************************** \n");
-                    printf("HOST_ACK (0xF0) received. \n");
-                    break;
-                }
-                default : {
-                    printf("##### Undefined Command Number = [%02x] ##### \n", rx_bin[1]);
-                }
-                }//switch(rx_bin[1])
+                //Command Number
+                EventId eventId = static_cast<EventId>(rx_bin[1]);
+                switch(eventId) {
+                    case HOST_EVT_UWB_MODULE_INFO :{
+                        printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ \n");
+                        printf("HOST_EVT_UWB_MODULE_INFO (0x81) received. \n");
+                        processModuleInfo(rx_bin);
+                        break;
+                    }
+                    case HOST_STATUS_LOCATION_INFO : {
+                        printf("HOST_STATUS_LOCATION_INFO (0x51) received. \n");
+                        processRangingInfo(rx_bin);
+                        break;
+                    }
+                    case HOST_STATUS_DISCONNECT : {
+                        printf("-------------------------------------------------------------------------------------------------- \n");
+                        printf("HOST_STATUS_DISCONNECT (0x62) received. \n");
+                        processDisconnectInfo(rx_bin);
+                        break;
+                    }
+                    case HOST_STATUS_MODULE_INFO : {
+                        printf("HOST_STATUS_MODULE_INFO (0x3C) received. \n");
+                        break;
+                    }
+                    case HOST_STATUS_PAIRING_INFO : {
+                        printf("HOST_STATUS_PAIRING_INFO (0x3D) received. \n");
+                        break;
+                    }
+                    case HOST_EVT_MEASUREMENT : {
+                        printf("HOST_EVT_MEASUREMENT (0x3E) received. \n");
+                        break;
+                    }
+                    case HOST_EVT_MEASUREMENT_BYPASS : {
+                        printf("HOST_EVT_MEASUREMENT_BYPASS (0x3F) received. \n");
+                        break;
+                    }
+                    case HOST_EVT_TRANSFER_DATA : {
+                        printf("HOST_EVT_TRANSFER_DATA (0x40) received. \n");
+                        break;
+                    }
+                    case HOST_EVT_SCAN_RESULT : {
+                        printf("HOST_EVT_SCAN_RESULT (0x41) received. \n");
+                        break;
+                    }
+                    case HOST_EVT_DISCONNECT : {
+                        printf("HOST_EVT_DISCONNECT (0x42) received. \n");
+                        break;
+                    }
+                    case HOST_EVT_CONNECT : {
+                        printf("HOST_EVT_CONNECT (0x43) received. \n");
+                        break;
+                    }
+                    case HOST_EVT_CMD : {
+                        printf("HOST_EVT_CMD (0x44) received. \n");
+                        processCommandResponse(rx_bin);
+                        break;
+                    }
+                    case HOST_EVT_DEVICE_NAME : {
+                        printf("HOST_EVT_DEVICE_NAME (0x44) received. \n");
+                        break;
+                    }
+                    case HOST_ACK_MODULE : {
+                        printf("HOST_ACK_MODULE (0x45) received. \n");
+                        break;
+                    }
+                    case HOST_ACK_SERVICE : {
+                        printf("HOST_ACK_SERVICE (0x46) received. \n");
+                        break;
+                    }
+                    case HOST_ACK : {
+                        printf("*************************************************************************************************** \n");
+                        printf("HOST_ACK (0xF0) received. \n");
+                        break;
+                    }
+                    default : {
+                        printf("##### Undefined Event Id = [%02x] ##### \n", eventId);
+                    }
+                }//switch(eventId)
             }
             else {
                 printf("Invalid Preamble Code!!!\n");
@@ -181,6 +231,17 @@ void UartSerial::serialDataRead() {
     } while (exitFlag == false);
 
     return;
+}
+
+void UartSerial::processCommandResponse(char *rx_bin) {
+
+}
+
+void UartSerial::setUwbModuleState(CommandId cmdId) {
+    std::vector<uint8_t> data {30, 0x00};
+    data[0] = PREAMBLE;
+    data[1] = cmdId;
+    write(mUartFd, data.data(), data.size());
 }
 
 void UartSerial::printData(char *rx_bin, int rx_length) {
