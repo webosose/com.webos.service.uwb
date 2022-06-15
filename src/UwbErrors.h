@@ -15,6 +15,7 @@ enum UwbErrorCodes
     UWB_ERR_DISCOVERY_TO_NEG_VALUE = 107,
     UWB_ERR_START_DISC_FAIL = 108,
     UWB_SUBSCRIPTION_ERROR = 109,
+    UWB_UART_WRITE_FAILED = 110,
 };
 
 const std::string retrieveErrorText(UwbErrorCodes errorCode);

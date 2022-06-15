@@ -219,8 +219,21 @@ bool UwbServiceManager::setUwbModuleState(LSHandle *sh, LSMessage *message, void
 
 bool UwbServiceManager::getStatus(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
+    LS::Message request(message);
+    UwbErrorCodes error = UWB_ERROR_NONE;
 
-    mUwbAdaptor->getStatus(message);
+    error = mUwbAdaptor->getStatus();
+
+    if (error != UWB_ERROR_NONE)
+    {
+        LSUtils::respondWithError(request, error);
+        return true;
+    }
+    
+    pbnjson::JValue responseObj = pbnjson::Object();
+    responseObj.put("returnValue", true);
+    LSUtils::postToClient(request, responseObj);
+    //TODO: Form the getStatus response with current info
     
     return true;
 }
@@ -320,5 +333,6 @@ bool UwbServiceManager::notifyDiscoveryResult() {
 
 
 void UwbServiceManager::notifyModuleStateChanged(bool moduleState) {
-
+    //TODO: Send getStatus response to subscribers with updated state
+    // If no change in state, then don't send.
 }

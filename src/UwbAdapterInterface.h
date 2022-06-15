@@ -18,7 +18,7 @@ public:
     virtual bool getUwbSpecificInfo(LSHandle *sh, LSMessage *message) = 0;
     virtual bool getRangingInfo(LSHandle *sh, LSMessage *message) = 0;
     virtual UwbErrorCodes setUwbModuleState(const std::string& moduleState) = 0;
-    virtual bool getStatus(LSMessage *message) = 0;
+    virtual UwbErrorCodes getStatus() = 0;
     virtual bool getPairedSessions(LSMessage *message) = 0;
     virtual UwbErrorCodes setState(const std::string& deviceType) = 0;
     virtual UwbErrorCodes startDiscovery(int32_t discoveryTimeout) = 0;

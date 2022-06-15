@@ -15,6 +15,7 @@
 #include <cstring>
 #include "CallbackInterface.h"
 #include "UartConstants.h"
+#include "UwbErrors.h"
 
 #define NUM_PRINT_BYTES  16
 enum {
@@ -26,7 +27,8 @@ class UartSerial {
 public:
     void setAdaptor(std::shared_ptr<CallbackInterface> adapter);
     void InitializeUart(std::string param);
-    void setUwbModuleState(CommandId cmdId);
+    UwbErrorCodes setUwbModuleState(CommandId cmdId);
+    UwbErrorCodes getUwbModuleInfo();
 
 private:
     uint32_t dataCount; //TODO: For testing. Can be removed.
@@ -41,10 +43,10 @@ private:
     void printData(char *rx_bin, int rx_length);
     void printBytes(int type, int length, const char *buffer);
     void serialDataRead();
-    void processModuleInfo(char *rx_bin);
     void processRangingInfo(char *rx_bin);
     void processDisconnectInfo(char *rx_bin);
     void processCommandResponse(char *rx_bin);
+    void processModuleInfo(char *rx_bin);
 };
 
 

@@ -1,3 +1,2 @@
 #SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6015", ATTRS{serial}=="DO00BEUO", SYMLINK+="ttyUSB_LGEUWB"
-SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6015", ATTRS{product}=="FT231X USB UART", SYMLINK+="ttyUSB_LGEUWB"
-
+#SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6015", ATTRS{product}=="FT231X USB UART", SYMLINK+="ttyUSB_LGEUWB"

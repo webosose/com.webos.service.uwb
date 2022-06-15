@@ -164,10 +164,10 @@ UwbErrorCodes UwbAdaptor::setUwbModuleState(const std::string& moduleState) {
     UWB_LOG_INFO("UwbAdaptor::setUwbModuleState");
     UwbErrorCodes error = UWB_ERROR_NONE;
     if(moduleState == "start") {
-        mUartSerial->setUwbModuleState(HOST_CMD_MODULE_START);
+        error = mUartSerial->setUwbModuleState(HOST_CMD_MODULE_START);
     }
     else if(moduleState == "stop") {
-        mUartSerial->setUwbModuleState(HOST_CMD_MODULE_STOP);
+        error = mUartSerial->setUwbModuleState(HOST_CMD_MODULE_STOP);
     }
     else {
         error = UWB_ERR_NOT_VALID_INPUT;
@@ -176,10 +176,12 @@ UwbErrorCodes UwbAdaptor::setUwbModuleState(const std::string& moduleState) {
     return error;
 }
 
-bool UwbAdaptor::getStatus(LSMessage *message) {
+UwbErrorCodes UwbAdaptor::getStatus() {
     UWB_LOG_INFO("UwbAdaptor::getStatus");
-    //TODO: Add call to driver API
-    return true;
+
+    UwbErrorCodes error = UWB_ERROR_NONE;
+    error = mUartSerial->getUwbModuleInfo();
+    return error;
 }
 
 bool UwbAdaptor::getPairedSessions(LSMessage *message) {

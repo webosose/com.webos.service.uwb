@@ -29,7 +29,7 @@ void UartSerial::configureUart() {
     /* Open UART Device */
     do {
         //To be applied for using deviceName that is set by user configuration
-        mUartFd = open("/dev/ttyUSB_LGEUWB", O_RDWR | O_NOCTTY | O_NDELAY);
+        mUartFd = open("/dev/ttyACM0", O_RDWR | O_NOCTTY /*| O_NDELAY*/);
         printf("uart open fd = %d \n", mUartFd);
 
         //fd control to be adjusted
@@ -41,7 +41,7 @@ void UartSerial::configureUart() {
         }
     } while (mUartFd < 0);
 
-    int speed = 9600; //TEMP coding
+    int speed = 115200; //TEMP coding
     speed_t baudRate = setBaudrate(speed);
     if (baudRate == -2) {
         printf("Error - Please do not use the speed!!! \n");
@@ -55,12 +55,14 @@ void UartSerial::configureUart() {
     options.c_iflag = IGNPAR | ICRNL;
     options.c_oflag = 0;
     options.c_lflag = 0;
-    options.c_cc[VMIN] = 22; //Setup Minimum size of bytes (characters), LGE UWB UART protocol use the fixed size of uart serial data length (22)
+    options.c_lflag &= ~(ECHO | ICANON | ONLCR);
+    options.c_cc[VMIN] = 35; //Setup Minimum size of bytes (characters), LGE UWB UART protocol use the fixed size of uart serial data length (35)
     options.c_cc[VTIME] = 0;
     cfsetispeed(&options, baudRate);
     cfsetospeed(&options, baudRate);
 
-    tcflush(mUartFd, TCIFLUSH);
+    //tcflush(mUartFd, TCIFLUSH);
+    tcflush(mUartFd, TCIOFLUSH);
     tcsetattr(mUartFd, TCSANOW, &options);    
 }
 
@@ -110,14 +112,14 @@ speed_t UartSerial::setBaudrate(const int speed)
 
 void UartSerial::serialDataRead() {
     rxFlag = true;
-    char rx_bin[128] = {0,};
+    char rx_bin[35] = {0,};
 
     do {        
     //    char rx_hex[256] = {0,};
         int rx_length = 0;
 
-        //Read up to 127 characters from the port if they are there
-        rx_length = read(mUartFd, (void*)rx_bin, 128);
+        //Read up to 35 characters from the port if they are there
+        rx_length = read(mUartFd, (void*)rx_bin, 35);
 
         printf("mUartFd=%d, rx_length=%d \n", mUartFd, rx_length);
         //To check the status of the mUartFd wheter it is available or not (rx_length <=0)
@@ -127,12 +129,14 @@ void UartSerial::serialDataRead() {
             return;
             //UART re-open & reconfigure logic SHOULD be added in here.
         }
+        
+        printData(rx_bin, rx_length);
 
-        if (rx_length == 22) {
+        if (rx_length == 35) {
             //Bytes received
-            rx_bin[rx_length] = '\0';
+        //    rx_bin[rx_length] = '\0';
             //bin2hex(rx_bin, rx_length, rx_hex);            
-            printData(rx_bin, rx_length);
+        //    printData(rx_bin, rx_length);
             
             //Preamble Code == 0xcc
             if( rx_bin[0] == 0xcc ) {
@@ -142,7 +146,7 @@ void UartSerial::serialDataRead() {
                     case HOST_EVT_UWB_MODULE_INFO :{
                         printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ \n");
                         printf("HOST_EVT_UWB_MODULE_INFO (0x81) received. \n");
-                        processModuleInfo(rx_bin);
+                    //    processModuleInfo(rx_bin);
                         break;
                     }
                     case HOST_STATUS_LOCATION_INFO : {
@@ -158,6 +162,7 @@ void UartSerial::serialDataRead() {
                     }
                     case HOST_STATUS_MODULE_INFO : {
                         printf("HOST_STATUS_MODULE_INFO (0x3C) received. \n");
+                        processModuleInfo(rx_bin);
                         break;
                     }
                     case HOST_STATUS_PAIRING_INFO : {
@@ -223,25 +228,125 @@ void UartSerial::serialDataRead() {
 
         } else {
             printf("Invalid the length of Rx data!!! \n");
-        } //rx_length == 22
+        } //rx_length == 35
 
         //TBC
         usleep(100000);
-        memset(rx_bin, 0, 128);
+        memset(rx_bin, 0, 35);
     } while (exitFlag == false);
 
     return;
 }
 
-void UartSerial::processCommandResponse(char *rx_bin) {
+void UartSerial::processModuleInfo(char *rx_bin) {
+    std::string fwVersion = to_string(rx_bin[2]) + "." + to_string(rx_bin[3]) + "." + to_string(rx_bin[4]);
+    std::string fwCrc = to_string(rx_bin[5]) + " " + to_string(rx_bin[6]);
+    
+    std::string moduleState = "";
+    if(rx_bin[7] == 0x00) {
+        moduleState = "stopped";
+    }
+    else if(rx_bin[7] == 0x01) {
+        moduleState = "active";
+    }
+    else {
+        moduleState = "Unknown";
+    }
+    
+    std::string deviceRole = "";
+    if(rx_bin[8] == 0x00) {
+        deviceRole = "controller";
+    }
+    else if(rx_bin[8] == 0x01) {
+        deviceRole = "controlee";
+    }
+    
+    std::string deviceMode = "";
+    if(rx_bin[9] == 0x00) {
+        deviceMode = "ranging";
+    }
+    else if(rx_bin[9] == 0x01) {
+        deviceMode = "dataTransfer";
+    }
+    
+    bool pairingFlag = false;
+    if(rx_bin[10] == 0x00) {
+        pairingFlag = false;
+    }
+    else if(rx_bin[10] == 0x01) {
+        pairingFlag = true;
+    }
+    
+ //   std::string uwbMacAddress = rx_bin[11] + rx_bin[12] + rx_bin[13] + rx_bin[14] + rx_bin[15] + rx_bin[16] + rx_bin[17] + rx_bin[18];
 
+    cout << "fwVersion:" << fwVersion << endl;
+    cout << "fwCrc:" << fwCrc << endl;
+    cout << "moduleState:" << moduleState << endl;
+    cout << "deviceRole:" << deviceRole << endl;
+    cout << "deviceMode:" << deviceMode << endl;
+    cout << "pairingFlag:" << pairingFlag << endl;
+ //   cout << "uwbMacAddress:" << uwbMacAddress << endl;
 }
 
-void UartSerial::setUwbModuleState(CommandId cmdId) {
-    std::vector<uint8_t> data {30, 0x00};
+UwbErrorCodes UartSerial::getUwbModuleInfo() {
+    std::vector<uint8_t> data (35, 0x00);
+    data[0] = PREAMBLE;
+    data[1] = 0x03;
+    
+    data[33] = 0x0d;
+    data[34] = 0x0a;
+    
+    ssize_t numBytesWritten = write(mUartFd, data.data(), data.size());
+    printf("numBytesWritten=%d \n", numBytesWritten);
+    if(numBytesWritten == -1) {
+        return UWB_UART_WRITE_FAILED;
+    }
+    return UWB_ERROR_NONE;
+}
+
+void UartSerial::processCommandResponse(char *rx_bin) {
+    CommandId commandId = static_cast<CommandId>(rx_bin[2]);
+    uint8_t commandResult = rx_bin[3];
+    printf("- commandResult: \t [%02x] \n", commandResult );
+    switch(commandId) {
+        case HOST_CMD_MODULE_START : {
+            if(commandResult == 1) {
+                mUwbAdaptor->updateModuleStateChanged(true);
+            }
+            else if(commandResult == 0) {
+                //TODO: return error code
+            }
+            break;
+        }
+        case HOST_CMD_MODULE_STOP : {
+            if(commandResult == 1) {
+                mUwbAdaptor->updateModuleStateChanged(false);
+            }
+            else if(commandResult == 0) {
+                //TODO: return error code
+            }            
+            break;
+        }
+        default : {
+            printf("##### command Id = [%02x] ##### \n", commandId);
+        }
+    }
+}
+
+UwbErrorCodes UartSerial::setUwbModuleState(CommandId cmdId) {
+    printf("cmdId=%d \n", cmdId);
+    std::vector<uint8_t> data (35, 0x00);
     data[0] = PREAMBLE;
     data[1] = cmdId;
-    write(mUartFd, data.data(), data.size());
+    
+    data[33] = 0x0d;
+    data[34] = 0x0a;
+    ssize_t numBytesWritten = write(mUartFd, data.data(), data.size());
+    printf("numBytesWritten=%d \n", numBytesWritten);
+    if(numBytesWritten == -1) {
+        return UWB_UART_WRITE_FAILED;
+    }
+    return UWB_ERROR_NONE;
 }
 
 void UartSerial::printData(char *rx_bin, int rx_length) {
@@ -258,37 +363,6 @@ void UartSerial::printData(char *rx_bin, int rx_length) {
     printf("- Device ID: \t Hexa[%02x] \t Int[%d] \n", rx_bin[2], (int)(rx_bin[2]) );
     printf("- Condition: \t Hexa[%02x] \t Int[%d] \n", rx_bin[7], (int)(rx_bin[7]) );
     printf("dataCount:%d\n", ++dataCount);
-}
-
-void UartSerial::processModuleInfo(char *rx_bin) {
-    //Need to data definition doc for UWB Module State
-    printf("UWB Module State : rx_bin[2] = [%02x %d] \n", rx_bin[2], (int)(rx_bin[2]) );
-    //Need to data definition doc for FW Version
-    printf("FW Version : rx_bin[3~5] = [%02x %02x %02x] \n", rx_bin[3], rx_bin[4], rx_bin[5]);
-    //Need to data definition doc for FW CRC
-    printf("FW CRC : rx_bin[6~9] = [%02x %02x %02x %02x] \n", rx_bin[6], rx_bin[7], rx_bin[8], rx_bin[9]);
-
-    //Convert FW Version
-    char str_fw_ver[4] = {0,};
-    str_fw_ver[0] = rx_bin[3];
-    str_fw_ver[1] = rx_bin[4];
-    str_fw_ver[2] = rx_bin[5];
-    str_fw_ver[3] = '\0';
-    printf("FW Version - str_fw_ver : [%02x %02x %02x] \n",
-            str_fw_ver[0], str_fw_ver[1], str_fw_ver[2]);
-    printBytes(BINARY, 3, str_fw_ver);
-
-    //Convert FW CRC
-    char str_fw_crc[5] = {0,};
-    str_fw_crc[0] = rx_bin[6];
-    str_fw_crc[1] = rx_bin[7];
-    str_fw_crc[2] = rx_bin[8];
-    str_fw_crc[3] = rx_bin[9];
-    str_fw_crc[4] = '\0';
-    printf("FW CRC - str_fw_crc : [%02x %02x %02x %02x] \n",
-            str_fw_crc[0], str_fw_crc[1], str_fw_crc[2], str_fw_crc[3]);
-    //Update UWB Data to UWB Adaptor
-    mUwbAdaptor->updateSpecificInfo((int)(rx_bin[2]), std::string("LGE UWB FW Version 1.0"), std::string("LGE UWB FW CRC temp"));   
 }
 
 void UartSerial::processRangingInfo(char *rx_bin) {

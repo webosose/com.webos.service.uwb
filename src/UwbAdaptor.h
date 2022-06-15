@@ -37,7 +37,7 @@ public:
     bool getUwbSpecificInfo(LSHandle *sh, LSMessage *message);
     bool getRangingInfo(LSHandle *sh, LSMessage *message);
     UwbErrorCodes setUwbModuleState(const std::string& moduleState);
-    bool getStatus(LSMessage *message);
+    UwbErrorCodes getStatus();
     bool getPairedSessions(LSMessage *message);
     UwbErrorCodes setState(const std::string& deviceType);
     UwbErrorCodes startDiscovery(int32_t discoveryTimeout);
