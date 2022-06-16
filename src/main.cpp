@@ -25,19 +25,15 @@ int main(int argc, char *argv[]) {
     UWB_LOG_INFO("UwbService Main : start com.webos.service.uwb");
 
     GMainLoop* mainLoop = g_main_loop_new(nullptr, false);
-
-    UWB_LOG_INFO("UwbService Main : start com.webos.service.uwb-1");
     if (mainLoop == NULL) {
         UWB_LOG_DEBUG("mainLoop not created");
         return EXIT_FAILURE;
     }
 
-    UWB_LOG_INFO("UwbService Main : start com.webos.service.uwb-2");
     UwbServiceManager *uwbService = UwbServiceManager::getInstance();
     auto adapter = std::make_shared<UwbAdaptor>();
 
     if (uwbService->init(mainLoop, adapter) == false) {
-        UWB_LOG_INFO("UwbService Main : start com.webos.service.uwb-3");
         g_main_loop_unref(mainLoop);
         return EXIT_FAILURE;
     }

@@ -27,7 +27,6 @@ UwbServiceManager *UwbServiceManager::getInstance() {
 UwbServiceManager::UwbServiceManager():
         mMainLoop(nullptr),
         mUwbSessionCtl(nullptr) {
-
 }
 
 UwbServiceManager::~UwbServiceManager(){
@@ -220,21 +219,29 @@ bool UwbServiceManager::setUwbModuleState(LSHandle *sh, LSMessage *message, void
 bool UwbServiceManager::getStatus(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
     LS::Message request(message);
-    UwbErrorCodes error = UWB_ERROR_NONE;
+    bool subscribed = false;
+    pbnjson::JValue responseObj = pbnjson::Object();
+    
+    LSError lsError;
+    LSErrorInit(&lsError);
+    if (LSMessageIsSubscription(message)) {
+        subscribed = true;
+        if (LSSubscriptionAdd(sh, "getStatus", message, &lsError) == false) {
+            UWB_LOG_ERROR("Failed to add getUwbServiceState to subscription");
 
-    error = mUwbAdaptor->getStatus();
-
-    if (error != UWB_ERROR_NONE)
-    {
-        LSUtils::respondWithError(request, error);
-        return true;
+            responseObj.put("returnValue", false);
+            responseObj.put("errorCode", UWB_UNKNOWN_ERROR);
+            responseObj.put("errorText", "Unknwon");
+            LSMessageReply(sh,message, responseObj.stringify().c_str() , &lsError );
+            return true;
+        }
     }
     
-    pbnjson::JValue responseObj = pbnjson::Object();
+    UwbServiceManager::getInstance()->appendCurrentStatus(responseObj);
     responseObj.put("returnValue", true);
+    responseObj.put("subscribed", subscribed);
+
     LSUtils::postToClient(request, responseObj);
-    //TODO: Form the getStatus response with current info
-    
     return true;
 }
 
@@ -332,7 +339,40 @@ bool UwbServiceManager::notifyDiscoveryResult() {
 }
 
 
-void UwbServiceManager::notifyModuleStateChanged(bool moduleState) {
-    //TODO: Send getStatus response to subscribers with updated state
-    // If no change in state, then don't send.
+void UwbServiceManager::notifyModuleStateChanged(const std::string&  moduleState) {
+    if(moduleState == mModuleInfo.getModuleState())
+        return;
+    
+    mModuleInfo.setModuleState(moduleState);
+    notifySubscribersModuleStatus();
+}
+
+void UwbServiceManager::notifySubscribersModuleStatus() {
+	pbnjson::JValue responseObj = pbnjson::Object();
+	appendCurrentStatus(responseObj);
+	responseObj.put("returnValue", true);
+    responseObj.put("subscribed", true);
+    
+    LSError lserror;
+    LSErrorInit(&lserror);
+    if (!LSSubscriptionReply(mServiceHandle, "getStatus", responseObj.stringify().c_str(), &lserror))
+    {
+        UWB_LOG_INFO("subscription reply error!!");
+        LSErrorFree(&lserror);
+        return;
+    }
+
+    LSErrorFree(&lserror);
+    
+//	LSUtils::postToSubscriptionPoint(std::atomic_load(&mGetStatusSubscriptions), responseObj);
+}
+
+void UwbServiceManager::appendCurrentStatus(pbnjson::JValue &object) {
+    object.put("moduleState", mModuleInfo.getModuleState());
+    object.put("fwVersion", mModuleInfo.getFwVersion());
+    object.put("fwCrc", mModuleInfo.getFwCrc());
+    object.put("deviceRole", mModuleInfo.getDeviceRole());
+    object.put("deviceMode", mModuleInfo.getDeviceMode());
+    object.put("pairingFlag", mModuleInfo.getPairingFlag());
+    object.put("uwbMacAddress", mModuleInfo.getUwbMacAddress());
 }

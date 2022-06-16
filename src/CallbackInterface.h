@@ -10,7 +10,7 @@ public:
     virtual void updateSpecificInfo(bool modState, std::string fwVersion, std::string fwCrc) = 0;
     virtual void updateRangingInfo(int condition, std::string remoteDevAddr, int64_t angle, int64_t distance) = 0;
     virtual void updateDisconnectedDevice(uint16_t deviceID) = 0;
-    virtual void updateModuleStateChanged(bool moduleState) = 0;
+    virtual void updateModuleStateChanged(const std::string& moduleState) = 0;
 };
 
 #endif

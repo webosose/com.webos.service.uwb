@@ -55,7 +55,7 @@ public:
     void updateSpecificInfo(bool modState, string fwVersion, string fwCrc);
     void updateRangingInfo(int condition, string remoteDevAddr, int64_t angle, int64_t distance);
     void updateDisconnectedDevice(uint16_t deviceID);
-    void updateModuleStateChanged(bool moduleState);
+    void updateModuleStateChanged(const std::string& moduleState);
 
     void notifySubscriberServiceState(bool isServiceAvailable);
     void notifySubscriberSpecificInfo(UwbSpecInfo& info);

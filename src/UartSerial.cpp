@@ -16,6 +16,7 @@ void UartSerial::InitializeUart(std::string param) {
     while (rxFlag != true) {
         usleep(10000);
     }
+    getUwbModuleInfo();
     rxThreadId.join();
 
     close(mUartFd);
@@ -277,7 +278,14 @@ void UartSerial::processModuleInfo(char *rx_bin) {
         pairingFlag = true;
     }
     
- //   std::string uwbMacAddress = rx_bin[11] + rx_bin[12] + rx_bin[13] + rx_bin[14] + rx_bin[15] + rx_bin[16] + rx_bin[17] + rx_bin[18];
+    char address[(8 * 3) + 1];
+    char *ptr = &address[0];
+    for (int i = 11; i < 19; i++) {
+        ptr += sprintf(ptr, "%02X", rx_bin[i]);
+        ptr += sprintf(ptr, ":");
+    }    
+    std::string uwbMacAddress = address;
+    uwbMacAddress.pop_back();
 
     cout << "fwVersion:" << fwVersion << endl;
     cout << "fwCrc:" << fwCrc << endl;
@@ -285,7 +293,15 @@ void UartSerial::processModuleInfo(char *rx_bin) {
     cout << "deviceRole:" << deviceRole << endl;
     cout << "deviceMode:" << deviceMode << endl;
     cout << "pairingFlag:" << pairingFlag << endl;
- //   cout << "uwbMacAddress:" << uwbMacAddress << endl;
+    cout << "uwbMacAddress:" << uwbMacAddress << endl;
+
+    mModuleInfo.setModuleState(moduleState);
+    mModuleInfo.setFwVersion(fwVersion);
+    mModuleInfo.setFwCrc(fwCrc);
+    mModuleInfo.setDeviceRole(deviceRole);
+    mModuleInfo.setDeviceMode(deviceMode);
+    mModuleInfo.setPairingFlag(pairingFlag);
+    mModuleInfo.setUwbMacAddress(uwbMacAddress);
 }
 
 UwbErrorCodes UartSerial::getUwbModuleInfo() {
@@ -311,7 +327,7 @@ void UartSerial::processCommandResponse(char *rx_bin) {
     switch(commandId) {
         case HOST_CMD_MODULE_START : {
             if(commandResult == 1) {
-                mUwbAdaptor->updateModuleStateChanged(true);
+                mUwbAdaptor->updateModuleStateChanged("active");
             }
             else if(commandResult == 0) {
                 //TODO: return error code
@@ -320,7 +336,7 @@ void UartSerial::processCommandResponse(char *rx_bin) {
         }
         case HOST_CMD_MODULE_STOP : {
             if(commandResult == 1) {
-                mUwbAdaptor->updateModuleStateChanged(false);
+                mUwbAdaptor->updateModuleStateChanged("stopped");
             }
             else if(commandResult == 0) {
                 //TODO: return error code

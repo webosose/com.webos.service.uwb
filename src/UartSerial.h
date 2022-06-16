@@ -16,6 +16,7 @@
 #include "CallbackInterface.h"
 #include "UartConstants.h"
 #include "UwbErrors.h"
+#include "ModuleInfo.h"
 
 #define NUM_PRINT_BYTES  16
 enum {
@@ -37,6 +38,7 @@ private:
     bool exitFlag = false;
     std::thread rxThreadId;
     std::shared_ptr<CallbackInterface> mUwbAdaptor;
+    ModuleInfo& mModuleInfo = ModuleInfo::getInstance();
     
     void configureUart();
     speed_t setBaudrate(const int speed);

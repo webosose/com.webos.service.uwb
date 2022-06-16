@@ -358,6 +358,6 @@ void UwbAdaptor::updateDisconnectedDevice(uint16_t deviceID) {
     //m_connectionStatus = isDisconnected;
 }
 
-void UwbAdaptor::updateModuleStateChanged(bool moduleState){
+void UwbAdaptor::updateModuleStateChanged(const std::string& moduleState){
     UwbServiceManager::getInstance()->notifyModuleStateChanged(moduleState);
 }

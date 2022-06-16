@@ -4,6 +4,7 @@
 #include "UwbLogging.h"
 #include "UwbAdapterInterface.h"
 #include "UwbSessionControl.h"
+#include "ModuleInfo.h"
 #include "ls2utils.h"
 #include <lunaservice.h>
 #include <luna-service2/lunaservice.hpp>
@@ -19,8 +20,7 @@
         return ((UwbServiceManager*)data)->name(sh, message, NULL); \
     }
 
-class UwbServiceManager
-{
+class UwbServiceManager {
 public:
     virtual ~UwbServiceManager();
     bool init(GMainLoop *, std::shared_ptr<UwbAdapterInterface> adapter);
@@ -30,10 +30,12 @@ public:
 
     static LSMethod serviceMethods[];
     bool notifyDiscoveryResult();
-    void notifyModuleStateChanged(bool moduleState);
+    void notifyModuleStateChanged(const std::string&  moduleState);
 
 private:
     UwbServiceManager();
+    void notifySubscribersModuleStatus();
+    void appendCurrentStatus(pbnjson::JValue &object);
 
     UWB_SERVICE_METHOD(getUwbServiceState);
     UWB_SERVICE_METHOD(getUwbSpecificInfo);
@@ -54,6 +56,7 @@ private:
     inline static UwbServiceManager *mUwbServiceMgr{nullptr};
     inline static std::shared_ptr<UwbAdapterInterface> mUwbAdaptor{}; //couldn't make it non-static because it's used in a static function
     UwbSessionControl *mUwbSessionCtl;
+    ModuleInfo& mModuleInfo = ModuleInfo::getInstance();
 };
 
 
