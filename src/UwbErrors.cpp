@@ -16,6 +16,7 @@ static std::map<UwbErrorCodes, std::string> uwbErrorTextTable =
     {UWB_ERR_START_DISC_FAIL, "Failed to start discovery"},
     {UWB_SUBSCRIPTION_ERROR, "Method Subscription error"},
     {UWB_UART_WRITE_FAILED, "UART write operation failed"},
+    {UWB_ERROR_DEVICENAME_LENGTH, "UWB Device name length exceeded allowed limit"},
 };
 
 const std::string retrieveErrorText(UwbErrorCodes errorCode)

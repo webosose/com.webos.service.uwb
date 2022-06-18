@@ -13,6 +13,7 @@
 #include <sys/stat.h>
 #include <memory>
 #include <cstring>
+#include<sstream>
 #include "CallbackInterface.h"
 #include "UartConstants.h"
 #include "UwbErrors.h"
@@ -30,6 +31,9 @@ public:
     void InitializeUart(std::string param);
     UwbErrorCodes setUwbModuleState(CommandId cmdId);
     UwbErrorCodes getUwbModuleInfo();
+    UwbErrorCodes getDeviceName();
+    UwbErrorCodes setDeviceName(const std::string& deviceName);
+    UwbErrorCodes getPairingInfo();
 
 private:
     uint32_t dataCount; //TODO: For testing. Can be removed.
@@ -49,6 +53,8 @@ private:
     void processDisconnectInfo(char *rx_bin);
     void processCommandResponse(char *rx_bin);
     void processModuleInfo(char *rx_bin);
+    void processDeviceName(char *rx_bin);
+    void processPairingInfo(char *rx_bin);
 };
 
 

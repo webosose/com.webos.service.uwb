@@ -17,6 +17,8 @@ void UartSerial::InitializeUart(std::string param) {
         usleep(10000);
     }
     getUwbModuleInfo();
+    usleep(100000);
+    getDeviceName();
     rxThreadId.join();
 
     close(mUartFd);
@@ -168,6 +170,7 @@ void UartSerial::serialDataRead() {
                     }
                     case HOST_STATUS_PAIRING_INFO : {
                         printf("HOST_STATUS_PAIRING_INFO (0x3D) received. \n");
+                        processPairingInfo(rx_bin);
                         break;
                     }
                     case HOST_EVT_MEASUREMENT : {
@@ -200,15 +203,16 @@ void UartSerial::serialDataRead() {
                         break;
                     }
                     case HOST_EVT_DEVICE_NAME : {
-                        printf("HOST_EVT_DEVICE_NAME (0x44) received. \n");
+                        printf("HOST_EVT_DEVICE_NAME (0x45) received. \n");
+                        processDeviceName(rx_bin);
                         break;
                     }
                     case HOST_ACK_MODULE : {
-                        printf("HOST_ACK_MODULE (0x45) received. \n");
+                        printf("HOST_ACK_MODULE (0x46) received. \n");
                         break;
                     }
                     case HOST_ACK_SERVICE : {
-                        printf("HOST_ACK_SERVICE (0x46) received. \n");
+                        printf("HOST_ACK_SERVICE (0x47) received. \n");
                         break;
                     }
                     case HOST_ACK : {
@@ -239,9 +243,81 @@ void UartSerial::serialDataRead() {
     return;
 }
 
+UwbErrorCodes UartSerial::getPairingInfo() {
+    std::vector<uint8_t> data (35, 0x00);
+    data[0] = PREAMBLE;
+    data[1] = 0x04;
+    
+    data[33] = 0x0d;
+    data[34] = 0x0a;
+    
+    ssize_t numBytesWritten = write(mUartFd, data.data(), data.size());
+    printf("numBytesWritten=%d \n", numBytesWritten);
+    if(numBytesWritten == -1) {
+        return UWB_UART_WRITE_FAILED;
+    }
+    return UWB_ERROR_NONE;
+}
+
+void UartSerial::processPairingInfo(char *rx_bin) {
+    
+}
+
+UwbErrorCodes UartSerial::setDeviceName(const std::string& deviceName) {
+    if(deviceName.size() > 25 ) 
+        return UWB_ERROR_DEVICENAME_LENGTH;
+    std::vector<uint8_t> data (35, 0x00);
+    data[0] = PREAMBLE;
+    data[1] = 0x16;
+    
+    for (size_t i = 0; i < deviceName.size(); ++i)
+    {
+       data[i+2] = deviceName[i];
+    }
+    
+    data[33] = 0x0d;
+    data[34] = 0x0a;
+    
+    ssize_t numBytesWritten = write(mUartFd, data.data(), data.size());
+    printf("numBytesWritten=%d \n", numBytesWritten);
+    if(numBytesWritten == -1) {
+        return UWB_UART_WRITE_FAILED;
+    }
+    return UWB_ERROR_NONE;
+}
+
+UwbErrorCodes UartSerial::getDeviceName() {
+    std::vector<uint8_t> data (35, 0x00);
+    data[0] = PREAMBLE;
+    data[1] = 0x17;
+    
+    data[33] = 0x0d;
+    data[34] = 0x0a;
+    
+    ssize_t numBytesWritten = write(mUartFd, data.data(), data.size());
+    printf("numBytesWritten=%d \n", numBytesWritten);
+    if(numBytesWritten == -1) {
+        return UWB_UART_WRITE_FAILED;
+    }
+    return UWB_ERROR_NONE;
+}
+
+void UartSerial::processDeviceName(char *rx_bin) {
+    ostringstream os;
+    for(int i=2;i<27;i++) {
+        if(rx_bin[i] != '\0')
+            os << rx_bin[i];
+    }
+    std::string deviceName  = os.str();
+    cout << "deviceName:" << deviceName << endl;
+    mModuleInfo.setDeviceName(deviceName);
+}
+
 void UartSerial::processModuleInfo(char *rx_bin) {
     std::string fwVersion = to_string(rx_bin[2]) + "." + to_string(rx_bin[3]) + "." + to_string(rx_bin[4]);
-    std::string fwCrc = to_string(rx_bin[5]) + " " + to_string(rx_bin[6]);
+    
+    char fwCrc[10];
+    sprintf(fwCrc, "%2X %2X", rx_bin[5], rx_bin[6]);
     
     std::string moduleState = "";
     if(rx_bin[7] == 0x00) {
@@ -286,14 +362,6 @@ void UartSerial::processModuleInfo(char *rx_bin) {
     }    
     std::string uwbMacAddress = address;
     uwbMacAddress.pop_back();
-
-    cout << "fwVersion:" << fwVersion << endl;
-    cout << "fwCrc:" << fwCrc << endl;
-    cout << "moduleState:" << moduleState << endl;
-    cout << "deviceRole:" << deviceRole << endl;
-    cout << "deviceMode:" << deviceMode << endl;
-    cout << "pairingFlag:" << pairingFlag << endl;
-    cout << "uwbMacAddress:" << uwbMacAddress << endl;
 
     mModuleInfo.setModuleState(moduleState);
     mModuleInfo.setFwVersion(fwVersion);

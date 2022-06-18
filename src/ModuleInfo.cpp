@@ -32,6 +32,10 @@ void ModuleInfo::setUwbMacAddress(const std::string& address) {
     mUwbMacAddress = address;
 }
 
+void ModuleInfo::setDeviceName(const std::string& deviceName) {
+    mDeviceName = deviceName;
+}
+
 std::string ModuleInfo::getFwVersion(){
     return mFwVersion;
 }
@@ -58,4 +62,8 @@ bool ModuleInfo::getPairingFlag(){
 
 std::string ModuleInfo::getUwbMacAddress(){
     return mUwbMacAddress;
+}
+
+std::string ModuleInfo::getDeviceName() { 
+    return mDeviceName;
 }

@@ -338,7 +338,6 @@ bool UwbServiceManager::notifyDiscoveryResult() {
     return true;
 }
 
-
 void UwbServiceManager::notifyModuleStateChanged(const std::string&  moduleState) {
     if(moduleState == mModuleInfo.getModuleState())
         return;
@@ -375,4 +374,5 @@ void UwbServiceManager::appendCurrentStatus(pbnjson::JValue &object) {
     object.put("deviceMode", mModuleInfo.getDeviceMode());
     object.put("pairingFlag", mModuleInfo.getPairingFlag());
     object.put("uwbMacAddress", mModuleInfo.getUwbMacAddress());
+    object.put("deviceName", mModuleInfo.getDeviceName());
 }

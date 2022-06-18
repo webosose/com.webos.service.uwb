@@ -17,6 +17,7 @@ public:
     void setDeviceMode(const std::string& mode);
     void setPairingFlag(bool flag);
     void setUwbMacAddress(const std::string& address);
+    void setDeviceName(const std::string& deviceName);
     
     std::string getFwVersion();
     std::string getFwCrc();
@@ -25,6 +26,7 @@ public:
     std::string getDeviceMode();
     bool getPairingFlag();
     std::string getUwbMacAddress();
+    std::string getDeviceName();
 
 private:
     ModuleInfo();
@@ -32,7 +34,7 @@ private:
     ModuleInfo(const ModuleInfo&)= delete;
     ModuleInfo& operator=(const ModuleInfo&)= delete;
 
-
+    std::string mDeviceName = "";
     std::string mFwVersion = "";
     std::string mFwCrc = "";
     std::string mModuleState = "";
