@@ -31,6 +31,8 @@ public:
     void InitializeUart(std::string param);
     UwbErrorCodes setUwbModuleState(CommandId cmdId);
     UwbErrorCodes getUwbModuleInfo();
+    UwbErrorCodes setDeviceType(uint8_t deviceType);
+    UwbErrorCodes setDeviceMode(uint8_t deviceMode);
     UwbErrorCodes getDeviceName();
     UwbErrorCodes setDeviceName(const std::string& deviceName);
     UwbErrorCodes getPairingInfo();
@@ -41,6 +43,10 @@ private:
     bool rxFlag = false;
     bool exitFlag = false;
     std::thread rxThreadId;
+    uint8_t mDeviceType = 0x00;
+    uint8_t mDeviceMode = 0x00;
+    std::string mDeviceName = "";
+    
     std::shared_ptr<CallbackInterface> mUwbAdaptor;
     ModuleInfo& mModuleInfo = ModuleInfo::getInstance();
     
@@ -51,7 +57,7 @@ private:
     void serialDataRead();
     void processRangingInfo(char *rx_bin);
     void processDisconnectInfo(char *rx_bin);
-    void processCommandResponse(char *rx_bin);
+    void processCommonEvent(char *rx_bin);
     void processModuleInfo(char *rx_bin);
     void processDeviceName(char *rx_bin);
     void processPairingInfo(char *rx_bin);

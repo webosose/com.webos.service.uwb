@@ -31,6 +31,9 @@ public:
     static LSMethod serviceMethods[];
     bool notifyDiscoveryResult();
     void notifyModuleStateChanged(const std::string&  moduleState);
+    void notifyDeviceNameChanged(const std::string& deviceName);
+    void notifyDeviceRoleChanged(const std::string& deviceRole);
+    void notifyDeviceModeChanged(const std::string& deviceMode);
 
 private:
     UwbServiceManager();

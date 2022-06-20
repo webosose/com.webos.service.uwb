@@ -199,7 +199,7 @@ void UartSerial::serialDataRead() {
                     }
                     case HOST_EVT_CMD : {
                         printf("HOST_EVT_CMD (0x44) received. \n");
-                        processCommandResponse(rx_bin);
+                        processCommonEvent(rx_bin);
                         break;
                     }
                     case HOST_EVT_DEVICE_NAME : {
@@ -263,6 +263,42 @@ void UartSerial::processPairingInfo(char *rx_bin) {
     
 }
 
+UwbErrorCodes UartSerial::setDeviceType(uint8_t deviceType) {
+    std::vector<uint8_t> data (35, 0x00);
+    data[0] = PREAMBLE;
+    data[1] = 0x05;
+    data[2] = deviceType;
+    
+    data[33] = 0x0d;
+    data[34] = 0x0a;
+    
+    ssize_t numBytesWritten = write(mUartFd, data.data(), data.size());
+    printf("numBytesWritten=%d \n", numBytesWritten);
+    if(numBytesWritten == -1) {
+        return UWB_UART_WRITE_FAILED;
+    }
+    mDeviceType = deviceType;
+    return UWB_ERROR_NONE;   
+}
+
+UwbErrorCodes UartSerial::setDeviceMode(uint8_t deviceMode) {
+    std::vector<uint8_t> data (35, 0x00);
+    data[0] = PREAMBLE;
+    data[1] = 0x06;
+    data[2] = deviceMode;
+    
+    data[33] = 0x0d;
+    data[34] = 0x0a;
+    
+    ssize_t numBytesWritten = write(mUartFd, data.data(), data.size());
+    printf("numBytesWritten=%d \n", numBytesWritten);
+    if(numBytesWritten == -1) {
+        return UWB_UART_WRITE_FAILED;
+    }
+    mDeviceMode = deviceMode;
+    return UWB_ERROR_NONE;
+}
+
 UwbErrorCodes UartSerial::setDeviceName(const std::string& deviceName) {
     if(deviceName.size() > 25 ) 
         return UWB_ERROR_DEVICENAME_LENGTH;
@@ -283,6 +319,7 @@ UwbErrorCodes UartSerial::setDeviceName(const std::string& deviceName) {
     if(numBytesWritten == -1) {
         return UWB_UART_WRITE_FAILED;
     }
+    mDeviceName = deviceName;
     return UWB_ERROR_NONE;
 }
 
@@ -388,9 +425,10 @@ UwbErrorCodes UartSerial::getUwbModuleInfo() {
     return UWB_ERROR_NONE;
 }
 
-void UartSerial::processCommandResponse(char *rx_bin) {
+void UartSerial::processCommonEvent(char *rx_bin) {
     CommandId commandId = static_cast<CommandId>(rx_bin[2]);
     uint8_t commandResult = rx_bin[3];
+    printf("- commandId: \t [%02x] \n", commandId );
     printf("- commandResult: \t [%02x] \n", commandResult );
     switch(commandId) {
         case HOST_CMD_MODULE_START : {
@@ -411,8 +449,35 @@ void UartSerial::processCommandResponse(char *rx_bin) {
             }            
             break;
         }
+        case HOST_SET_DEVICE_TYPE : {
+            if(commandResult == 1) {
+                mUwbAdaptor->updateDeviceTypeChanged(mDeviceType);
+            }
+            else if(commandResult == 0) {
+                //TODO: return error code
+            }
+            break;
+        }
+        case HOST_SET_DEVICE_MODE : {
+            if(commandResult == 1) {
+                mUwbAdaptor->updateDeviceModeChanged(mDeviceMode);
+            }
+            else if(commandResult == 0) {
+                //TODO: return error code
+            }
+            break;
+        }
+        case HOST_SET_DEVICE_NAME : {
+            if(commandResult == 1) {
+                mUwbAdaptor->updateDeviceNameChanged(mDeviceName);
+            }
+            else if(commandResult == 0) {
+                //TODO: return error code
+            }
+            break;
+        }
         default : {
-            printf("##### command Id = [%02x] ##### \n", commandId);
+            printf("#####Unused command Id = [%02x] ##### \n", commandId);
         }
     }
 }

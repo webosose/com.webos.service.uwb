@@ -190,14 +190,37 @@ bool UwbAdaptor::getPairedSessions(LSMessage *message) {
     return true;
 }
 
-UwbErrorCodes UwbAdaptor::setState(const std::string& deviceType) {
+UwbErrorCodes UwbAdaptor::setDeviceType(const std::string& deviceType) {
     UWB_LOG_INFO("UwbAdaptor::setState");
     UwbErrorCodes error = UWB_ERROR_NONE;
     if(deviceType == "controller") {
-        //TODO:Call HOST_SET_DEVICE_TYPE(0)
+        error = mUartSerial->setDeviceType(0);
     }
     else if(deviceType == "controlee") {
-        //TODO:Call HOST_SET_DEVICE_TYPE(1)
+        error = mUartSerial->setDeviceType(1);
+    }
+    else {
+        error = UWB_ERR_NOT_VALID_INPUT;
+    }
+
+    return error;
+}
+
+UwbErrorCodes UwbAdaptor::setDeviceName(const std::string& deviceName) {
+    UWB_LOG_INFO("UwbAdaptor::setDeviceName");
+    UwbErrorCodes error = UWB_ERROR_NONE;
+    error = mUartSerial->setDeviceName(deviceName);
+    return error;
+}
+
+UwbErrorCodes UwbAdaptor::setDeviceMode(const std::string& deviceMode) {
+    UWB_LOG_INFO("UwbAdaptor::setDeviceMode");
+    UwbErrorCodes error = UWB_ERROR_NONE;
+    if(deviceMode == "ranging") {
+        error = mUartSerial->setDeviceMode(0);
+    }
+    else if(deviceMode == "dataTransfer") {
+        error = mUartSerial->setDeviceMode(1);
     }
     else {
         error = UWB_ERR_NOT_VALID_INPUT;
@@ -360,4 +383,26 @@ void UwbAdaptor::updateDisconnectedDevice(uint16_t deviceID) {
 
 void UwbAdaptor::updateModuleStateChanged(const std::string& moduleState){
     UwbServiceManager::getInstance()->notifyModuleStateChanged(moduleState);
+}
+
+void UwbAdaptor::updateDeviceTypeChanged(uint8_t deviceType) {
+    if(deviceType == 0) {
+        UwbServiceManager::getInstance()->notifyDeviceRoleChanged("controller");
+    }
+    else if (deviceType == 1) {
+        UwbServiceManager::getInstance()->notifyDeviceRoleChanged("controlee");
+    }
+}
+
+void UwbAdaptor::updateDeviceModeChanged(uint8_t deviceMode) {
+    if(deviceMode == 0) {
+        UwbServiceManager::getInstance()->notifyDeviceModeChanged("ranging");
+    }
+    else if (deviceMode == 1) {
+        UwbServiceManager::getInstance()->notifyDeviceModeChanged("dataTransfer");
+    }
+}
+
+void UwbAdaptor::updateDeviceNameChanged(const std::string& deviceName) {
+    UwbServiceManager::getInstance()->notifyDeviceNameChanged(deviceName);
 }

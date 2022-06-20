@@ -39,7 +39,9 @@ public:
     UwbErrorCodes setUwbModuleState(const std::string& moduleState);
     UwbErrorCodes getStatus();
     bool getPairedSessions(LSMessage *message);
-    UwbErrorCodes setState(const std::string& deviceType);
+    UwbErrorCodes setDeviceType(const std::string& deviceType);
+    UwbErrorCodes setDeviceName(const std::string& deviceName);
+    UwbErrorCodes setDeviceMode(const std::string& deviceMode);
     UwbErrorCodes startDiscovery(int32_t discoveryTimeout);
     bool stopDiscovery(LSMessage *message);
     bool openSession(LSMessage *message);
@@ -56,6 +58,9 @@ public:
     void updateRangingInfo(int condition, string remoteDevAddr, int64_t angle, int64_t distance);
     void updateDisconnectedDevice(uint16_t deviceID);
     void updateModuleStateChanged(const std::string& moduleState);
+    void updateDeviceTypeChanged(uint8_t deviceType);
+    void updateDeviceModeChanged(uint8_t deviceMode);
+    void updateDeviceNameChanged(const std::string& deviceName);
 
     void notifySubscriberServiceState(bool isServiceAvailable);
     void notifySubscriberSpecificInfo(UwbSpecInfo& info);

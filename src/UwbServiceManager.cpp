@@ -259,7 +259,7 @@ bool UwbServiceManager::setState(LSHandle *sh, LSMessage *message, void *data) {
 	pbnjson::JValue requestObj;
 	int parseError = 0;
 
-    const std::string schema = STRICT_SCHEMA(PROPS_1(PROP(role, string)) REQUIRED_1(role));
+    const std::string schema = STRICT_SCHEMA(PROPS_3(PROP(role, string), PROP(deviceName, string), PROP(deviceMode, string)));
 
 	if (!LSUtils::parsePayload(request.getPayload(), requestObj, schema, &parseError))
 	{
@@ -277,7 +277,41 @@ bool UwbServiceManager::setState(LSHandle *sh, LSMessage *message, void *data) {
 		UwbErrorCodes error = UWB_ERROR_NONE;
         UWB_LOG_INFO("setState : role [%s]", role.c_str());
 
-        error = mUwbAdaptor->setState(role);
+        error = mUwbAdaptor->setDeviceType(role);
+
+		if (error != UWB_ERROR_NONE)
+		{
+			LSUtils::respondWithError(request, error);
+			return true;
+		}
+        usleep(50000);
+	}
+    
+    if (requestObj.hasKey("deviceName"))
+	{
+		std::string deviceName = requestObj["deviceName"].asString();
+
+		UwbErrorCodes error = UWB_ERROR_NONE;
+        UWB_LOG_INFO("setState : deviceName [%s]", deviceName.c_str());
+
+        error = mUwbAdaptor->setDeviceName(deviceName);
+
+		if (error != UWB_ERROR_NONE)
+		{
+			LSUtils::respondWithError(request, error);
+			return true;
+		}
+        usleep(50000);
+	}
+    
+    if (requestObj.hasKey("deviceMode"))
+	{
+		std::string deviceMode = requestObj["deviceMode"].asString();
+
+		UwbErrorCodes error = UWB_ERROR_NONE;
+        UWB_LOG_INFO("setState : deviceMode [%s]", deviceMode.c_str());
+
+        error = mUwbAdaptor->setDeviceMode(deviceMode);
 
 		if (error != UWB_ERROR_NONE)
 		{
@@ -343,6 +377,30 @@ void UwbServiceManager::notifyModuleStateChanged(const std::string&  moduleState
         return;
     
     mModuleInfo.setModuleState(moduleState);
+    notifySubscribersModuleStatus();
+}
+
+void UwbServiceManager::notifyDeviceNameChanged(const std::string& deviceName) {
+    if(deviceName == mModuleInfo.getDeviceName())
+        return;
+    
+    mModuleInfo.setDeviceName(deviceName);
+    notifySubscribersModuleStatus();
+}
+
+void UwbServiceManager::notifyDeviceRoleChanged(const std::string& deviceRole) {
+    if(deviceRole == mModuleInfo.getDeviceRole())
+        return;
+    
+    mModuleInfo.setDeviceRole(deviceRole);
+    notifySubscribersModuleStatus();
+}
+
+void UwbServiceManager::notifyDeviceModeChanged(const std::string& deviceMode) {
+    if(deviceMode == mModuleInfo.getDeviceMode())
+        return;
+    
+    mModuleInfo.setDeviceMode(deviceMode);
     notifySubscribersModuleStatus();
 }
 
