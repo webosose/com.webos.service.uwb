@@ -7,6 +7,7 @@
 #include "UartSerial.h"
 #include "UwbAdapterInterface.h"
 #include "UwbAdaptor.h"
+#include "UwbEventListener.h"
 
 PmLogContext gUwbLogContext;
 static const char* const logContextName = "webos-uwb-service";
@@ -41,6 +42,8 @@ int main(int argc, char *argv[]) {
     //Start uart communication, To be modified in refactoring step
     auto uartSerial = std::make_shared<UartSerial>();
     adapter->setDeviceInterface(uartSerial);
+    auto eventListener = std::make_shared<UwbEventListener>();
+    uartSerial->setEventListener(eventListener);
     std::thread uartThread(&UartSerial::InitializeUart, uartSerial, "Init Uart");
     
     //End of start uart communication

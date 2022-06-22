@@ -26,7 +26,7 @@ string UwbRangingInfo::getRemoteDevAddr() const{
     return m_remoteDevAddr;
 }
 
-int32_t UwbRangingInfo::getElapsedTime() const{
+int64_t UwbRangingInfo::getElapsedTime() const{
     return mElapsedTime;
 }
 
@@ -58,7 +58,7 @@ void UwbRangingInfo::setRemoteDevAddr(string remoteDevAddr) {
      m_remoteDevAddr = remoteDevAddr;
 }
 
-void UwbRangingInfo::setElapsedTime(int32_t elapsedTime) {
+void UwbRangingInfo::setElapsedTime(int64_t elapsedTime) {
     mElapsedTime = elapsedTime;
 }
 

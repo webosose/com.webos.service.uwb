@@ -27,7 +27,7 @@ enum {
 
 class UartSerial {
 public:
-    void setAdaptor(std::shared_ptr<CallbackInterface> adapter);
+    void setEventListener(std::shared_ptr<CallbackInterface> eventListener);
     void InitializeUart(std::string param);
     UwbErrorCodes setUwbModuleState(CommandId cmdId);
     UwbErrorCodes getUwbModuleInfo();
@@ -38,7 +38,7 @@ public:
     UwbErrorCodes getPairingInfo();
 
 private:
-    uint32_t dataCount; //TODO: For testing. Can be removed.
+    uint32_t dataCount = 0; //TODO: For testing. Can be removed.
     int mUartFd = -1;
     bool rxFlag = false;
     bool exitFlag = false;
@@ -47,7 +47,7 @@ private:
     uint8_t mDeviceMode = 0x00;
     std::string mDeviceName = "";
     
-    std::shared_ptr<CallbackInterface> mUwbAdaptor;
+    std::shared_ptr<CallbackInterface> mEventListener;
     ModuleInfo& mModuleInfo = ModuleInfo::getInstance();
     
     void configureUart();
@@ -55,12 +55,11 @@ private:
     void printData(char *rx_bin, int rx_length);
     void printBytes(int type, int length, const char *buffer);
     void serialDataRead();
-    void processRangingInfo(char *rx_bin);
-    void processDisconnectInfo(char *rx_bin);
     void processCommonEvent(char *rx_bin);
     void processModuleInfo(char *rx_bin);
     void processDeviceName(char *rx_bin);
     void processPairingInfo(char *rx_bin);
+    void processMeasurement(char *rx_bin);
 };
 
 

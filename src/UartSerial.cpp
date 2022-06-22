@@ -2,9 +2,8 @@
 
 using namespace std;
 
-void UartSerial::setAdaptor(shared_ptr<CallbackInterface> adapter) {
-    dataCount = 0;
-    mUwbAdaptor = adapter;
+void UartSerial::setEventListener(shared_ptr<CallbackInterface> eventListener) {
+    mEventListener = eventListener;
 }
 
 void UartSerial::InitializeUart(std::string param) {
@@ -133,7 +132,7 @@ void UartSerial::serialDataRead() {
             //UART re-open & reconfigure logic SHOULD be added in here.
         }
         
-        printData(rx_bin, rx_length);
+    //    printData(rx_bin, rx_length);
 
         if (rx_length == 35) {
             //Bytes received
@@ -145,24 +144,7 @@ void UartSerial::serialDataRead() {
             if( rx_bin[0] == 0xcc ) {
                 //Command Number
                 EventId eventId = static_cast<EventId>(rx_bin[1]);
-                switch(eventId) {
-                    case HOST_EVT_UWB_MODULE_INFO :{
-                        printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ \n");
-                        printf("HOST_EVT_UWB_MODULE_INFO (0x81) received. \n");
-                    //    processModuleInfo(rx_bin);
-                        break;
-                    }
-                    case HOST_STATUS_LOCATION_INFO : {
-                        printf("HOST_STATUS_LOCATION_INFO (0x51) received. \n");
-                        processRangingInfo(rx_bin);
-                        break;
-                    }
-                    case HOST_STATUS_DISCONNECT : {
-                        printf("-------------------------------------------------------------------------------------------------- \n");
-                        printf("HOST_STATUS_DISCONNECT (0x62) received. \n");
-                        processDisconnectInfo(rx_bin);
-                        break;
-                    }
+                switch(eventId) {                    
                     case HOST_STATUS_MODULE_INFO : {
                         printf("HOST_STATUS_MODULE_INFO (0x3C) received. \n");
                         processModuleInfo(rx_bin);
@@ -175,6 +157,7 @@ void UartSerial::serialDataRead() {
                     }
                     case HOST_EVT_MEASUREMENT : {
                         printf("HOST_EVT_MEASUREMENT (0x3E) received. \n");
+                        processMeasurement(rx_bin);
                         break;
                     }
                     case HOST_EVT_MEASUREMENT_BYPASS : {
@@ -213,11 +196,6 @@ void UartSerial::serialDataRead() {
                     }
                     case HOST_ACK_SERVICE : {
                         printf("HOST_ACK_SERVICE (0x47) received. \n");
-                        break;
-                    }
-                    case HOST_ACK : {
-                        printf("*************************************************************************************************** \n");
-                        printf("HOST_ACK (0xF0) received. \n");
                         break;
                     }
                     default : {
@@ -433,7 +411,7 @@ void UartSerial::processCommonEvent(char *rx_bin) {
     switch(commandId) {
         case HOST_CMD_MODULE_START : {
             if(commandResult == 1) {
-                mUwbAdaptor->updateModuleStateChanged("active");
+                mEventListener->updateModuleStateChanged("active");
             }
             else if(commandResult == 0) {
                 //TODO: return error code
@@ -442,7 +420,7 @@ void UartSerial::processCommonEvent(char *rx_bin) {
         }
         case HOST_CMD_MODULE_STOP : {
             if(commandResult == 1) {
-                mUwbAdaptor->updateModuleStateChanged("stopped");
+                mEventListener->updateModuleStateChanged("stopped");
             }
             else if(commandResult == 0) {
                 //TODO: return error code
@@ -451,7 +429,7 @@ void UartSerial::processCommonEvent(char *rx_bin) {
         }
         case HOST_SET_DEVICE_TYPE : {
             if(commandResult == 1) {
-                mUwbAdaptor->updateDeviceTypeChanged(mDeviceType);
+                mEventListener->updateDeviceTypeChanged(mDeviceType);
             }
             else if(commandResult == 0) {
                 //TODO: return error code
@@ -460,7 +438,7 @@ void UartSerial::processCommonEvent(char *rx_bin) {
         }
         case HOST_SET_DEVICE_MODE : {
             if(commandResult == 1) {
-                mUwbAdaptor->updateDeviceModeChanged(mDeviceMode);
+                mEventListener->updateDeviceModeChanged(mDeviceMode);
             }
             else if(commandResult == 0) {
                 //TODO: return error code
@@ -469,7 +447,7 @@ void UartSerial::processCommonEvent(char *rx_bin) {
         }
         case HOST_SET_DEVICE_NAME : {
             if(commandResult == 1) {
-                mUwbAdaptor->updateDeviceNameChanged(mDeviceName);
+                mEventListener->updateDeviceNameChanged(mDeviceName);
             }
             else if(commandResult == 0) {
                 //TODO: return error code
@@ -498,11 +476,23 @@ UwbErrorCodes UartSerial::setUwbModuleState(CommandId cmdId) {
     return UWB_ERROR_NONE;
 }
 
+void UartSerial::processMeasurement(char *rx_bin) {
+    uint8_t sessionId = rx_bin[2];
+    printf("- sessionId: \t [%02x] \n", sessionId );
+    int16_t angle = rx_bin[3] | rx_bin[4] << 8;
+    int16_t distance = rx_bin[5] | rx_bin[6] << 8;
+    uint8_t reliability = rx_bin[7];
+    
+    printf("Angle[3~4] = [%d], Dist_cm = [%d], reliability = [%d] \n",angle, distance, reliability );
+    mEventListener->updateRangingInfo(reliability, sessionId, angle, distance);
+    printf("dataCount:%d\n", ++dataCount);
+}
+
 void UartSerial::printData(char *rx_bin, int rx_length) {
     printf("UWB RX BUFFER (Length=%d) \n", rx_length);
     printf("Hexa String : ");
     printBytes(BINARY, rx_length, rx_bin);
-
+#if 0
     printf("Angle: [%d], Distance: [%d] \n", (int)(rx_bin[3]), (int)(rx_bin[5]) );
     printf("rx_bin int_val: [%d] [%d] [%d] [%d] [%d] [%d] [%d] [%d] [%d] \n",
                 (int)(rx_bin[0]), (int)(rx_bin[1]), (int)(rx_bin[2]), (int)(rx_bin[3]), (int)(rx_bin[4]), (int)(rx_bin[5]), (int)(rx_bin[6]), (int)(rx_bin[7]), (int)(rx_bin[8]));
@@ -511,30 +501,7 @@ void UartSerial::printData(char *rx_bin, int rx_length) {
     printf("- Command: \t Hexa[%02x] \t Int[%d] \n", rx_bin[1], (int)(rx_bin[1]) );
     printf("- Device ID: \t Hexa[%02x] \t Int[%d] \n", rx_bin[2], (int)(rx_bin[2]) );
     printf("- Condition: \t Hexa[%02x] \t Int[%d] \n", rx_bin[7], (int)(rx_bin[7]) );
-    printf("dataCount:%d\n", ++dataCount);
-}
-
-void UartSerial::processRangingInfo(char *rx_bin) {
-    //Reading for Little Endian, TBD : we should use Big-Endian that is generic in network protocols
-    short angle = rx_bin[3] | rx_bin[4] << 8;
-    short dist = rx_bin[5] | rx_bin[6] << 8;
-    //float dist_f = rx_bin[5] | rx_bin[6] << 8 | 0x00 << 16 | 0x00 << 24 ;
-    //unsigned long dist_ul = (rx_bin[5])&0xFF | (rx_bin[6])&0xFF << 8 | 0x00&0xFF << 16 | 0x00&0xFF << 24 ;
-    //float dist_f = *( (float*)&dist_ul );
-
-    //Distance Calculation : 1 inch -> 2.54 cm
-    //received distance == inch * 10
-    //So, dist_cm = dist_inch (i.e., dist) * 2.54 / 10
-    float dist_cm = dist * 2.54 / 10;
-    printf("Device ID = [%02x %d] Angle[3~4] = [%d], Dist_inch*10[5~6] = [%d], Dist_cm = [%f], Condition = [%d] \n",
-            rx_bin[2], (int)(rx_bin[2]), angle, dist, dist_cm, (int)(rx_bin[7]) );
-    //Update UWB Data to UWB Adaptor
-    mUwbAdaptor->updateRangingInfo((int)(rx_bin[7]), std::to_string( (int)(rx_bin[2]) ), (int)angle, (int)dist);
-}
-
-void UartSerial::processDisconnectInfo(char *rx_bin) {
-    printf("Device ID = [%02x %d] \n", rx_bin[2], (int)(rx_bin[2]));
-    mUwbAdaptor->updateDisconnectedDevice( (int)(rx_bin[2]) );
+ #endif
 }
 
 void UartSerial::printBytes(int type, int length, const char *buffer)

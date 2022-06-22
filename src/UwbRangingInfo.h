@@ -20,7 +20,7 @@ public:
     bool getConnectionStatus() const;
     int getCondition() const;
     string getRemoteDevAddr() const;
-    int32_t getElapsedTime() const;
+    int64_t getElapsedTime() const;
     std::unique_ptr<DistanceMeasure>& getDistanceMeasure();
     std::unique_ptr<AngleMeasure>& getAzimuthAngleMeasure();
     std::unique_ptr<AngleMeasure>& getAltitudeAngleMeasure();
@@ -28,16 +28,16 @@ public:
     void setConnectionStatus(bool connectionStatus);
     void setCondition(int condition);
     void setRemoteDevAddr(string remoteDevAddr);
-    void setElapsedTime(int32_t elapsedTime);
+    void setElapsedTime(int64_t elapsedTime);
     void setDistanceMeasure(std::unique_ptr<DistanceMeasure> distanceMeasure);
     void setAzimuthAngleMeasure(std::unique_ptr<AngleMeasure> angleMeasure);
     void setAltitudeAngleMeasure(std::unique_ptr<AngleMeasure> angleMeasure);
 
 private:
-    uint16_t m_sessionId{0};
+    uint16_t m_sessionId{0}; //TODO: not needed in this class. Remove it.
     int m_condition{0};        
     string m_remoteDevAddr{""};
-    int32_t mElapsedTime{0};
+    int64_t mElapsedTime{0};
     bool m_connectionStatus{true};
     std::unique_ptr<DistanceMeasure> mDistanceMeasure;
     std::unique_ptr<AngleMeasure> mAzimuthAngleMeasure;

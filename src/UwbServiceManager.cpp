@@ -26,6 +26,7 @@ UwbServiceManager *UwbServiceManager::getInstance() {
 
 UwbServiceManager::UwbServiceManager():
         mMainLoop(nullptr),
+    //    mResponseBuilder(std::make_unique<UwbResponseBuilder>()),
         mUwbSessionCtl(nullptr) {
 }
 
@@ -89,25 +90,80 @@ bool UwbServiceManager::deinit() {
 bool UwbServiceManager::getUwbServiceState(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
 
-    mUwbAdaptor->getUwbServiceState(sh, message);
-
     return true;
 }
 
 bool UwbServiceManager::getUwbSpecificInfo(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
-
-    mUwbAdaptor->getUwbSpecificInfo(sh, message);
    
     return true;
 }
 
 bool UwbServiceManager::getRangingInfo(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
+    
+    LS::Message request(message);
+    bool subscribed = false;
+    pbnjson::JValue responseObj = pbnjson::Object();
+    
+    LSError lsError;
+    LSErrorInit(&lsError);
+    if (LSMessageIsSubscription(message)) {
+        subscribed = true;
+        if (LSSubscriptionAdd(sh, "getRangingInfo", message, &lsError) == false) {
+            UWB_LOG_ERROR("Failed to add getUwbServiceState to subscription");
 
-    mUwbAdaptor->getRangingInfo(sh, message);
+            responseObj.put("returnValue", false);
+            responseObj.put("errorCode", UWB_UNKNOWN_ERROR);
+            responseObj.put("errorText", "Unknwon");
+            LSMessageReply(sh,message, responseObj.stringify().c_str() , &lsError );
+            return true;
+        }
+    }
+   
+    if(!mSavedUwbRangingInfo) {    
+        mSavedUwbRangingInfo = std::make_unique<UwbRangingInfo>();
+    }
+
+    mResponseBuilder->buildRangingInfo(responseObj, mSavedUwbRangingInfo);
+
+    responseObj.put("sessionId", 1); //TODO: Update logic when session support is added
+    responseObj.put("returnValue", true);
+    responseObj.put("subscribed", subscribed);
+
+    if (!LSMessageReply(sh, message, responseObj.stringify().c_str(), &lsError))
+    {
+        UWB_LOG_ERROR("HANDLE_getUwbServiceState Message reply error!!");
+        LSErrorPrint(&lsError, stdout);
+
+        return false;
+    }
     
     return true;
+}
+
+void UwbServiceManager::notifySubscriberRangingInfo(std::unique_ptr<UwbRangingInfo> rangingInfo, uint8_t sessionId)
+{
+    UWB_LOG_DEBUG("notifySubscriberRangingInfo");
+    LSError lsError;
+    LSErrorInit(&lsError);
+
+    pbnjson::JValue responseObj = pbnjson::Object();
+    responseObj.put("sessionId", sessionId);
+    mResponseBuilder->buildRangingInfo(responseObj, rangingInfo);
+    responseObj.put("returnValue", true);
+    responseObj.put("subscribed", true);
+    mSavedUwbRangingInfo = std::move(rangingInfo);
+    if (!LSSubscriptionReply(mServiceHandle, "getRangingInfo", responseObj.stringify().c_str(), &lsError))
+    {
+        UWB_LOG_INFO("subscription reply error!!");
+        LSErrorFree(&lsError);
+        return;
+    }
+
+    LSErrorFree(&lsError);   
+
+    return;
 }
 
 bool UwbServiceManager::startDiscovery(LSHandle *sh, LSMessage *message, void *data) {
