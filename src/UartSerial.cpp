@@ -31,7 +31,7 @@ void UartSerial::configureUart() {
     /* Open UART Device */
     do {
         //To be applied for using deviceName that is set by user configuration
-        mUartFd = open("/dev/ttyACM0", O_RDWR | O_NOCTTY /*| O_NDELAY*/);
+        mUartFd = open("/dev/ttyUSB_LGEUWB", O_RDWR | O_NOCTTY /*| O_NDELAY*/);
         printf("uart open fd = %d \n", mUartFd);
 
         //fd control to be adjusted

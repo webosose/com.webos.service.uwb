@@ -26,7 +26,6 @@ UwbServiceManager *UwbServiceManager::getInstance() {
 
 UwbServiceManager::UwbServiceManager():
         mMainLoop(nullptr),
-    //    mResponseBuilder(std::make_unique<UwbResponseBuilder>()),
         mUwbSessionCtl(nullptr) {
 }
 
