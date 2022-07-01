@@ -2,6 +2,16 @@
     "uwb.operation": [
         "com.webos.service.uwb/getUwbServiceState",
         "com.webos.service.uwb/getUwbSpecificInfo",
-        "com.webos.service.uwb/getRangingInfo"
+        "com.webos.service.uwb/getRangingInfo",
+        "com.webos.service.uwb/setUwbModuleState",
+        "com.webos.service.uwb/getStatus",
+        "com.webos.service.uwb/getPairedSessions",
+        "com.webos.service.uwb/setState",
+        "com.webos.service.uwb/startDiscovery",
+        "com.webos.service.uwb/stopDiscovery",
+        "com.webos.service.uwb/openSession",
+        "com.webos.service.uwb/closeSession",
+        "com.webos.service.uwb/startRanging",
+        "com.webos.service.uwb/stopRanging"
     ]
 }

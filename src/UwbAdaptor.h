@@ -6,8 +6,15 @@
 #include <luna-service2/lunaservice.hpp>
 #include <pthread.h>
 #include <string>
+#include <memory>
 #include "UwbSpecInfo.h"
 #include "UwbRangingInfo.h"
+#include "UwbResponseBuilder.h"
+#include "UwbErrors.h"
+#include "UartSerial.h"
+#include "UwbAdapterInterface.h"
+#include "CallbackInterface.h"
+#include "UartConstants.h"
 
 using namespace std;
 
@@ -16,48 +23,32 @@ namespace LS
     class Message;
 }
 
-class UwbAdaptor {
-
+class UwbAdaptor : public UwbAdapterInterface {
 public:
-
-    static UwbAdaptor *getInstance();
-
-    ~UwbAdaptor();
-    bool init(LSHandle *sh);
-
-    bool getUwbServiceState(LSHandle *sh, LSMessage *message);
-    bool getUwbSpecificInfo(LSHandle *sh, LSMessage *message);
-    bool getRangingInfo(LSHandle *sh, LSMessage *message);
-
-    void updateServiceState(bool isServiceAvailable); //Not supported currently
-    void updateSpecificInfo(bool modState, string fwVersion, string fwCrc);
-    void updateRangingInfo(int condition, string remoteDevAddr, int64_t angle, int64_t distance);
-    void updateDisconnectedDevice(uint16_t deviceID);
-
-    void notifySubscriberServiceState(bool isServiceAvailable);
-    void notifySubscriberSpecificInfo(UwbSpecInfo& info);
-    void notifySubscriberRangingInfo(UwbRangingInfo& rangingInfo);
-
-    void writeServiceState(pbnjson::JValue &responseObj, bool isServiceAvailable);
-    void writeSpecificInfo(pbnjson::JValue &responseObj, UwbSpecInfo &info);
-    void writeRangingInfo(pbnjson::JValue &responseObj, UwbRangingInfo& rangingInfo);
-
-    void setServiceState(bool serviceState) {
-        m_isServiceAvailable = serviceState;
-    }
-
-private:
     UwbAdaptor();
-    LSHandle *mLSHandle = nullptr;
-    static UwbAdaptor *mUwbAdaptor;
-    static UwbSpecInfo *mUwbSpecInfo;
-    bool m_isServiceAvailable{false};
-    bool m_connectionStatus{false};
-    int64_t m_sessionId{0};
-    UwbRangingInfo *mSavedUwbRangingInfo = nullptr; // for saving up-to-date rangingInfo
-    UwbRangingInfo *mRangingInfo = nullptr;
-    UwbRangingInfo *disConnRangingInfo = nullptr;
+    ~UwbAdaptor();
+    UwbAdaptor(const UwbAdaptor&) = delete;
+    UwbAdaptor& operator=(const UwbAdaptor&) = delete;    
+ 
+    bool init(LSHandle *sh);
+    void setDeviceInterface(std::shared_ptr<UartSerial> uartSerial);   
 
+    UwbErrorCodes getStatus();
+    UwbErrorCodes setUwbModuleState(const std::string& moduleState);
+    UwbErrorCodes setDeviceType(const std::string& deviceType);
+    UwbErrorCodes setDeviceName(const std::string& deviceName);
+    UwbErrorCodes setDeviceMode(const std::string& deviceMode);
+    UwbErrorCodes startDiscovery(int32_t discoveryTimeout);
+    bool getPairedSessions(LSMessage *message);
+    bool stopDiscovery(LSMessage *message);
+    bool openSession(LSMessage *message);
+    bool closeSession(LSMessage *message);
+    bool startRanging(LSMessage *message);
+    bool stopRanging(LSMessage *message);
+
+private:    
+    LSHandle *mLSHandle = nullptr;
+    std::shared_ptr<UartSerial> mUartSerial = nullptr;
 };
 
 #endif//H_UwbAdaptor

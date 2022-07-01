@@ -2,22 +2,12 @@
 #include "UwbLogging.h"
 #include "LunaUwbServiceUtil.h"
 
-UwbAdaptor* UwbAdaptor::mUwbAdaptor = nullptr;
-UwbSpecInfo* UwbAdaptor::mUwbSpecInfo = nullptr;
-
-UwbAdaptor* UwbAdaptor::getInstance() {
-    if(mUwbAdaptor == nullptr) mUwbAdaptor = new UwbAdaptor();
-    return mUwbAdaptor;
-}
-
 UwbAdaptor::UwbAdaptor() {
     UWB_LOG_INFO("UwbAdaptor Constructor");
 }
 
 UwbAdaptor::~UwbAdaptor() {
-    delete mSavedUwbRangingInfo;
-    delete mRangingInfo;
-    delete disConnRangingInfo;
+
 }
 
 bool UwbAdaptor::init(LSHandle *sh) {
@@ -27,309 +17,112 @@ bool UwbAdaptor::init(LSHandle *sh) {
     return true;
 }
 
-bool UwbAdaptor::getUwbServiceState(LSHandle *sh, LSMessage *message) {
-    UWB_LOG_INFO("UwbAdaptor::getRangingInfo");
+void UwbAdaptor::setDeviceInterface(std::shared_ptr<UartSerial> uartSerial) {
+    mUartSerial = uartSerial;
+}
 
-    LSError mLSError;
-    bool isSubscription = false;
-    pbnjson::JValue responseObj = pbnjson::Object();
+UwbErrorCodes UwbAdaptor::startDiscovery(int32_t discoveryTimeout) {
+    UWB_LOG_INFO("UwbAdaptor::startDiscovery");
+    UwbErrorCodes error = UWB_ERROR_NONE;
+    //TODO: Add call to driver API to start discovery
+    return error;
+}
 
-    LSErrorInit(&mLSError);
-
-    if (LSMessageIsSubscription(message)) {
-        isSubscription = true;
-        if (LSSubscriptionAdd(sh, "getUwbServiceState", message, &mLSError) == false) {
-            UWB_LOG_ERROR("Failed to add getUwbServiceState to subscription");
-
-            responseObj.put("returnValue", false);
-            responseObj.put("errorCode", UWB_UNKNOWN_ERROR);
-            responseObj.put("errorText", "Unknwon");
-            LSMessageReply(sh,message, responseObj.stringify().c_str() , &mLSError );
-            return true;
-        }
-    }
-
-    if (responseObj.isNull())
-            return false;
-    writeServiceState(responseObj, m_isServiceAvailable);
-    responseObj.put("returnValue", true);
-    responseObj.put("subscribed", isSubscription);
-
-    if (!LSMessageReply(sh, message, responseObj.stringify().c_str(), &mLSError))
-    {
-        UWB_LOG_ERROR("HANDLE_getUwbServiceState Message reply error!!");
-        LSErrorPrint(&mLSError, stdout);
-
-        return false;
-    }
+bool UwbAdaptor::stopDiscovery(LSMessage *message) {
+    UWB_LOG_INFO("UwbAdaptor::stopDiscovery");
+    //TODO: Add call to driver API
     return true;
 }
 
-bool UwbAdaptor::getUwbSpecificInfo(LSHandle *sh, LSMessage *message) {
-    UWB_LOG_INFO("UwbAdaptor::getRangingInfo");
-    LSError mLSError;
-    bool isSubscription = false;
-    pbnjson::JValue responseObj = pbnjson::Object();
-
-    LSErrorInit(&mLSError);
-
-    if (LSMessageIsSubscription(message)) {
-        isSubscription = true;
-        if (LSSubscriptionAdd(sh, "getUwbSpecificInfo", message, &mLSError) == false) {
-            UWB_LOG_ERROR("Failed to add getUwbServiceState to subscription");
-
-            responseObj.put("returnValue", false);
-            responseObj.put("errorCode", UWB_UNKNOWN_ERROR);
-            responseObj.put("errorText", "Unknwon");
-            LSMessageReply(sh,message, responseObj.stringify().c_str() , &mLSError );
-            return true;
-        }
+UwbErrorCodes UwbAdaptor::setUwbModuleState(const std::string& moduleState) {
+    UWB_LOG_INFO("UwbAdaptor::setUwbModuleState");
+    UwbErrorCodes error = UWB_ERROR_NONE;
+    if(moduleState == "start") {
+        error = mUartSerial->setUwbModuleState(HOST_CMD_MODULE_START);
     }
-
-    if (responseObj.isNull())
-            return false;
-
-    mUwbSpecInfo = UwbSpecInfo::getInstance();
-    writeSpecificInfo(responseObj, *mUwbSpecInfo);
-
-    responseObj.put("returnValue", true);
-    responseObj.put("subscribed", isSubscription);
-
-    if (!LSMessageReply(sh, message, responseObj.stringify().c_str(), &mLSError))
-    {
-        UWB_LOG_ERROR("HANDLE_getUwbServiceState Message reply error!!");
-        LSErrorPrint(&mLSError, stdout);
-
-        return false;
-    }
-
-    return true;
-}
-
-bool UwbAdaptor::getRangingInfo(LSHandle *sh, LSMessage *message) {
-    UWB_LOG_INFO("UwbAdaptor::getRangingInfo");
-    LSError mLSError;
-    bool isSubscription = false;
-    pbnjson::JValue responseObj = pbnjson::Object();
-
-    LSErrorInit(&mLSError);
-
-    if (LSMessageIsSubscription(message)) {
-        isSubscription = true;
-        if (LSSubscriptionAdd(sh, "getRangingInfo", message, &mLSError) == false) {
-            UWB_LOG_ERROR("Failed to add getUwbServiceState to subscription");
-
-            responseObj.put("returnValue", false);
-            responseObj.put("errorCode", UWB_UNKNOWN_ERROR);
-            responseObj.put("errorText", "Unknwon");
-            LSMessageReply(sh,message, responseObj.stringify().c_str() , &mLSError );
-            return true;
-        }
-    }
-
-    if (responseObj.isNull())
-        return false;
-
-    if(!mSavedUwbRangingInfo) {
-        mSavedUwbRangingInfo = new UwbRangingInfo(m_sessionId, m_connectionStatus, 1, "01", "Success", 30, 100);
-    }
-    writeRangingInfo(responseObj, *mSavedUwbRangingInfo);
-
-    responseObj.put("returnValue", true);
-    responseObj.put("subscribed", isSubscription);
-
-    if (!LSMessageReply(sh, message, responseObj.stringify().c_str(), &mLSError))
-    {
-        UWB_LOG_ERROR("HANDLE_getUwbServiceState Message reply error!!");
-        LSErrorPrint(&mLSError, stdout);
-
-        return false;
-    }
-
-    return true;
-}
-
-void UwbAdaptor::notifySubscriberServiceState(bool isServiceAvailable) {
-    UWB_LOG_INFO("notifySubscriberServiceState");
-    LSError lserror;
-    LSErrorInit(&lserror);
-
-    pbnjson::JValue responseObj = pbnjson::Object();
-    writeServiceState(responseObj, isServiceAvailable );
-    responseObj.put("subscribed", true);
-    responseObj.put("returnValue", true);
-
-    if (!LSSubscriptionReply(mLSHandle, "getUwbServiceState", responseObj.stringify().c_str(), &lserror))
-    {
-        UWB_LOG_INFO("subscription reply error!!");
-        LSErrorFree(&lserror);
-        return;
-    }
-    LSErrorFree(&lserror);
-    return;
-}
-
-void UwbAdaptor::notifySubscriberSpecificInfo(UwbSpecInfo& info) {
-    UWB_LOG_INFO("notifySubscriberSpecificInfo");
-    LSError lserror;
-    LSErrorInit(&lserror);
-
-    pbnjson::JValue responseObj = pbnjson::Object();
-
-    writeSpecificInfo(responseObj, info);
-    responseObj.put("returnValue", true);
-    responseObj.put("subscribed", true);
-
-    if (!LSSubscriptionReply(mLSHandle, "getUwbSpecificInfo", responseObj.stringify().c_str(), &lserror))
-    {
-        UWB_LOG_INFO("subscription reply error!!");
-        LSErrorFree(&lserror);
-        return;
-    }
-    LSErrorFree(&lserror);
-    return;
-}
-
-void UwbAdaptor::notifySubscriberRangingInfo(UwbRangingInfo& rangingInfo)
-{
-    UWB_LOG_INFO("notifySubscriberRangingInfo");
-    LSError lserror;
-    LSErrorInit(&lserror);
-
-    pbnjson::JValue responseObj = pbnjson::Object();
-    writeRangingInfo(responseObj, rangingInfo);
-    responseObj.put("returnValue", true);
-    responseObj.put("subscribed", true);
-
-    if (!LSSubscriptionReply(mLSHandle, "getRangingInfo", responseObj.stringify().c_str(), &lserror))
-    {
-        UWB_LOG_INFO("subscription reply error!!");
-        LSErrorFree(&lserror);
-        return;
-    }
-
-    LSErrorFree(&lserror);
-    return;
-}
-
-void UwbAdaptor::writeServiceState(pbnjson::JValue &responseObj, bool isServiceAvailable) {
-    UWB_LOG_INFO("writeServiceState");
-    responseObj.put("serviceAvailability", isServiceAvailable);
-}
-
-void UwbAdaptor::writeSpecificInfo(pbnjson::JValue &responseObj, UwbSpecInfo &info) {
-    UWB_LOG_INFO("writeSpecificInfo");
-
-    responseObj.put("modState",info.getModState());
-    responseObj.put("fwVersion", info.getFwVersion());
-    responseObj.put("fwCrc", info.getFwCrc());
-}
-
-void UwbAdaptor::writeRangingInfo(pbnjson::JValue &responseObj, UwbRangingInfo& rangingInfo) {
-    UWB_LOG_INFO("writeRangingInfo");
-
-    pbnjson::JValue rangingInfoArray = pbnjson::Array();
-    pbnjson::JValue rangingInfoLgeAirCondObj = pbnjson::Object();
-
-    pbnjson::JValue lgeAirCondArray = pbnjson::Array();
-    pbnjson::JValue lgeAirCondData = pbnjson::Object();
-
-    pbnjson::JValue lgeAirCondRangingData = pbnjson::Object();
-    pbnjson::JValue lgeAirCondRangingArray = pbnjson::Array();
-
-    responseObj.put("sessionId", m_sessionId);
-    responseObj.put("rangingInfo", rangingInfoArray);
-
-    rangingInfoArray.append(rangingInfoLgeAirCondObj);
-    rangingInfoLgeAirCondObj.put("rangingDataLgeAirCond", lgeAirCondArray);
-
-    lgeAirCondArray.append(lgeAirCondData);
-    lgeAirCondData.put("remoteDeviceAddress", rangingInfo.getRemoteDevAddr());
-
-    UWB_LOG_INFO("writeRangingInfo : rangingInfo.getConnectionStatus() = [%d]", (int)(rangingInfo.getConnectionStatus()));
-    int comp_connStatus = (int)(rangingInfo.getConnectionStatus());
-    UWB_LOG_INFO("writeRangingInfo : comp_connStatus = [%d]", (int)(comp_connStatus));
-
-    if( comp_connStatus == 0 ) {
-        lgeAirCondData.put("connectionStatus", false);
+    else if(moduleState == "stop") {
+        error = mUartSerial->setUwbModuleState(HOST_CMD_MODULE_STOP);
     }
     else {
-        lgeAirCondData.put("connectionStatus", true);
+        error = UWB_ERR_NOT_VALID_INPUT;
     }
 
-    UWB_LOG_INFO("writeRangingInfo : rangingInfo.getCondition() = [%d]", rangingInfo.getCondition());
-    lgeAirCondData.put("condition", rangingInfo.getCondition());
-    lgeAirCondData.put("receivedData", lgeAirCondRangingArray);
-
-    lgeAirCondRangingArray.append(lgeAirCondRangingData);
-    lgeAirCondRangingData.put("status", rangingInfo.getData()->getStatus());
-    lgeAirCondRangingData.put("distance", rangingInfo.getData()->getDistance());
-    lgeAirCondRangingData.put("angle", rangingInfo.getData()->getAngle());
+    return error;
 }
 
-void UwbAdaptor::updateServiceState(bool isServiceAvailable) {
-    m_isServiceAvailable = isServiceAvailable;
-    notifySubscriberServiceState(m_isServiceAvailable);
-}
-void UwbAdaptor::updateSpecificInfo(bool modState, string fwVersion, string fwCrc) {
-    bool cModeState = !(modState); // 0 -> available in UART Protocol
-    UWB_LOG_INFO("updateSpecificInfo : modState [%d], fwVersion [%s], fwCrc [%s]", cModeState, fwVersion.c_str(), fwCrc.c_str());
+UwbErrorCodes UwbAdaptor::getStatus() {
+    UWB_LOG_INFO("UwbAdaptor::getStatus");
 
-    UwbSpecInfo *info = UwbSpecInfo::getInstance();
-    info->setModState(cModeState);
-    info->setFwVersion(fwVersion);
-    info->setFwCrc(fwCrc);
-    notifySubscriberSpecificInfo(*info);
+    UwbErrorCodes error = UWB_ERROR_NONE;
+    error = mUartSerial->getUwbModuleInfo();
+    return error;
 }
 
-void UwbAdaptor::updateRangingInfo(int condition, string remoteDevAddr, int64_t angle, int64_t distance) {
-    UWB_LOG_INFO("updateRangingInfo : condition [%d], remoteDevAddr [%s], angle [%lld], distance [%lld]", condition, remoteDevAddr.c_str(), angle, distance);
-    //TEMP code, service state = true
-    updateServiceState(true);
-
-    //UwbRangingInfo *rangingInfo = new UwbRangingInfo();
-    mRangingInfo = new UwbRangingInfo();
-
-    mRangingInfo->setRemoteDevAddr(remoteDevAddr);
-    mRangingInfo->setCondition(condition);
-
-    mRangingInfo->getData()->setDistance(distance);
-    mRangingInfo->getData()->setAngle(angle);
-
-    //If this API is called, it means that the UWB module is working well and also ranging is successfully received.
-    //TEMP code, to trigger connectionStatus
-    mRangingInfo->setConnectionStatus(true);
-    mRangingInfo->getData()->setStatus("Success");
-
-    m_sessionId++;
-    mRangingInfo->setSessionId(m_sessionId);
-
-    mSavedUwbRangingInfo = mRangingInfo;
-    notifySubscriberRangingInfo(*mRangingInfo);
-
-    //Need to single tone obj and remove the below line
-    //delete mRangingInfo;
+bool UwbAdaptor::getPairedSessions(LSMessage *message) {
+    UWB_LOG_INFO("UwbAdaptor::getPairedSessions");
+    //TODO: Add call to driver API
+    return true;
 }
 
-void UwbAdaptor::updateDisconnectedDevice(uint16_t deviceID) {
-    UWB_LOG_INFO("updateDisconnectedStatus : deviceID [%d]", deviceID);
+UwbErrorCodes UwbAdaptor::setDeviceType(const std::string& deviceType) {
+    UWB_LOG_INFO("UwbAdaptor::setState");
+    UwbErrorCodes error = UWB_ERROR_NONE;
+    if(deviceType == "controller") {
+        error = mUartSerial->setDeviceType(0);
+    }
+    else if(deviceType == "controlee") {
+        error = mUartSerial->setDeviceType(1);
+    }
+    else {
+        error = UWB_ERR_NOT_VALID_INPUT;
+    }
 
-    //TEMP code, service state = true
-    updateServiceState(false);
+    return error;
+}
 
-    //If this API is called, it means that the UWB Tag (DeviceID) is disconnected and also ranging can be not received.
-    //TEMP code, to trigger connectionStatus
-    //UwbRangingInfo *rangingInfo = new UwbRangingInfo();
-    disConnRangingInfo = new UwbRangingInfo();
-    disConnRangingInfo->setConnectionStatus(false);
-    disConnRangingInfo->getData()->setStatus("OutOfRange");
-    disConnRangingInfo->setCondition(255); // 255 : invalid ranging info, (0 : valid)
-    m_sessionId = 0;
-    disConnRangingInfo->setSessionId(m_sessionId);
-    mSavedUwbRangingInfo = disConnRangingInfo; // for saving up-to-date ranging data
-    notifySubscriberRangingInfo(*disConnRangingInfo);
-    //Need to single tone obj and remove the below line
-    //delete rangingInfo;
+UwbErrorCodes UwbAdaptor::setDeviceName(const std::string& deviceName) {
+    UWB_LOG_INFO("UwbAdaptor::setDeviceName");
+    UwbErrorCodes error = UWB_ERROR_NONE;
+    error = mUartSerial->setDeviceName(deviceName);
+    return error;
+}
 
-    //m_connectionStatus = isDisconnected;
+UwbErrorCodes UwbAdaptor::setDeviceMode(const std::string& deviceMode) {
+    UWB_LOG_INFO("UwbAdaptor::setDeviceMode");
+    UwbErrorCodes error = UWB_ERROR_NONE;
+    if(deviceMode == "ranging") {
+        error = mUartSerial->setDeviceMode(0);
+    }
+    else if(deviceMode == "dataTransfer") {
+        error = mUartSerial->setDeviceMode(1);
+    }
+    else {
+        error = UWB_ERR_NOT_VALID_INPUT;
+    }
+
+    return error;
+}
+
+bool UwbAdaptor::openSession(LSMessage *message) {
+    UWB_LOG_INFO("UwbAdaptor::openSession");
+    //TODO: Add call to driver API
+    return true;
+}
+
+bool UwbAdaptor::closeSession(LSMessage *message) {
+    UWB_LOG_INFO("UwbAdaptor::closeSession");
+    //TODO: Add call to driver API
+    return true;
+}
+
+bool UwbAdaptor::startRanging(LSMessage *message) {
+    UWB_LOG_INFO("UwbAdaptor::startRanging");
+    //TODO: Add call to driver API
+    return true;
+}
+
+bool UwbAdaptor::stopRanging(LSMessage *message) {
+    UWB_LOG_INFO("UwbAdaptor::stopRanging");
+    //TODO: Add call to driver API
+    return true;
 }
