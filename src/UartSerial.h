@@ -36,6 +36,13 @@ public:
     UwbErrorCodes getDeviceName();
     UwbErrorCodes setDeviceName(const std::string& deviceName);
     UwbErrorCodes getPairingInfo();
+    UwbErrorCodes setScanTime(int32_t discoveryTimeout);
+    UwbErrorCodes startDiscovery();
+    UwbErrorCodes stopDiscovery();
+    UwbErrorCodes openSession(const std::string& address);
+    UwbErrorCodes closeSession(uint8_t sessionId);
+    UwbErrorCodes startRanging(uint8_t sessionId);
+    UwbErrorCodes stopRanging(uint8_t sessionId);
 
 private:
     uint32_t dataCount = 0; //TODO: For testing. Can be removed.
@@ -60,6 +67,8 @@ private:
     void processDeviceName(char *rx_bin);
     void processPairingInfo(char *rx_bin);
     void processMeasurement(char *rx_bin);
+    void processScanResult(char *rx_bin);
+    bool IsUwbConnected();
 };
 
 

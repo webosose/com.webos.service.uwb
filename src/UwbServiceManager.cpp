@@ -168,6 +168,13 @@ void UwbServiceManager::notifySubscriberRangingInfo(std::unique_ptr<UwbRangingIn
 bool UwbServiceManager::startDiscovery(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
     LS::Message request(message);
+    pbnjson::JValue responseObj = pbnjson::Object();
+    
+    if(mModuleInfo.getDeviceRole() == "controlee") {
+        LSUtils::respondWithError(request, UWB_ERROR_UNSUPPORTED_API_CONTROLEE);
+        return true;
+    }
+    
 	pbnjson::JValue requestObj;
 	int parseError = 0;
 
@@ -198,7 +205,6 @@ bool UwbServiceManager::startDiscovery(LSHandle *sh, LSMessage *message, void *d
     
     LSError lsError;
     bool isSubscription = false;
-    pbnjson::JValue responseObj = pbnjson::Object();
     
     if (request.isSubscription())
     {
@@ -384,7 +390,14 @@ bool UwbServiceManager::setState(LSHandle *sh, LSMessage *message, void *data) {
 
 bool UwbServiceManager::stopDiscovery(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
-
+    LS::Message request(message);
+    pbnjson::JValue responseObj = pbnjson::Object();
+    
+    if(mModuleInfo.getDeviceRole() == "controlee") {
+        LSUtils::respondWithError(request, UWB_ERROR_UNSUPPORTED_API_CONTROLEE);
+        return true;
+    }
+    
     mUwbAdaptor->stopDiscovery(message);
     
     return true;
@@ -408,6 +421,13 @@ bool UwbServiceManager::closeSession(LSHandle *sh, LSMessage *message, void *dat
 
 bool UwbServiceManager::startRanging(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
+    LS::Message request(message);
+    pbnjson::JValue responseObj = pbnjson::Object();
+    
+    if(mModuleInfo.getDeviceRole() == "controlee") {
+        LSUtils::respondWithError(request, UWB_ERROR_UNSUPPORTED_API_CONTROLEE);
+        return true;
+    }
 
     mUwbAdaptor->startRanging(message);
     
@@ -416,7 +436,14 @@ bool UwbServiceManager::startRanging(LSHandle *sh, LSMessage *message, void *dat
 
 bool UwbServiceManager::stopRanging(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
-
+    LS::Message request(message);
+    pbnjson::JValue responseObj = pbnjson::Object();
+    
+    if(mModuleInfo.getDeviceRole() == "controlee") {
+        LSUtils::respondWithError(request, UWB_ERROR_UNSUPPORTED_API_CONTROLEE);
+        return true;
+    }
+    
     mUwbAdaptor->stopRanging(message);
     
     return true;

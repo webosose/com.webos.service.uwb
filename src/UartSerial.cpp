@@ -6,6 +6,32 @@ void UartSerial::setEventListener(shared_ptr<CallbackInterface> eventListener) {
     mEventListener = eventListener;
 }
 
+bool UartSerial::IsUwbConnected()
+{
+    FILE *fp;
+    int status;
+    char result[5] = {0,};
+
+    bool connected = false;
+
+    std::string command = "ls -l /dev/ttyUSB_LGEUWB | grep ttyUSB_LGEUWB | wc -l";
+
+    fp = popen(command.c_str(), "r");
+    if (fp == NULL)
+        cout << "handle error" << endl;
+
+    while (fgets(result, 5, fp) != NULL)
+    {
+        if (strstr(result, "1") != NULL)
+        {
+            connected = true;
+        }
+    }
+
+    pclose(fp);
+    return connected;
+}
+
 void UartSerial::InitializeUart(std::string param) {
     std::cout << param << std::endl;    
     configureUart();
@@ -15,12 +41,22 @@ void UartSerial::InitializeUart(std::string param) {
     while (rxFlag != true) {
         usleep(10000);
     }
-    getUwbModuleInfo();
-    usleep(100000);
     getDeviceName();
-    rxThreadId.join();
-
+    usleep(100000);
+    getUwbModuleInfo();
+    rxThreadId.join();    
     close(mUartFd);
+    
+    sleep(1);
+    rxFlag = false;
+    bool connected = false;
+    
+    do {
+        connected = IsUwbConnected();
+        sleep(1);
+    }while(connected == false);
+    
+    InitializeUart("UWB Device connected: Initialize Uart");
     return;
 }
 
@@ -38,8 +74,7 @@ void UartSerial::configureUart() {
         int ret_f = fcntl(mUartFd, F_SETFL, 0);
         if (mUartFd == -1) {
             printf("Error - Unable to open UART\n");
-            //close(mUartFd);
-            //return -1;
+            usleep(100000); //sleep before retry
         }
     } while (mUartFd < 0);
 
@@ -170,6 +205,7 @@ void UartSerial::serialDataRead() {
                     }
                     case HOST_EVT_SCAN_RESULT : {
                         printf("HOST_EVT_SCAN_RESULT (0x41) received. \n");
+                        processScanResult(rx_bin);
                         break;
                     }
                     case HOST_EVT_DISCONNECT : {
@@ -230,7 +266,6 @@ UwbErrorCodes UartSerial::getPairingInfo() {
     data[34] = 0x0a;
     
     ssize_t numBytesWritten = write(mUartFd, data.data(), data.size());
-    printf("numBytesWritten=%d \n", numBytesWritten);
     if(numBytesWritten == -1) {
         return UWB_UART_WRITE_FAILED;
     }
@@ -239,6 +274,71 @@ UwbErrorCodes UartSerial::getPairingInfo() {
 
 void UartSerial::processPairingInfo(char *rx_bin) {
     
+}
+
+UwbErrorCodes UartSerial::setScanTime(int32_t discoveryTimeout) {
+    std::vector<uint8_t> data (35, 0x00);
+    data[0] = PREAMBLE;
+    data[1] = 0x0A;
+    data[2] = discoveryTimeout; //TODO: Fill with LSB
+    data[3] = discoveryTimeout; //TODO: Fill with MSB
+    
+    data[33] = 0x0d;
+    data[34] = 0x0a;
+    
+    ssize_t numBytesWritten = write(mUartFd, data.data(), data.size());;
+    if(numBytesWritten == -1) {
+        return UWB_UART_WRITE_FAILED;
+    }
+    return UWB_ERROR_NONE;   
+}
+
+UwbErrorCodes UartSerial::startDiscovery() {
+    std::vector<uint8_t> data (35, 0x00);
+    data[0] = PREAMBLE;
+    data[1] = 0x0B;
+    
+    data[33] = 0x0d;
+    data[34] = 0x0a;
+    
+    ssize_t numBytesWritten = write(mUartFd, data.data(), data.size());;
+    if(numBytesWritten == -1) {
+        return UWB_UART_WRITE_FAILED;
+    }
+    return UWB_ERROR_NONE;
+}
+
+void UartSerial::processScanResult(char *rx_bin) {
+    ostringstream os;
+    for(int i=2;i<8;i++) {
+        os << rx_bin[i];
+    }
+    std::string macAddress  = os.str();
+    cout << "macAddress:" << macAddress << endl;
+    
+    ostringstream name;
+    for(int i=8;i<33;i++) {
+        if(rx_bin[i] != '\0')
+            name << rx_bin[i];
+    }
+    std::string deviceName  = name.str();
+    cout << "deviceName:" << deviceName << endl;
+    //TODO: Update scan result to client
+}
+
+UwbErrorCodes UartSerial::stopDiscovery() {
+    std::vector<uint8_t> data (35, 0x00);
+    data[0] = PREAMBLE;
+    data[1] = 0x0C;
+    
+    data[33] = 0x0d;
+    data[34] = 0x0a;
+    
+    ssize_t numBytesWritten = write(mUartFd, data.data(), data.size());;
+    if(numBytesWritten == -1) {
+        return UWB_UART_WRITE_FAILED;
+    }
+    return UWB_ERROR_NONE;
 }
 
 UwbErrorCodes UartSerial::setDeviceType(uint8_t deviceType) {
@@ -251,7 +351,6 @@ UwbErrorCodes UartSerial::setDeviceType(uint8_t deviceType) {
     data[34] = 0x0a;
     
     ssize_t numBytesWritten = write(mUartFd, data.data(), data.size());
-    printf("numBytesWritten=%d \n", numBytesWritten);
     if(numBytesWritten == -1) {
         return UWB_UART_WRITE_FAILED;
     }
@@ -269,7 +368,6 @@ UwbErrorCodes UartSerial::setDeviceMode(uint8_t deviceMode) {
     data[34] = 0x0a;
     
     ssize_t numBytesWritten = write(mUartFd, data.data(), data.size());
-    printf("numBytesWritten=%d \n", numBytesWritten);
     if(numBytesWritten == -1) {
         return UWB_UART_WRITE_FAILED;
     }
@@ -293,7 +391,6 @@ UwbErrorCodes UartSerial::setDeviceName(const std::string& deviceName) {
     data[34] = 0x0a;
     
     ssize_t numBytesWritten = write(mUartFd, data.data(), data.size());
-    printf("numBytesWritten=%d \n", numBytesWritten);
     if(numBytesWritten == -1) {
         return UWB_UART_WRITE_FAILED;
     }
@@ -310,7 +407,6 @@ UwbErrorCodes UartSerial::getDeviceName() {
     data[34] = 0x0a;
     
     ssize_t numBytesWritten = write(mUartFd, data.data(), data.size());
-    printf("numBytesWritten=%d \n", numBytesWritten);
     if(numBytesWritten == -1) {
         return UWB_UART_WRITE_FAILED;
     }
@@ -325,6 +421,7 @@ void UartSerial::processDeviceName(char *rx_bin) {
     }
     std::string deviceName  = os.str();
     cout << "deviceName:" << deviceName << endl;
+    mDeviceName = deviceName;
     mModuleInfo.setDeviceName(deviceName);
 }
 
@@ -396,7 +493,6 @@ UwbErrorCodes UartSerial::getUwbModuleInfo() {
     data[34] = 0x0a;
     
     ssize_t numBytesWritten = write(mUartFd, data.data(), data.size());
-    printf("numBytesWritten=%d \n", numBytesWritten);
     if(numBytesWritten == -1) {
         return UWB_UART_WRITE_FAILED;
     }
@@ -454,6 +550,25 @@ void UartSerial::processCommonEvent(char *rx_bin) {
             }
             break;
         }
+        case HOST_SET_SCAN_TIME : {
+            if(commandResult == 1) {
+                cout << "Discovery time is set" << endl;
+            }
+            else if(commandResult == 0) {
+                //TODO: return error code
+            }
+            break;
+        }
+        case HOST_REQ_DISCOVERY_STOP : {
+            if(commandResult == 1) {
+                cout << "HOST_REQ_DISCOVERY_STOP successful" << endl;
+                //TODO: update client about discoveryStatus?
+            }
+            else if(commandResult == 0) {
+                //TODO: return error code
+            }
+            break;
+        }
         default : {
             printf("#####Unused command Id = [%02x] ##### \n", commandId);
         }
@@ -469,10 +584,83 @@ UwbErrorCodes UartSerial::setUwbModuleState(CommandId cmdId) {
     data[33] = 0x0d;
     data[34] = 0x0a;
     ssize_t numBytesWritten = write(mUartFd, data.data(), data.size());
-    printf("numBytesWritten=%d \n", numBytesWritten);
     if(numBytesWritten == -1) {
         return UWB_UART_WRITE_FAILED;
     }
+    return UWB_ERROR_NONE;
+}
+
+UwbErrorCodes UartSerial::openSession(const std::string& address) {
+    if(address.size() > 6 ) 
+        return UWB_ERROR_ADDRESS_LENGTH;
+    std::vector<uint8_t> data (35, 0x00);
+    data[0] = PREAMBLE;
+    data[1] = 0x0E;
+    
+    for (size_t i = 0; i < address.size(); ++i)
+    {
+       data[i+2] = address[i];
+    }
+    
+    data[33] = 0x0d;
+    data[34] = 0x0a;
+    
+    ssize_t numBytesWritten = write(mUartFd, data.data(), data.size());
+    if(numBytesWritten == -1) {
+        return UWB_UART_WRITE_FAILED;
+    }
+
+    return UWB_ERROR_NONE;
+}
+
+UwbErrorCodes UartSerial::closeSession(uint8_t sessionId) {
+    std::vector<uint8_t> data (35, 0x00);
+    data[0] = PREAMBLE;
+    data[1] = 0x10;
+    data[2] = sessionId;
+    
+    data[33] = 0x0d;
+    data[34] = 0x0a;
+    
+    ssize_t numBytesWritten = write(mUartFd, data.data(), data.size());
+    if(numBytesWritten == -1) {
+        return UWB_UART_WRITE_FAILED;
+    }
+
+    return UWB_ERROR_NONE;
+}
+
+UwbErrorCodes UartSerial::startRanging(uint8_t sessionId) {
+    std::vector<uint8_t> data (35, 0x00);
+    data[0] = PREAMBLE;
+    data[1] = 0x12;
+    data[2] = sessionId;
+    
+    data[33] = 0x0d;
+    data[34] = 0x0a;
+    
+    ssize_t numBytesWritten = write(mUartFd, data.data(), data.size());
+    if(numBytesWritten == -1) {
+        return UWB_UART_WRITE_FAILED;
+    }
+
+    return UWB_ERROR_NONE;
+}
+
+UwbErrorCodes UartSerial::stopRanging(uint8_t sessionId) {
+    std::vector<uint8_t> data (35, 0x00);
+    data[0] = PREAMBLE;
+    data[1] = 0x13;
+    data[2] = sessionId;
+    
+    data[33] = 0x0d;
+    data[34] = 0x0a;
+    
+    ssize_t numBytesWritten = write(mUartFd, data.data(), data.size());
+    if(numBytesWritten == -1) {
+        return UWB_UART_WRITE_FAILED;
+    }
+
     return UWB_ERROR_NONE;
 }
 
@@ -526,5 +714,3 @@ void UartSerial::printBytes(int type, int length, const char *buffer)
     }
     printf("\n");
 }
-
-

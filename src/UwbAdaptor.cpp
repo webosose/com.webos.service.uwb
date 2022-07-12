@@ -24,7 +24,15 @@ void UwbAdaptor::setDeviceInterface(std::shared_ptr<UartSerial> uartSerial) {
 UwbErrorCodes UwbAdaptor::startDiscovery(int32_t discoveryTimeout) {
     UWB_LOG_INFO("UwbAdaptor::startDiscovery");
     UwbErrorCodes error = UWB_ERROR_NONE;
-    //TODO: Add call to driver API to start discovery
+    
+    if(discoveryTimeout > 0) {
+        error = mUartSerial->setScanTime(discoveryTimeout);
+        if (error != UWB_ERROR_NONE) {
+            return error;
+        }
+        usleep(50000);
+    }
+    error = mUartSerial->startDiscovery();
     return error;
 }
 
