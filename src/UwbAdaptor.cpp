@@ -111,10 +111,11 @@ UwbErrorCodes UwbAdaptor::setDeviceMode(const std::string& deviceMode) {
     return error;
 }
 
-bool UwbAdaptor::openSession(LSMessage *message) {
+UwbErrorCodes UwbAdaptor::openSession(const std::string& address) {
     UWB_LOG_INFO("UwbAdaptor::openSession");
-    //TODO: Add call to driver API
-    return true;
+    UwbErrorCodes error = UWB_ERROR_NONE;
+    error = mUartSerial->openSession(address);
+    return error;
 }
 
 bool UwbAdaptor::closeSession(LSMessage *message) {

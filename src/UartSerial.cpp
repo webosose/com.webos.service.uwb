@@ -1,4 +1,5 @@
 #include "UartSerial.h"
+#include "UwbLogging.h"
 
 using namespace std;
 
@@ -18,7 +19,7 @@ bool UartSerial::IsUwbConnected()
 
     fp = popen(command.c_str(), "r");
     if (fp == NULL)
-        cout << "handle error" << endl;
+        UWB_LOG_ERROR("handle error");
 
     while (fgets(result, 5, fp) != NULL)
     {
@@ -33,7 +34,7 @@ bool UartSerial::IsUwbConnected()
 }
 
 void UartSerial::InitializeUart(std::string param) {
-    std::cout << param << std::endl;    
+    UWB_LOG_INFO("InitializeUart: %s", param.c_str());
     configureUart();
     
     //create RX thread
@@ -62,18 +63,18 @@ void UartSerial::InitializeUart(std::string param) {
 
 void UartSerial::configureUart() {
     struct termios options;
-    std::cout << "UART Serial Communicator for LGE UWB Module" << std::endl;
+    UWB_LOG_INFO("starting Serial port configuration for UWB module");
 
     /* Open UART Device */
     do {
         //To be applied for using deviceName that is set by user configuration
         mUartFd = open("/dev/ttyUSB_LGEUWB", O_RDWR | O_NOCTTY /*| O_NDELAY*/);
-        printf("uart open fd = %d \n", mUartFd);
+        UWB_LOG_INFO("uart open fd = %d", mUartFd );
 
         //fd control to be adjusted
         int ret_f = fcntl(mUartFd, F_SETFL, 0);
         if (mUartFd == -1) {
-            printf("Error - Unable to open UART\n");
+            UWB_LOG_ERROR("Error - Unable to open UART");
             usleep(100000); //sleep before retry
         }
     } while (mUartFd < 0);
@@ -81,10 +82,10 @@ void UartSerial::configureUart() {
     int speed = 115200; //TEMP coding
     speed_t baudRate = setBaudrate(speed);
     if (baudRate == -2) {
-        printf("Error - Please do not use the speed!!! \n");
+        UWB_LOG_ERROR("Error: Please do not use the baud rate!!!");
         return;
     }
-    printf("UART Baud Rate is set as [%d] \n", speed);
+    UWB_LOG_INFO("UART Baud Rate is set as [%d]", speed);
 
     /* Set Config UART */
     tcgetattr(mUartFd, &options);
@@ -158,11 +159,11 @@ void UartSerial::serialDataRead() {
         //Read up to 35 characters from the port if they are there
         rx_length = read(mUartFd, (void*)rx_bin, 35);
 
-        printf("mUartFd=%d, rx_length=%d \n", mUartFd, rx_length);
+        UWB_LOG_DEBUG("mUartFd=%d, rx_length=%d", mUartFd, rx_length);
         //To check the status of the mUartFd wheter it is available or not (rx_length <=0)
 
         if (rx_length <= 0) {
-            printf("UART is not available!!! \n");
+            UWB_LOG_ERROR("UART is not available!!!");
             return;
             //UART re-open & reconfigure logic SHOULD be added in here.
         }
@@ -181,72 +182,70 @@ void UartSerial::serialDataRead() {
                 EventId eventId = static_cast<EventId>(rx_bin[1]);
                 switch(eventId) {                    
                     case HOST_STATUS_MODULE_INFO : {
-                        printf("HOST_STATUS_MODULE_INFO (0x3C) received. \n");
+                        UWB_LOG_INFO("HOST_STATUS_MODULE_INFO (0x3C) received");
                         processModuleInfo(rx_bin);
                         break;
                     }
                     case HOST_STATUS_PAIRING_INFO : {
-                        printf("HOST_STATUS_PAIRING_INFO (0x3D) received. \n");
+                        UWB_LOG_INFO("HOST_STATUS_PAIRING_INFO (0x3D) received");
                         processPairingInfo(rx_bin);
                         break;
                     }
                     case HOST_EVT_MEASUREMENT : {
-                        printf("HOST_EVT_MEASUREMENT (0x3E) received. \n");
+                        UWB_LOG_INFO("HOST_EVT_MEASUREMENT (0x3E) received");
                         processMeasurement(rx_bin);
                         break;
                     }
                     case HOST_EVT_MEASUREMENT_BYPASS : {
-                        printf("HOST_EVT_MEASUREMENT_BYPASS (0x3F) received. \n");
+                        UWB_LOG_INFO("HOST_EVT_MEASUREMENT_BYPASS (0x3F) received");
                         break;
                     }
                     case HOST_EVT_TRANSFER_DATA : {
-                        printf("HOST_EVT_TRANSFER_DATA (0x40) received. \n");
+                        UWB_LOG_INFO("HOST_EVT_TRANSFER_DATA (0x40) received");
                         break;
                     }
                     case HOST_EVT_SCAN_RESULT : {
-                        printf("HOST_EVT_SCAN_RESULT (0x41) received. \n");
+                        UWB_LOG_INFO("HOST_EVT_SCAN_RESULT (0x41) received");
                         processScanResult(rx_bin);
                         break;
                     }
                     case HOST_EVT_DISCONNECT : {
-                        printf("HOST_EVT_DISCONNECT (0x42) received. \n");
+                        UWB_LOG_INFO("HOST_EVT_DISCONNECT (0x42) received");
                         break;
                     }
                     case HOST_EVT_CONNECT : {
-                        printf("HOST_EVT_CONNECT (0x43) received. \n");
+                        UWB_LOG_INFO("HOST_EVT_CONNECT (0x43) received");
                         break;
                     }
                     case HOST_EVT_CMD : {
-                        printf("HOST_EVT_CMD (0x44) received. \n");
+                        UWB_LOG_INFO("HOST_EVT_CMD (0x44) received");
                         processCommonEvent(rx_bin);
                         break;
                     }
                     case HOST_EVT_DEVICE_NAME : {
-                        printf("HOST_EVT_DEVICE_NAME (0x45) received. \n");
+                        UWB_LOG_INFO("HOST_EVT_DEVICE_NAME (0x45) received");
                         processDeviceName(rx_bin);
                         break;
                     }
                     case HOST_ACK_MODULE : {
-                        printf("HOST_ACK_MODULE (0x46) received. \n");
+                        UWB_LOG_INFO("HOST_ACK_MODULE (0x46) received");
                         break;
                     }
                     case HOST_ACK_SERVICE : {
-                        printf("HOST_ACK_SERVICE (0x47) received. \n");
+                        UWB_LOG_INFO("HOST_ACK_SERVICE (0x47) received");
                         break;
                     }
                     default : {
-                        printf("##### Undefined Event Id = [%02x] ##### \n", eventId);
+                        UWB_LOG_INFO("Undefined Event Id = [%02x]");
                     }
                 }//switch(eventId)
             }
             else {
-                printf("Invalid Preamble Code!!!\n");
+                UWB_LOG_INFO("Invalid Preamble Code!!!");
             } //rx_bin[0] == 0xcc
 
-            printf("\n");
-
         } else {
-            printf("Invalid the length of Rx data!!! \n");
+            UWB_LOG_INFO("Invalid the length of Rx data!!!");
         } //rx_length == 35
 
         //TBC
@@ -314,7 +313,7 @@ void UartSerial::processScanResult(char *rx_bin) {
         os << rx_bin[i];
     }
     std::string macAddress  = os.str();
-    cout << "macAddress:" << macAddress << endl;
+    UWB_LOG_INFO("macAddress: %s", macAddress.c_str() );
     
     ostringstream name;
     for(int i=8;i<33;i++) {
@@ -322,8 +321,8 @@ void UartSerial::processScanResult(char *rx_bin) {
             name << rx_bin[i];
     }
     std::string deviceName  = name.str();
-    cout << "deviceName:" << deviceName << endl;
-    //TODO: Update scan result to client
+    UWB_LOG_INFO("deviceName: %s", deviceName.c_str() );
+    mEventListener->updateScanResult(macAddress, deviceName);
 }
 
 UwbErrorCodes UartSerial::stopDiscovery() {
@@ -420,7 +419,7 @@ void UartSerial::processDeviceName(char *rx_bin) {
             os << rx_bin[i];
     }
     std::string deviceName  = os.str();
-    cout << "deviceName:" << deviceName << endl;
+    UWB_LOG_INFO("deviceName: %s", deviceName.c_str() );
     mDeviceName = deviceName;
     mModuleInfo.setDeviceName(deviceName);
 }
@@ -485,6 +484,7 @@ void UartSerial::processModuleInfo(char *rx_bin) {
 }
 
 UwbErrorCodes UartSerial::getUwbModuleInfo() {
+    UWB_LOG_INFO("UartSerial::getUwbModuleInfo is Called");
     std::vector<uint8_t> data (35, 0x00);
     data[0] = PREAMBLE;
     data[1] = 0x03;
@@ -502,8 +502,8 @@ UwbErrorCodes UartSerial::getUwbModuleInfo() {
 void UartSerial::processCommonEvent(char *rx_bin) {
     CommandId commandId = static_cast<CommandId>(rx_bin[2]);
     uint8_t commandResult = rx_bin[3];
-    printf("- commandId: \t [%02x] \n", commandId );
-    printf("- commandResult: \t [%02x] \n", commandResult );
+    UWB_LOG_INFO("commandId: [%02x]", commandId);
+    UWB_LOG_INFO("commandResult: [%02x]", commandResult);
     switch(commandId) {
         case HOST_CMD_MODULE_START : {
             if(commandResult == 1) {
@@ -552,7 +552,7 @@ void UartSerial::processCommonEvent(char *rx_bin) {
         }
         case HOST_SET_SCAN_TIME : {
             if(commandResult == 1) {
-                cout << "Discovery time is set" << endl;
+                UWB_LOG_INFO("Discovery time-out is set");
             }
             else if(commandResult == 0) {
                 //TODO: return error code
@@ -561,8 +561,19 @@ void UartSerial::processCommonEvent(char *rx_bin) {
         }
         case HOST_REQ_DISCOVERY_STOP : {
             if(commandResult == 1) {
-                cout << "HOST_REQ_DISCOVERY_STOP successful" << endl;
-                //TODO: update client about discoveryStatus?
+                UWB_LOG_INFO("HOST_REQ_DISCOVERY_STOP successful");
+                //TODO: update client about discoveryStatus? Update discoveryStatus in module info
+            }
+            else if(commandResult == 0) {
+                //TODO: return error code
+            }
+            break;
+        }
+        case HOST_REQ_PAIRING_REQUEST : {
+            if(commandResult == 1) {
+                uint8_t sessionId = rx_bin[4];
+                UWB_LOG_INFO("sessionId: %d", sessionId );
+                //TODO: update client about sessionId?
             }
             else if(commandResult == 0) {
                 //TODO: return error code
@@ -570,13 +581,13 @@ void UartSerial::processCommonEvent(char *rx_bin) {
             break;
         }
         default : {
-            printf("#####Unused command Id = [%02x] ##### \n", commandId);
+            UWB_LOG_INFO("Unused commandId: [%02x]", commandId);
         }
     }
 }
 
 UwbErrorCodes UartSerial::setUwbModuleState(CommandId cmdId) {
-    printf("cmdId=%d \n", cmdId);
+    UWB_LOG_INFO("commandId: [%02x]", cmdId);
     std::vector<uint8_t> data (35, 0x00);
     data[0] = PREAMBLE;
     data[1] = cmdId;
@@ -666,30 +677,18 @@ UwbErrorCodes UartSerial::stopRanging(uint8_t sessionId) {
 
 void UartSerial::processMeasurement(char *rx_bin) {
     uint8_t sessionId = rx_bin[2];
-    printf("- sessionId: \t [%02x] \n", sessionId );
+    UWB_LOG_INFO("sessionId: [%02x]", sessionId);
     int16_t angle = rx_bin[3] | rx_bin[4] << 8;
     int16_t distance = rx_bin[5] | rx_bin[6] << 8;
     uint8_t reliability = rx_bin[7];
     
-    printf("Angle[3~4] = [%d], Dist_cm = [%d], reliability = [%d] \n",angle, distance, reliability );
+    UWB_LOG_DEBUG("Angle = [%d], Dist_cm = [%d], reliability = [%d]",angle, distance, reliability);
     mEventListener->updateRangingInfo(reliability, sessionId, angle, distance);
-    printf("dataCount:%d\n", ++dataCount);
 }
 
 void UartSerial::printData(char *rx_bin, int rx_length) {
-    printf("UWB RX BUFFER (Length=%d) \n", rx_length);
-    printf("Hexa String : ");
+    UWB_LOG_DEBUG("UWB RX BUFFER (Length=%d)", rx_length);
     printBytes(BINARY, rx_length, rx_bin);
-#if 0
-    printf("Angle: [%d], Distance: [%d] \n", (int)(rx_bin[3]), (int)(rx_bin[5]) );
-    printf("rx_bin int_val: [%d] [%d] [%d] [%d] [%d] [%d] [%d] [%d] [%d] \n",
-                (int)(rx_bin[0]), (int)(rx_bin[1]), (int)(rx_bin[2]), (int)(rx_bin[3]), (int)(rx_bin[4]), (int)(rx_bin[5]), (int)(rx_bin[6]), (int)(rx_bin[7]), (int)(rx_bin[8]));
-
-    printf("- Preamble: \t Hexa[%02x] \t Int[%d] \n", rx_bin[0], (int)(rx_bin[0]) );
-    printf("- Command: \t Hexa[%02x] \t Int[%d] \n", rx_bin[1], (int)(rx_bin[1]) );
-    printf("- Device ID: \t Hexa[%02x] \t Int[%d] \n", rx_bin[2], (int)(rx_bin[2]) );
-    printf("- Condition: \t Hexa[%02x] \t Int[%d] \n", rx_bin[7], (int)(rx_bin[7]) );
- #endif
 }
 
 void UartSerial::printBytes(int type, int length, const char *buffer)
@@ -698,19 +697,17 @@ void UartSerial::printBytes(int type, int length, const char *buffer)
     char temp[NUM_PRINT_BYTES] = {0,};
 
     for (i = 0; i < length; i++) {
-        printf("%02x ", buffer[i]);
+        UWB_LOG_DEBUG("%02x ", buffer[i]);
         temp[i%NUM_PRINT_BYTES] = buffer[i];
         if (((i + 1) % NUM_PRINT_BYTES) == 0) {
             if (type == STRING) {
-                printf("\t%s", temp);
+                UWB_LOG_DEBUG("%s", temp);
             }
-            printf("\n");
             memset(temp, 0, NUM_PRINT_BYTES);
         }
     }
     if (type == STRING) {
         if (i % NUM_PRINT_BYTES != 0)
-            printf("\t%s", temp);
+            UWB_LOG_DEBUG("%s", temp);
     }
-    printf("\n");
 }

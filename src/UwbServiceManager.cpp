@@ -405,8 +405,47 @@ bool UwbServiceManager::stopDiscovery(LSHandle *sh, LSMessage *message, void *da
 
 bool UwbServiceManager::openSession(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
+    LS::Message request(message);
+    pbnjson::JValue responseObj = pbnjson::Object();
+    
+    pbnjson::JValue requestObj;
+	int parseError = 0;
+    bool isSubscription = false;
 
-    mUwbAdaptor->openSession(message);
+    const std::string schema = STRICT_SCHEMA(PROPS_3(PROP(timeOut, integer), PROP(subscribe, boolean), PROP(address, string)) REQUIRED_1(subscribe));
+
+    if(!LSUtils::parsePayload(request.getPayload(),requestObj,schema,&parseError))
+	{
+		if(parseError != JSON_PARSE_SCHEMA_ERROR)
+			LSUtils::respondWithError(request, UWB_ERR_BAD_JSON);
+		else if (!request.isSubscription())
+			LSUtils::respondWithError(request, UWB_ERR_MTHD_NOT_SUBSCRIBED);
+		else
+			LSUtils::respondWithError(request,UWB_ERR_SCHEMA_VALIDATION_FAIL);
+
+		return true;
+	}
+    
+    if(mModuleInfo.getDeviceRole() == "controller") {
+        if (requestObj.hasKey("address")) {
+            std::string macAddress = requestObj["address"].asString();
+
+            UwbErrorCodes error = UWB_ERROR_NONE;
+            error = mUwbAdaptor->openSession(macAddress);
+
+            if (error != UWB_ERROR_NONE)
+            {
+                LSUtils::respondWithError(request, error);
+                return true;
+            }
+        }        
+    }
+    
+    //TODO: Add openSession code for controlee 
+    
+    responseObj.put("returnValue", true);
+    responseObj.put("subscribed", isSubscription);
+    LSUtils::postToClient(request, responseObj);
     
     return true;
 }
@@ -515,4 +554,29 @@ void UwbServiceManager::appendCurrentStatus(pbnjson::JValue &object) {
     object.put("pairingFlag", mModuleInfo.getPairingFlag());
     object.put("uwbMacAddress", mModuleInfo.getUwbMacAddress());
     object.put("deviceName", mModuleInfo.getDeviceName());
+}
+
+void UwbServiceManager::notifyScanResult(const std::string& macAddress, const std::string& deviceName) {
+    pbnjson::JValue responseObj = pbnjson::Object();
+    //TODO: Store the devices in a map?
+    
+    responseObj.put("returnValue", true);
+    responseObj.put("subscribed", true);    
+    pbnjson::JValue devicesArray = pbnjson::Array();
+    pbnjson::JValue deviceObj = pbnjson::Object();    
+    deviceObj.put("address", macAddress);
+    deviceObj.put("name", deviceName);    
+    devicesArray.append(deviceObj);
+    responseObj.put("devices", devicesArray);
+    
+    LSError lsError;
+    LSErrorInit(&lsError);
+    if (!LSSubscriptionReply(mServiceHandle, "startDiscovery", responseObj.stringify().c_str(), &lsError))
+    {
+        UWB_LOG_INFO("subscription reply error!!");
+        LSErrorFree(&lsError);
+        return;
+    }
+
+    LSErrorFree(&lsError);
 }

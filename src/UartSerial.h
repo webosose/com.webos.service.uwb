@@ -45,7 +45,6 @@ public:
     UwbErrorCodes stopRanging(uint8_t sessionId);
 
 private:
-    uint32_t dataCount = 0; //TODO: For testing. Can be removed.
     int mUartFd = -1;
     bool rxFlag = false;
     bool exitFlag = false;

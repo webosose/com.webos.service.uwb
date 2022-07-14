@@ -13,7 +13,7 @@ public:
     void updateDeviceModeChanged(uint8_t deviceMode) override;
     void updateDeviceNameChanged(const std::string& deviceName) override;
     void updateRangingInfo(uint8_t condition, uint8_t sessionId, int64_t angle, int64_t distance) override;
-
+    void updateScanResult(const std::string& macAddress, const std::string& deviceName) override;
 private:
 
 };

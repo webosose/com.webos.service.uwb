@@ -36,6 +36,7 @@ public:
     void notifyDeviceRoleChanged(const std::string& deviceRole);
     void notifyDeviceModeChanged(const std::string& deviceMode);
     void notifySubscriberRangingInfo(std::unique_ptr<UwbRangingInfo> rangingInfo, uint8_t sessionId);
+    void notifyScanResult(const std::string& macAddress, const std::string& deviceName);
 
 private:
     UwbServiceManager();
@@ -61,7 +62,7 @@ private:
     inline static UwbServiceManager *mUwbServiceMgr{nullptr};
     inline static std::shared_ptr<UwbAdapterInterface> mUwbAdaptor{}; //couldn't make it non-static because it's used in a static function
     UwbSessionControl *mUwbSessionCtl;
-    ModuleInfo& mModuleInfo = ModuleInfo::getInstance();
+    inline static ModuleInfo& mModuleInfo = ModuleInfo::getInstance();
     inline static std::unique_ptr<UwbRangingInfo> mSavedUwbRangingInfo = nullptr; // for saving latest rangingInfo
     inline static std::unique_ptr<IResponseBuilder> mResponseBuilder{std::make_unique<UwbResponseBuilder>()};
 };
