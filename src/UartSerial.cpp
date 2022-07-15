@@ -51,6 +51,8 @@ void UartSerial::InitializeUart(std::string param) {
     sleep(1);
     rxFlag = false;
     bool connected = false;
+    mModuleInfo.resetModuleInfo();
+    mEventListener->updateModuleStatus();
     
     do {
         connected = IsUwbConnected();
@@ -481,6 +483,7 @@ void UartSerial::processModuleInfo(char *rx_bin) {
     mModuleInfo.setDeviceMode(deviceMode);
     mModuleInfo.setPairingFlag(pairingFlag);
     mModuleInfo.setUwbMacAddress(uwbMacAddress);
+    mEventListener->updateModuleStatus();
 }
 
 UwbErrorCodes UartSerial::getUwbModuleInfo() {

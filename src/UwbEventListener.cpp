@@ -6,6 +6,10 @@ void UwbEventListener::updateModuleStateChanged(const std::string& moduleState){
     UwbServiceManager::getInstance()->notifyModuleStateChanged(moduleState);
 }
 
+void UwbEventListener::updateModuleStatus() {
+    UwbServiceManager::getInstance()->notifySubscribersModuleStatus();
+}
+
 void UwbEventListener::updateDeviceTypeChanged(uint8_t deviceType) {
     if(deviceType == 0) {
         UwbServiceManager::getInstance()->notifyDeviceRoleChanged("controller");

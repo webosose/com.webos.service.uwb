@@ -67,3 +67,14 @@ std::string ModuleInfo::getUwbMacAddress(){
 std::string ModuleInfo::getDeviceName() { 
     return mDeviceName;
 }
+
+void ModuleInfo::resetModuleInfo() {
+    mDeviceName = "";
+    mFwVersion = "";
+    mFwCrc = "";
+    mModuleState = "disconnect";
+    mDeviceRole = "";
+    mDeviceMode = "";
+    mPairingFlag = false;
+    mUwbMacAddress = "";
+}

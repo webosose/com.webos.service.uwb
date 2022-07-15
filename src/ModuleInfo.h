@@ -18,6 +18,7 @@ public:
     void setPairingFlag(bool flag);
     void setUwbMacAddress(const std::string& address);
     void setDeviceName(const std::string& deviceName);
+    void resetModuleInfo();
     
     std::string getFwVersion();
     std::string getFwCrc();
@@ -37,7 +38,7 @@ private:
     std::string mDeviceName = "";
     std::string mFwVersion = "";
     std::string mFwCrc = "";
-    std::string mModuleState = "";
+    std::string mModuleState = "disconnect";
     std::string mDeviceRole = "";
     std::string mDeviceMode = "";
     bool mPairingFlag = false;

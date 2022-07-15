@@ -37,10 +37,10 @@ public:
     void notifyDeviceModeChanged(const std::string& deviceMode);
     void notifySubscriberRangingInfo(std::unique_ptr<UwbRangingInfo> rangingInfo, uint8_t sessionId);
     void notifyScanResult(const std::string& macAddress, const std::string& deviceName);
+    void notifySubscribersModuleStatus();
 
 private:
-    UwbServiceManager();
-    void notifySubscribersModuleStatus();
+    UwbServiceManager();    
     void appendCurrentStatus(pbnjson::JValue &object);
 
     UWB_SERVICE_METHOD(getUwbServiceState);
