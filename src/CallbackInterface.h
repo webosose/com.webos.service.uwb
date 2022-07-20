@@ -13,6 +13,8 @@ public:
     virtual void updateRangingInfo(uint8_t condition, uint8_t sessionId, int64_t angle, int64_t distance) = 0;
     virtual void updateScanResult(const std::string& macAddress, const std::string& deviceName) = 0;
     virtual void updateModuleStatus() = 0;
+    virtual void updateDiscoveryStatus(bool discoveryStatus) = 0;
+    virtual void updateOpenSessionResponse(uint8_t sessionId) = 0;
 };
 
 #endif

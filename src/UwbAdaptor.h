@@ -40,11 +40,12 @@ public:
     UwbErrorCodes setDeviceMode(const std::string& deviceMode) override;
     UwbErrorCodes startDiscovery(int32_t discoveryTimeout) override;
     UwbErrorCodes openSession(const std::string& address) override;
+    UwbErrorCodes openSessionControlee(int32_t advTimeout) override;
     bool getPairedSessions(LSMessage *message) override;
-    bool stopDiscovery(LSMessage *message) override;
-    bool closeSession(LSMessage *message) override;
-    bool startRanging(LSMessage *message) override;
-    bool stopRanging(LSMessage *message) override;
+    UwbErrorCodes stopDiscovery() override;
+    UwbErrorCodes closeSession(uint8_t sessionId) override;
+    UwbErrorCodes startRanging(uint8_t sessionId) override;
+    UwbErrorCodes stopRanging(uint8_t sessionId) override;
 
 private:    
     LSHandle *mLSHandle = nullptr;

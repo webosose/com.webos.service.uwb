@@ -32,6 +32,10 @@ void UwbEventListener::updateDeviceNameChanged(const std::string& deviceName) {
     UwbServiceManager::getInstance()->notifyDeviceNameChanged(deviceName);
 }
 
+void UwbEventListener::updateDiscoveryStatus(bool discoveryStatus) {
+    UwbServiceManager::getInstance()->notifyDiscoveryStatus(discoveryStatus);
+}
+
 void UwbEventListener::updateRangingInfo(uint8_t reliability, uint8_t sessionId, int64_t angle, int64_t distance) {
     UWB_LOG_DEBUG("updateRangingInfo : reliability [%d], sessionId [%d], angle [%lld], distance [%lld]", reliability, sessionId, angle, distance);
     double distanceMeter = (double)distance / 100;
@@ -56,4 +60,8 @@ void UwbEventListener::updateRangingInfo(uint8_t reliability, uint8_t sessionId,
 
 void UwbEventListener::updateScanResult(const std::string& macAddress, const std::string& deviceName) {
     UwbServiceManager::getInstance()->notifyScanResult(macAddress, deviceName);
+}
+
+void UwbEventListener::updateOpenSessionResponse(uint8_t sessionId) {
+    UwbServiceManager::getInstance()->notifyOpenSessionResponse(sessionId);
 }

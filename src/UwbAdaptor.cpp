@@ -36,10 +36,11 @@ UwbErrorCodes UwbAdaptor::startDiscovery(int32_t discoveryTimeout) {
     return error;
 }
 
-bool UwbAdaptor::stopDiscovery(LSMessage *message) {
+UwbErrorCodes UwbAdaptor::stopDiscovery() {
     UWB_LOG_INFO("UwbAdaptor::stopDiscovery");
-    //TODO: Add call to driver API
-    return true;
+    UwbErrorCodes error = UWB_ERROR_NONE;
+    error = mUartSerial->stopDiscovery();
+    return error;
 }
 
 UwbErrorCodes UwbAdaptor::setUwbModuleState(const std::string& moduleState) {
@@ -118,20 +119,30 @@ UwbErrorCodes UwbAdaptor::openSession(const std::string& address) {
     return error;
 }
 
-bool UwbAdaptor::closeSession(LSMessage *message) {
+UwbErrorCodes UwbAdaptor::openSessionControlee(int32_t advTimeout) {
+    UWB_LOG_INFO("UwbAdaptor::openSessionControlee");
+    UwbErrorCodes error = UWB_ERROR_NONE;
+    error = mUartSerial->openSessionControlee(advTimeout);
+    return error;
+}
+
+UwbErrorCodes UwbAdaptor::closeSession(uint8_t sessionId) {
     UWB_LOG_INFO("UwbAdaptor::closeSession");
-    //TODO: Add call to driver API
-    return true;
+    UwbErrorCodes error = UWB_ERROR_NONE;
+    error = mUartSerial->closeSession(sessionId);
+    return error;
 }
 
-bool UwbAdaptor::startRanging(LSMessage *message) {
+UwbErrorCodes UwbAdaptor::startRanging(uint8_t sessionId) {
     UWB_LOG_INFO("UwbAdaptor::startRanging");
-    //TODO: Add call to driver API
-    return true;
+    UwbErrorCodes error = UWB_ERROR_NONE;
+    error = mUartSerial->startRanging(sessionId);
+    return error;
 }
 
-bool UwbAdaptor::stopRanging(LSMessage *message) {
+UwbErrorCodes UwbAdaptor::stopRanging(uint8_t sessionId) {
     UWB_LOG_INFO("UwbAdaptor::stopRanging");
-    //TODO: Add call to driver API
-    return true;
+    UwbErrorCodes error = UWB_ERROR_NONE;
+    error = mUartSerial->stopRanging(sessionId);
+    return error;
 }

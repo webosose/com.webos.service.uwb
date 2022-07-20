@@ -40,6 +40,7 @@ public:
     UwbErrorCodes startDiscovery();
     UwbErrorCodes stopDiscovery();
     UwbErrorCodes openSession(const std::string& address);
+    UwbErrorCodes openSessionControlee(int32_t advTimeout);
     UwbErrorCodes closeSession(uint8_t sessionId);
     UwbErrorCodes startRanging(uint8_t sessionId);
     UwbErrorCodes stopRanging(uint8_t sessionId);

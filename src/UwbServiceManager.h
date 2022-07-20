@@ -30,7 +30,6 @@ public:
     static UwbServiceManager *getInstance();
 
     static LSMethod serviceMethods[];
-    bool notifyDiscoveryResult();
     void notifyModuleStateChanged(const std::string&  moduleState);
     void notifyDeviceNameChanged(const std::string& deviceName);
     void notifyDeviceRoleChanged(const std::string& deviceRole);
@@ -38,6 +37,8 @@ public:
     void notifySubscriberRangingInfo(std::unique_ptr<UwbRangingInfo> rangingInfo, uint8_t sessionId);
     void notifyScanResult(const std::string& macAddress, const std::string& deviceName);
     void notifySubscribersModuleStatus();
+    void notifyDiscoveryStatus(bool discoveryStatus);
+    void notifyOpenSessionResponse(uint8_t sessionId);
 
 private:
     UwbServiceManager();    
@@ -65,6 +66,7 @@ private:
     inline static ModuleInfo& mModuleInfo = ModuleInfo::getInstance();
     inline static std::unique_ptr<UwbRangingInfo> mSavedUwbRangingInfo = nullptr; // for saving latest rangingInfo
     inline static std::unique_ptr<IResponseBuilder> mResponseBuilder{std::make_unique<UwbResponseBuilder>()};
+    std::unordered_map<std::string , std::string> mRemoteDeviceMap{};
 };
 
 

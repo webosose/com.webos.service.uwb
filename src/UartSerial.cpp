@@ -306,6 +306,7 @@ UwbErrorCodes UartSerial::startDiscovery() {
     if(numBytesWritten == -1) {
         return UWB_UART_WRITE_FAILED;
     }
+    mEventListener->updateDiscoveryStatus(true);
     return UWB_ERROR_NONE;
 }
 
@@ -565,18 +566,60 @@ void UartSerial::processCommonEvent(char *rx_bin) {
         case HOST_REQ_DISCOVERY_STOP : {
             if(commandResult == 1) {
                 UWB_LOG_INFO("HOST_REQ_DISCOVERY_STOP successful");
-                //TODO: update client about discoveryStatus? Update discoveryStatus in module info
+                mEventListener->updateDiscoveryStatus(false);
             }
             else if(commandResult == 0) {
                 //TODO: return error code
             }
             break;
         }
-        case HOST_REQ_PAIRING_REQUEST : {
+        case HOST_REQ_PAIRING_REQUEST : { //openSession response
             if(commandResult == 1) {
                 uint8_t sessionId = rx_bin[4];
                 UWB_LOG_INFO("sessionId: %d", sessionId );
-                //TODO: update client about sessionId?
+                mEventListener->updateOpenSessionResponse(sessionId);
+            }
+            else if(commandResult == 0) {
+                //TODO: return error code
+            }
+            break;
+        }
+        case HOST_REQ_ADVERTISING : {
+            if(commandResult == 1) {
+                uint8_t sessionId = rx_bin[4];
+                UWB_LOG_INFO("sessionId: %d", sessionId );
+                UWB_LOG_INFO("HOST_REQ_ADVERTISING successful");
+                //TODO: update client about session?
+            }
+            else if(commandResult == 0) {
+                //TODO: return error code
+            }
+            break;
+        }
+        case HOST_REQ_PAIRING_CANCEL : { //closeSession response
+            if(commandResult == 1) {
+                uint8_t sessionId = rx_bin[4];
+                UWB_LOG_INFO("sessionId: %d", sessionId );
+            }
+            else if(commandResult == 0) {
+                //TODO: return error code
+            }
+            break;
+        }
+        case HOST_REQ_START_RANGING_SESSION : {
+            if(commandResult == 1) {
+                uint8_t sessionId = rx_bin[4];
+                UWB_LOG_INFO("sessionId: %d", sessionId );
+            }
+            else if(commandResult == 0) {
+                //TODO: return error code
+            }
+            break;
+        }
+        case HOST_REQ_STOP_RANGING_SESSION : {
+            if(commandResult == 1) {
+                uint8_t sessionId = rx_bin[4];
+                UWB_LOG_INFO("sessionId: %d", sessionId );
             }
             else if(commandResult == 0) {
                 //TODO: return error code
@@ -627,6 +670,23 @@ UwbErrorCodes UartSerial::openSession(const std::string& address) {
     return UWB_ERROR_NONE;
 }
 
+UwbErrorCodes UartSerial::openSessionControlee(int32_t advTimeout) {
+    std::vector<uint8_t> data (35, 0x00);
+    data[0] = PREAMBLE;
+    data[1] = 0x0D;
+    data[2] = advTimeout; //TODO: Fill with LSB
+    data[3] = advTimeout; //TODO: Fill with MSB
+    
+    data[33] = 0x0d;
+    data[34] = 0x0a;
+    
+    ssize_t numBytesWritten = write(mUartFd, data.data(), data.size());;
+    if(numBytesWritten == -1) {
+        return UWB_UART_WRITE_FAILED;
+    }
+    return UWB_ERROR_NONE;   
+}
+
 UwbErrorCodes UartSerial::closeSession(uint8_t sessionId) {
     std::vector<uint8_t> data (35, 0x00);
     data[0] = PREAMBLE;
@@ -640,7 +700,6 @@ UwbErrorCodes UartSerial::closeSession(uint8_t sessionId) {
     if(numBytesWritten == -1) {
         return UWB_UART_WRITE_FAILED;
     }
-
     return UWB_ERROR_NONE;
 }
 

@@ -390,15 +390,25 @@ bool UwbServiceManager::setState(LSHandle *sh, LSMessage *message, void *data) {
 
 bool UwbServiceManager::stopDiscovery(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
-    LS::Message request(message);
-    pbnjson::JValue responseObj = pbnjson::Object();
+    LS::Message request(message);    
     
     if(mModuleInfo.getDeviceRole() == "controlee") {
         LSUtils::respondWithError(request, UWB_ERROR_UNSUPPORTED_API_CONTROLEE);
         return true;
     }
     
-    mUwbAdaptor->stopDiscovery(message);
+    UwbErrorCodes error = UWB_ERROR_NONE;
+    error = mUwbAdaptor->stopDiscovery();
+    
+    if (error != UWB_ERROR_NONE)
+    {
+        LSUtils::respondWithError(request, error);
+        return true;
+    }
+
+    pbnjson::JValue responseObj = pbnjson::Object();
+    responseObj.put("returnValue", true);
+    LSUtils::postToClient(request, responseObj);
     
     return true;
 }
@@ -410,7 +420,13 @@ bool UwbServiceManager::openSession(LSHandle *sh, LSMessage *message, void *data
     
     pbnjson::JValue requestObj;
 	int parseError = 0;
+    LSError lsError;
     bool isSubscription = false;
+    
+    if(mModuleInfo.getDiscoveryStatus() == true) {
+        LSUtils::respondWithError(request, UWB_ERROR_DISCOVERY_IN_PROGRESS);
+        return true;
+    }
 
     const std::string schema = STRICT_SCHEMA(PROPS_3(PROP(timeOut, integer), PROP(subscribe, boolean), PROP(address, string)) REQUIRED_1(subscribe));
 
@@ -425,6 +441,20 @@ bool UwbServiceManager::openSession(LSHandle *sh, LSMessage *message, void *data
 
 		return true;
 	}
+    
+    if (request.isSubscription())
+    {
+        if (LSSubscriptionAdd(sh, "openSession", message, &lsError) == false) {
+            UWB_LOG_ERROR("Failed to add openSession to subscription");
+
+            responseObj.put("returnValue", false);
+            responseObj.put("errorCode", UWB_UNKNOWN_ERROR);
+            responseObj.put("errorText", "Unknwon");
+            LSMessageReply(sh,message, responseObj.stringify().c_str() , &lsError );
+            return true;
+        }
+        isSubscription = true;
+    }
     
     if(mModuleInfo.getDeviceRole() == "controller") {
         if (requestObj.hasKey("address")) {
@@ -441,7 +471,26 @@ bool UwbServiceManager::openSession(LSHandle *sh, LSMessage *message, void *data
         }        
     }
     
-    //TODO: Add openSession code for controlee 
+    if(mModuleInfo.getDeviceRole() == "controlee") {    
+        if (requestObj.hasKey("timeOut"))
+        {
+            int32_t timeOut = 0;
+            timeOut = requestObj["timeOut"].asNumber<int32_t>();
+            if (timeOut < 0)
+            {
+                    LSUtils::respondWithError(request, retrieveErrorText(UWB_ERR_ADV_TIMEOUT_NEG_VALUE) + std::to_string(timeOut), UWB_ERR_ADV_TIMEOUT_NEG_VALUE);
+                    return true;
+            }
+            UwbErrorCodes error = UWB_ERROR_NONE;
+            error = mUwbAdaptor->openSessionControlee(timeOut);
+
+            if (error != UWB_ERROR_NONE)
+            {
+                LSUtils::respondWithError(request, error);
+                return true;
+            }
+        }  
+    }
     
     responseObj.put("returnValue", true);
     responseObj.put("subscribed", isSubscription);
@@ -452,9 +501,46 @@ bool UwbServiceManager::openSession(LSHandle *sh, LSMessage *message, void *data
 
 bool UwbServiceManager::closeSession(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
-
-    mUwbAdaptor->closeSession(message);
+    LS::Message request(message);
+    pbnjson::JValue responseObj = pbnjson::Object();
     
+    if(mModuleInfo.getDeviceRole() == "controlee") {
+        LSUtils::respondWithError(request, UWB_ERROR_UNSUPPORTED_API_CONTROLEE);
+        return true;
+    }
+    
+    pbnjson::JValue requestObj;
+	int parseError = 0;
+    
+    const std::string schema = STRICT_SCHEMA(PROPS_1(PROP(sessionId, integer)) REQUIRED_1(sessionId));
+    
+    if(!LSUtils::parsePayload(request.getPayload(),requestObj,schema,&parseError))
+	{
+		if(parseError != JSON_PARSE_SCHEMA_ERROR)
+			LSUtils::respondWithError(request, UWB_ERR_BAD_JSON);
+		else
+			LSUtils::respondWithError(request,UWB_ERR_SCHEMA_VALIDATION_FAIL);
+
+		return true;
+	}
+    
+    if (requestObj.hasKey("sessionId"))
+    {
+        uint8_t sessionId = 0;
+        sessionId = requestObj["sessionId"].asNumber<int32_t>();
+        
+        UwbErrorCodes error = UWB_ERROR_NONE;
+        error = mUwbAdaptor->closeSession(sessionId);
+
+        if (error != UWB_ERROR_NONE)
+        {
+            LSUtils::respondWithError(request, error);
+            return true;
+        }
+    }    
+    
+    responseObj.put("returnValue", true);
+    LSUtils::postToClient(request, responseObj);
     return true;
 }
 
@@ -467,9 +553,39 @@ bool UwbServiceManager::startRanging(LSHandle *sh, LSMessage *message, void *dat
         LSUtils::respondWithError(request, UWB_ERROR_UNSUPPORTED_API_CONTROLEE);
         return true;
     }
-
-    mUwbAdaptor->startRanging(message);
     
+    pbnjson::JValue requestObj;
+	int parseError = 0;
+    
+    const std::string schema = STRICT_SCHEMA(PROPS_1(PROP(sessionId, integer)) REQUIRED_1(sessionId));
+    
+    if(!LSUtils::parsePayload(request.getPayload(),requestObj,schema,&parseError))
+	{
+		if(parseError != JSON_PARSE_SCHEMA_ERROR)
+			LSUtils::respondWithError(request, UWB_ERR_BAD_JSON);
+		else
+			LSUtils::respondWithError(request,UWB_ERR_SCHEMA_VALIDATION_FAIL);
+
+		return true;
+	}
+    
+    if (requestObj.hasKey("sessionId"))
+    {
+        uint8_t sessionId = 0;
+        sessionId = requestObj["sessionId"].asNumber<int32_t>();
+        
+        UwbErrorCodes error = UWB_ERROR_NONE;
+        error = mUwbAdaptor->startRanging(sessionId);
+
+        if (error != UWB_ERROR_NONE)
+        {
+            LSUtils::respondWithError(request, error);
+            return true;
+        }
+    }    
+    
+    responseObj.put("returnValue", true);
+    LSUtils::postToClient(request, responseObj);
     return true;
 }
 
@@ -483,13 +599,38 @@ bool UwbServiceManager::stopRanging(LSHandle *sh, LSMessage *message, void *data
         return true;
     }
     
-    mUwbAdaptor->stopRanging(message);
+    pbnjson::JValue requestObj;
+	int parseError = 0;
     
-    return true;
-}
+    const std::string schema = STRICT_SCHEMA(PROPS_1(PROP(sessionId, integer)) REQUIRED_1(sessionId));
+    
+    if(!LSUtils::parsePayload(request.getPayload(),requestObj,schema,&parseError))
+	{
+		if(parseError != JSON_PARSE_SCHEMA_ERROR)
+			LSUtils::respondWithError(request, UWB_ERR_BAD_JSON);
+		else
+			LSUtils::respondWithError(request,UWB_ERR_SCHEMA_VALIDATION_FAIL);
 
-bool UwbServiceManager::notifyDiscoveryResult() {
-    UWB_LOG_INFO("notifyDiscoveryResult API Called %s", __FUNCTION__ );
+		return true;
+	}
+    
+    if (requestObj.hasKey("sessionId"))
+    {
+        uint8_t sessionId = 0;
+        sessionId = requestObj["sessionId"].asNumber<int32_t>();
+        
+        UwbErrorCodes error = UWB_ERROR_NONE;
+        error = mUwbAdaptor->stopRanging(sessionId);
+
+        if (error != UWB_ERROR_NONE)
+        {
+            LSUtils::respondWithError(request, error);
+            return true;
+        }
+    }    
+    
+    responseObj.put("returnValue", true);
+    LSUtils::postToClient(request, responseObj);
     return true;
 }
 
@@ -506,6 +647,14 @@ void UwbServiceManager::notifyDeviceNameChanged(const std::string& deviceName) {
         return;
     
     mModuleInfo.setDeviceName(deviceName);
+    notifySubscribersModuleStatus();
+}
+
+void UwbServiceManager::notifyDiscoveryStatus(bool discoveryStatus) {
+    if(discoveryStatus == mModuleInfo.getDiscoveryStatus())
+        return;
+    
+    mModuleInfo.setDiscoveryStatus(discoveryStatus);
     notifySubscribersModuleStatus();
 }
 
@@ -552,26 +701,48 @@ void UwbServiceManager::appendCurrentStatus(pbnjson::JValue &object) {
     object.put("deviceRole", mModuleInfo.getDeviceRole());
     object.put("deviceMode", mModuleInfo.getDeviceMode());
     object.put("pairingFlag", mModuleInfo.getPairingFlag());
+    object.put("discoveryStatus", mModuleInfo.getDiscoveryStatus());
     object.put("uwbMacAddress", mModuleInfo.getUwbMacAddress());
     object.put("deviceName", mModuleInfo.getDeviceName());
 }
 
 void UwbServiceManager::notifyScanResult(const std::string& macAddress, const std::string& deviceName) {
     pbnjson::JValue responseObj = pbnjson::Object();
-    //TODO: Store the devices in a map?
+    mRemoteDeviceMap.emplace(std::pair<std::string , std::string>(macAddress, deviceName));
     
     responseObj.put("returnValue", true);
     responseObj.put("subscribed", true);    
     pbnjson::JValue devicesArray = pbnjson::Array();
-    pbnjson::JValue deviceObj = pbnjson::Object();    
-    deviceObj.put("address", macAddress);
-    deviceObj.put("name", deviceName);    
-    devicesArray.append(deviceObj);
+    
+    for(auto itr: mRemoteDeviceMap) {
+        pbnjson::JValue deviceObj = pbnjson::Object();    
+        deviceObj.put("address", itr.first);
+        deviceObj.put("name", itr.second);    
+        devicesArray.append(deviceObj);
+    }
     responseObj.put("devices", devicesArray);
     
     LSError lsError;
     LSErrorInit(&lsError);
     if (!LSSubscriptionReply(mServiceHandle, "startDiscovery", responseObj.stringify().c_str(), &lsError))
+    {
+        UWB_LOG_INFO("subscription reply error!!");
+        LSErrorFree(&lsError);
+        return;
+    }
+
+    LSErrorFree(&lsError);
+}
+
+void UwbServiceManager::notifyOpenSessionResponse(uint8_t sessionId) {
+    pbnjson::JValue responseObj = pbnjson::Object();
+    responseObj.put("returnValue", true);
+    responseObj.put("subscribed", true);
+    responseObj.put("sessionId", sessionId);
+    
+    LSError lsError;
+    LSErrorInit(&lsError);
+    if (!LSSubscriptionReply(mServiceHandle, "openSession", responseObj.stringify().c_str(), &lsError))
     {
         UWB_LOG_INFO("subscription reply error!!");
         LSErrorFree(&lsError);
