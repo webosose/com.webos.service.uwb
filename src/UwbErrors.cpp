@@ -22,6 +22,7 @@ static std::map<UwbErrorCodes, std::string> uwbErrorTextTable =
     {UWB_ERROR_ADDRESS_LENGTH, "MAC Address length exceeded allowed limit"},
     {UWB_ERROR_DISCOVERY_IN_PROGRESS, "Discovery is in progress"},
     {UWB_ERR_ADV_TIMEOUT_NEG_VALUE, "Invalid negative value for advertising Timeout: "},
+    {UWB_ERR_WRONG_DEV_STATE, "Module state shall be stopped before changing role or mode"},
 };
 
 const std::string retrieveErrorText(UwbErrorCodes errorCode)

@@ -22,6 +22,7 @@ enum UwbErrorCodes
     UWB_ERROR_ADDRESS_LENGTH = 114,
     UWB_ERROR_DISCOVERY_IN_PROGRESS = 115,
     UWB_ERR_ADV_TIMEOUT_NEG_VALUE = 116,
+    UWB_ERR_WRONG_DEV_STATE = 117,
 };
 
 const std::string retrieveErrorText(UwbErrorCodes errorCode);

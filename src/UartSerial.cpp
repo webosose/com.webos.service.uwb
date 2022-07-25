@@ -35,6 +35,12 @@ bool UartSerial::IsUwbConnected()
 
 void UartSerial::InitializeUart(std::string param) {
     UWB_LOG_INFO("InitializeUart: %s", param.c_str());
+    bool connected = false;
+    do {
+        connected = IsUwbConnected();
+        sleep(1);
+    }while(connected == false);
+    
     configureUart();
     
     //create RX thread
@@ -50,14 +56,8 @@ void UartSerial::InitializeUart(std::string param) {
     
     sleep(1);
     rxFlag = false;
-    bool connected = false;
     mModuleInfo.resetModuleInfo();
-    mEventListener->updateModuleStatus();
-    
-    do {
-        connected = IsUwbConnected();
-        sleep(1);
-    }while(connected == false);
+    mEventListener->updateModuleStatus();    
     
     InitializeUart("UWB Device connected: Initialize Uart");
     return;
@@ -435,10 +435,10 @@ void UartSerial::processModuleInfo(char *rx_bin) {
     
     std::string moduleState = "";
     if(rx_bin[7] == 0x00) {
-        moduleState = "stopped";
+        moduleState = "stop";
     }
     else if(rx_bin[7] == 0x01) {
-        moduleState = "active";
+        moduleState = "start";
     }
     else {
         moduleState = "Unknown";
@@ -511,7 +511,7 @@ void UartSerial::processCommonEvent(char *rx_bin) {
     switch(commandId) {
         case HOST_CMD_MODULE_START : {
             if(commandResult == 1) {
-                mEventListener->updateModuleStateChanged("active");
+                mEventListener->updateModuleStateChanged("start");
             }
             else if(commandResult == 0) {
                 //TODO: return error code
@@ -520,7 +520,7 @@ void UartSerial::processCommonEvent(char *rx_bin) {
         }
         case HOST_CMD_MODULE_STOP : {
             if(commandResult == 1) {
-                mEventListener->updateModuleStateChanged("stopped");
+                mEventListener->updateModuleStateChanged("stop");
             }
             else if(commandResult == 0) {
                 //TODO: return error code

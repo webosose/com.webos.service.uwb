@@ -320,7 +320,7 @@ bool UwbServiceManager::setState(LSHandle *sh, LSMessage *message, void *data) {
 	pbnjson::JValue requestObj;
 	int parseError = 0;
 
-    const std::string schema = STRICT_SCHEMA(PROPS_3(PROP(role, string), PROP(deviceName, string), PROP(deviceMode, string)));
+    const std::string schema = STRICT_SCHEMA(PROPS_4(PROP(deviceRole, string), PROP(deviceName, string), PROP(moduleState, string), PROP(deviceMode, string)));
 
 	if (!LSUtils::parsePayload(request.getPayload(), requestObj, schema, &parseError))
 	{
@@ -329,57 +329,152 @@ bool UwbServiceManager::setState(LSHandle *sh, LSMessage *message, void *data) {
 		else
 			LSUtils::respondWithError(request, UWB_ERR_BAD_JSON);
 		return true;
-	}
-
-    if (requestObj.hasKey("role"))
-	{
-		std::string role = requestObj["role"].asString();
-
-		UwbErrorCodes error = UWB_ERROR_NONE;
-        UWB_LOG_INFO("setState : role [%s]", role.c_str());
-
-        error = mUwbAdaptor->setDeviceType(role);
-
-		if (error != UWB_ERROR_NONE)
-		{
-			LSUtils::respondWithError(request, error);
-			return true;
-		}
-        usleep(50000);
-	}
+	}    
     
-    if (requestObj.hasKey("deviceName"))
-	{
-		std::string deviceName = requestObj["deviceName"].asString();
+    if(mModuleInfo.getModuleState() == "stop") {
+        if (requestObj.hasKey("deviceRole"))
+        {
+            std::string deviceRole = requestObj["deviceRole"].asString();
 
-		UwbErrorCodes error = UWB_ERROR_NONE;
-        UWB_LOG_INFO("setState : deviceName [%s]", deviceName.c_str());
+            UwbErrorCodes error = UWB_ERROR_NONE;
+            UWB_LOG_INFO("setState : deviceRole [%s]", deviceRole.c_str());
 
-        error = mUwbAdaptor->setDeviceName(deviceName);
+            error = mUwbAdaptor->setDeviceType(deviceRole);
 
-		if (error != UWB_ERROR_NONE)
-		{
-			LSUtils::respondWithError(request, error);
-			return true;
-		}
-        usleep(50000);
-	}
-    
-    if (requestObj.hasKey("deviceMode"))
-	{
-		std::string deviceMode = requestObj["deviceMode"].asString();
+            if (error != UWB_ERROR_NONE)
+            {
+                LSUtils::respondWithError(request, error);
+                return true;
+            }
+            usleep(50000);
+        }    
+        
+        if (requestObj.hasKey("deviceMode"))
+        {
+            std::string deviceMode = requestObj["deviceMode"].asString();
 
-		UwbErrorCodes error = UWB_ERROR_NONE;
-        UWB_LOG_INFO("setState : deviceMode [%s]", deviceMode.c_str());
+            UwbErrorCodes error = UWB_ERROR_NONE;
+            UWB_LOG_INFO("setState : deviceMode [%s]", deviceMode.c_str());
 
-        error = mUwbAdaptor->setDeviceMode(deviceMode);
+            error = mUwbAdaptor->setDeviceMode(deviceMode);
 
-		if (error != UWB_ERROR_NONE)
-		{
-			LSUtils::respondWithError(request, error);
-			return true;
-		}
-	}
+            if (error != UWB_ERROR_NONE)
+            {
+                LSUtils::respondWithError(request, error);
+                return true;
+            }
+            usleep(50000);
+        }
+        
+        if (requestObj.hasKey("deviceName"))
+        {
+            std::string deviceName = requestObj["deviceName"].asString();
+
+            UwbErrorCodes error = UWB_ERROR_NONE;
+            UWB_LOG_INFO("setState : deviceName [%s]", deviceName.c_str());
+
+            error = mUwbAdaptor->setDeviceName(deviceName);
+
+            if (error != UWB_ERROR_NONE)
+            {
+                LSUtils::respondWithError(request, error);
+                return true;
+            }
+            usleep(50000);
+        }
+        
+        if (requestObj.hasKey("moduleState"))
+        {
+            std::string moduleState = requestObj["moduleState"].asString();
+
+            UwbErrorCodes error = UWB_ERROR_NONE;
+            UWB_LOG_INFO("setState : moduleState [%s]", moduleState.c_str());
+
+            error = mUwbAdaptor->setUwbModuleState(moduleState);
+
+            if (error != UWB_ERROR_NONE)
+            {
+                LSUtils::respondWithError(request, error);
+                return true;
+            }
+            usleep(50000);
+        }
+    }  
+    else if(mModuleInfo.getModuleState() == "start") {
+        if (requestObj.hasKey("moduleState"))
+        {
+            std::string moduleState = requestObj["moduleState"].asString();
+
+            UwbErrorCodes error = UWB_ERROR_NONE;
+            UWB_LOG_INFO("setState : moduleState [%s]", moduleState.c_str());
+
+            error = mUwbAdaptor->setUwbModuleState(moduleState);
+
+            if (error != UWB_ERROR_NONE)
+            {
+                LSUtils::respondWithError(request, error);
+                return true;
+            }
+            usleep(500000);
+        }
+        
+        if(mModuleInfo.getModuleState() == "stop") {
+            if (requestObj.hasKey("deviceRole"))
+            {
+                std::string deviceRole = requestObj["deviceRole"].asString();
+
+                UwbErrorCodes error = UWB_ERROR_NONE;
+                UWB_LOG_INFO("setState : deviceRole [%s]", deviceRole.c_str());
+
+                error = mUwbAdaptor->setDeviceType(deviceRole);
+
+                if (error != UWB_ERROR_NONE)
+                {
+                    LSUtils::respondWithError(request, error);
+                    return true;
+                }
+                usleep(50000);
+            }    
+            
+            if (requestObj.hasKey("deviceMode"))
+            {
+                std::string deviceMode = requestObj["deviceMode"].asString();
+
+                UwbErrorCodes error = UWB_ERROR_NONE;
+                UWB_LOG_INFO("setState : deviceMode [%s]", deviceMode.c_str());
+
+                error = mUwbAdaptor->setDeviceMode(deviceMode);
+
+                if (error != UWB_ERROR_NONE)
+                {
+                    LSUtils::respondWithError(request, error);
+                    return true;
+                }
+                usleep(50000);
+            }
+            
+            if (requestObj.hasKey("deviceName"))
+            {
+                std::string deviceName = requestObj["deviceName"].asString();
+
+                UwbErrorCodes error = UWB_ERROR_NONE;
+                UWB_LOG_INFO("setState : deviceName [%s]", deviceName.c_str());
+
+                error = mUwbAdaptor->setDeviceName(deviceName);
+
+                if (error != UWB_ERROR_NONE)
+                {
+                    LSUtils::respondWithError(request, error);
+                    return true;
+                }
+                usleep(50000);
+            }
+        }
+        else {
+            LSUtils::respondWithError(request, UWB_ERR_WRONG_DEV_STATE);
+            return true;
+        }        
+    }
 
     pbnjson::JValue responseObj = pbnjson::Object();
     responseObj.put("returnValue", true);
