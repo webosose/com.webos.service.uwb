@@ -517,11 +517,11 @@ bool UwbServiceManager::openSession(LSHandle *sh, LSMessage *message, void *data
 	int parseError = 0;
     LSError lsError;
     bool isSubscription = false;
-    
-    if(mModuleInfo.getDiscoveryStatus() == true) {
-        LSUtils::respondWithError(request, UWB_ERROR_DISCOVERY_IN_PROGRESS);
-        return true;
-    }
+    //TODO:Needed once stopDiscovery function implemented from firmware.
+    //if(mModuleInfo.getDiscoveryStatus() == true) {
+    //    LSUtils::respondWithError(request, UWB_ERROR_DISCOVERY_IN_PROGRESS);
+    //    return true;
+    //}
 
     const std::string schema = STRICT_SCHEMA(PROPS_3(PROP(timeOut, integer), PROP(subscribe, boolean), PROP(address, string)) REQUIRED_1(subscribe));
 

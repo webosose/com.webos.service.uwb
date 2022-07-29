@@ -311,13 +311,16 @@ UwbErrorCodes UartSerial::startDiscovery() {
 }
 
 void UartSerial::processScanResult(char *rx_bin) {
-    ostringstream os;
-    for(int i=2;i<8;i++) {
-        os << rx_bin[i];
-    }
-    std::string macAddress  = os.str();
-    UWB_LOG_INFO("macAddress: %s", macAddress.c_str() );
-    
+	char address[(6*3)+1];
+    char *ptr = &address[0];
+    for (int i=2;i<8;i++) {
+        ptr += sprintf(ptr, "%02X", rx_bin[i]);
+		if(i<7)
+            ptr += sprintf(ptr,":");
+    }    
+    std::string macAddress = address;
+	UWB_LOG_INFO("macAddress: %s", macAddress.c_str() );
+	
     ostringstream name;
     for(int i=8;i<33;i++) {
         if(rx_bin[i] != '\0')
@@ -648,17 +651,20 @@ UwbErrorCodes UartSerial::setUwbModuleState(CommandId cmdId) {
 }
 
 UwbErrorCodes UartSerial::openSession(const std::string& address) {
-    if(address.size() > 6 ) 
+    if(address.size()>17)  
         return UWB_ERROR_ADDRESS_LENGTH;
-    std::vector<uint8_t> data (35, 0x00);
+	char *ptr = &address[0];
+    char delim[] = ":";
+    char *token = strtok(ptr,delim);
+	std::vector<uint8_t> data (35, 0x00);
     data[0] = PREAMBLE;
     data[1] = 0x0E;
-    
-    for (size_t i = 0; i < address.size(); ++i)
-    {
-       data[i+2] = address[i];
+  	int i = 0;
+    while (token)  {
+    sscanf(token, "%02x", &data[i+2]);
+    i++;
+    token = strtok(NULL,delim);
     }
-    
     data[33] = 0x0d;
     data[34] = 0x0a;
     
