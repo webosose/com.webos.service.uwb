@@ -679,7 +679,7 @@ UwbErrorCodes UartSerial::openSession(const std::string& address) {
 UwbErrorCodes UartSerial::openSessionControlee(int32_t advTimeout) {
     std::vector<uint8_t> data (35, 0x00);
     data[0] = PREAMBLE;
-    data[1] = 0x0D;
+    data[1] = 0x1A;
     data[2] = advTimeout; //TODO: Fill with LSB
     data[3] = advTimeout; //TODO: Fill with MSB
     
