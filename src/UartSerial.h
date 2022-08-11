@@ -13,7 +13,8 @@
 #include <sys/stat.h>
 #include <memory>
 #include <cstring>
-#include<sstream>
+#include <sstream>
+#include <map>
 #include "CallbackInterface.h"
 #include "UartConstants.h"
 #include "UwbErrors.h"
@@ -54,6 +55,7 @@ private:
     uint8_t mDeviceMode = 0x00;
     std::string mDeviceName = "";
     
+    std::map<std::string,std::string> mdeviceMap{};
     std::shared_ptr<CallbackInterface> mEventListener;
     ModuleInfo& mModuleInfo = ModuleInfo::getInstance();
     

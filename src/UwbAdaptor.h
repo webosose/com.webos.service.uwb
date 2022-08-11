@@ -41,7 +41,7 @@ public:
     UwbErrorCodes startDiscovery(int32_t discoveryTimeout) override;
     UwbErrorCodes openSession(const std::string& address) override;
     UwbErrorCodes openSessionControlee(int32_t advTimeout) override;
-    bool getPairedSessions(LSMessage *message) override;
+    UwbErrorCodes getPairedSessions(LSMessage *message) override;
     UwbErrorCodes stopDiscovery() override;
     UwbErrorCodes closeSession(uint8_t sessionId) override;
     UwbErrorCodes startRanging(uint8_t sessionId) override;

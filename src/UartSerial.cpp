@@ -274,7 +274,42 @@ UwbErrorCodes UartSerial::getPairingInfo() {
 }
 
 void UartSerial::processPairingInfo(char *rx_bin) {
-    
+	uint8_t pairingCount = rx_bin[2];
+	pbnjson::JValue responseObj = pbnjson::Object();
+	
+	responseObj.put("returnValue", true);
+    responseObj.put("subscribed", true);   
+    responseObj.put("pairingCount", pairingCount);	
+    pbnjson::JValue pairingArray = pbnjson::Array();
+	
+    for(int i=2;i<(pairingCount*3);i += 3){
+        uint8_t sessionId = rx_bin[i+1];
+		UWB_LOG_INFO("sessionId: %d", sessionId );
+	
+        std::string deviceRole = "";
+		if(rx_bin[i+2] == 0x00){
+			deviceRole = "Controller";
+		}
+		else 
+			deviceRole = "Controlee";
+ 		
+		UWB_LOG_INFO("deviceRole: %s", deviceRole.c_str() );
+		
+		bool connectionStatus = false;
+		if(rx_bin[i+3] == 0x01)
+			connectionStatus = true;
+		
+		UWB_LOG_INFO("connectionStatus : %d", connectionStatus);
+		   
+        pbnjson::JValue pairingObj = pbnjson::Object();
+		pairingObj.put("sessionId", sessionId);
+        pairingObj.put("deviceRole", deviceRole);
+	    pairingObj.put("deviceName", mModuleInfo.getDeviceName());
+        pairingObj.put("connectionStatus", connectionStatus);   
+        pairingArray.append(pairingObj);
+		responseObj.put("devices", pairingArray);
+	}
+	mEventListener->updatePairingInfo(responseObj);   
 }
 
 UwbErrorCodes UartSerial::setScanTime(int32_t discoveryTimeout) {
@@ -320,7 +355,7 @@ void UartSerial::processScanResult(char *rx_bin) {
     }    
     std::string macAddress = address;
 	UWB_LOG_INFO("macAddress: %s", macAddress.c_str() );
-	
+    
     ostringstream name;
     for(int i=8;i<33;i++) {
         if(rx_bin[i] != '\0')
@@ -328,7 +363,23 @@ void UartSerial::processScanResult(char *rx_bin) {
     }
     std::string deviceName  = name.str();
     UWB_LOG_INFO("deviceName: %s", deviceName.c_str() );
-    mEventListener->updateScanResult(macAddress, deviceName);
+
+	int count = 0;
+	static int count1 = 0;
+	if(count1 == 10)
+	{
+		mdeviceMap.clear();
+		count1 = 0;
+	}
+	
+	if(mdeviceMap.count(macAddress) == 0)
+	{
+		mdeviceMap.emplace(std::pair<std::string , std::string>(macAddress, deviceName));
+		count ++;
+	}
+	if(count)
+		 mEventListener->updateScanResult(macAddress, deviceName);
+	count1++;
 }
 
 UwbErrorCodes UartSerial::stopDiscovery() {
@@ -420,7 +471,7 @@ UwbErrorCodes UartSerial::getDeviceName() {
 
 void UartSerial::processDeviceName(char *rx_bin) {
     ostringstream os;
-    for(int i=2;i<27;i++) {
+    for(int i=3;i<28;i++) {
         if(rx_bin[i] != '\0')
             os << rx_bin[i];
     }
@@ -431,7 +482,7 @@ void UartSerial::processDeviceName(char *rx_bin) {
 }
 
 void UartSerial::processModuleInfo(char *rx_bin) {
-    std::string fwVersion = to_string(rx_bin[2]) + "." + to_string(rx_bin[3]) + "." + to_string(rx_bin[4]);
+    std::string fwVersion = to_string(rx_bin[4]) + "." + to_string(rx_bin[3]) + "." + to_string(rx_bin[2]);
     
     char fwCrc[10];
     sprintf(fwCrc, "%2X %2X", rx_bin[5], rx_bin[6]);

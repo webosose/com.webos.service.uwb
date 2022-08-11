@@ -3,10 +3,10 @@
 #include <pbnjson.hpp>
 
 LSMethod UwbServiceManager::serviceMethods[] = {
-    { "getUwbServiceState", UwbServiceManager::_getUwbServiceState },
-    { "getUwbSpecificInfo", UwbServiceManager::_getUwbSpecificInfo },
+   // { "getUwbServiceState", UwbServiceManager::_getUwbServiceState },    //TODO: need to remove these APIs
+   // { "getUwbSpecificInfo", UwbServiceManager::_getUwbSpecificInfo },
     { "getRangingInfo",     UwbServiceManager::_getRangingInfo },
-    { "setUwbModuleState", UwbServiceManager::_setUwbModuleState },
+   // { "setUwbModuleState", UwbServiceManager::_setUwbModuleState },
     { "getStatus", UwbServiceManager::_getStatus },
     { "getPairedSessions",     UwbServiceManager::_getPairedSessions },
     { "setState",     UwbServiceManager::_setState },
@@ -86,7 +86,8 @@ bool UwbServiceManager::deinit() {
     return true;
 }
 
-bool UwbServiceManager::getUwbServiceState(LSHandle *sh, LSMessage *message, void *data) {
+//TODO:need to be removed..
+/*bool UwbServiceManager::getUwbServiceState(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
 
     return true;
@@ -97,6 +98,8 @@ bool UwbServiceManager::getUwbSpecificInfo(LSHandle *sh, LSMessage *message, voi
    
     return true;
 }
+*/
+
 
 bool UwbServiceManager::getRangingInfo(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
@@ -110,7 +113,7 @@ bool UwbServiceManager::getRangingInfo(LSHandle *sh, LSMessage *message, void *d
     if (LSMessageIsSubscription(message)) {
         subscribed = true;
         if (LSSubscriptionAdd(sh, "getRangingInfo", message, &lsError) == false) {
-            UWB_LOG_ERROR("Failed to add getUwbServiceState to subscription");
+            UWB_LOG_ERROR("Failed to add getRangingInfo to subscription");
 
             responseObj.put("returnValue", false);
             responseObj.put("errorCode", UWB_UNKNOWN_ERROR);
@@ -236,7 +239,8 @@ bool UwbServiceManager::startDiscovery(LSHandle *sh, LSMessage *message, void *d
 
     return true;
 }
-
+//TODO:need to be removed..
+/*
 bool UwbServiceManager::setUwbModuleState(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
     LS::Message request(message);
@@ -277,6 +281,9 @@ bool UwbServiceManager::setUwbModuleState(LSHandle *sh, LSMessage *message, void
     return true;
 }
 
+*/
+
+
 bool UwbServiceManager::getStatus(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
     LS::Message request(message);
@@ -288,7 +295,7 @@ bool UwbServiceManager::getStatus(LSHandle *sh, LSMessage *message, void *data) 
     if (LSMessageIsSubscription(message)) {
         subscribed = true;
         if (LSSubscriptionAdd(sh, "getStatus", message, &lsError) == false) {
-            UWB_LOG_ERROR("Failed to add getUwbServiceState to subscription");
+            UWB_LOG_ERROR("Failed to add getStatus to subscription");
 
             responseObj.put("returnValue", false);
             responseObj.put("errorCode", UWB_UNKNOWN_ERROR);
@@ -308,8 +315,37 @@ bool UwbServiceManager::getStatus(LSHandle *sh, LSMessage *message, void *data) 
 
 bool UwbServiceManager::getPairedSessions(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
+    LS::Message request(message);     //changes done..
+	
+	if(mModuleInfo.getDeviceRole() == "controlee") {
+        LSUtils::respondWithError(request, UWB_ERROR_UNSUPPORTED_API_CONTROLEE);
+        return true;
+    }
+    
+	bool subscribed = false;
+	pbnjson::JValue responseObj = pbnjson::Object();
+	
+	LSError lsError;
+    LSErrorInit(&lsError);
+    if (LSMessageIsSubscription(message)) {
+        subscribed = true;
+        if (LSSubscriptionAdd(sh, "getPairedSessions", message, &lsError) == false) {
+            UWB_LOG_ERROR("Failed to add getPairedSessions to subscription");
 
+            responseObj.put("returnValue", false);
+            responseObj.put("errorCode", UWB_UNKNOWN_ERROR);
+            responseObj.put("errorText", "Unknwon");
+            LSMessageReply(sh,message, responseObj.stringify().c_str() , &lsError );
+            return true;
+        }
+    }
     mUwbAdaptor->getPairedSessions(message);
+	
+	responseObj.put("returnValue", true);
+    responseObj.put("subscribed", subscribed);
+
+    LSUtils::postToClient(request, responseObj);
+
     
     return true;
 }
@@ -517,11 +553,11 @@ bool UwbServiceManager::openSession(LSHandle *sh, LSMessage *message, void *data
 	int parseError = 0;
     LSError lsError;
     bool isSubscription = false;
-    //TODO:Needed once stopDiscovery function implemented from firmware.
-    //if(mModuleInfo.getDiscoveryStatus() == true) {
+    //TODO: need to update logic..
+   // if(mModuleInfo.getDiscoveryStatus() == true) {
     //    LSUtils::respondWithError(request, UWB_ERROR_DISCOVERY_IN_PROGRESS);
     //    return true;
-    //}
+   // }
 
     const std::string schema = STRICT_SCHEMA(PROPS_3(PROP(timeOut, integer), PROP(subscribe, boolean), PROP(address, string)) REQUIRED_1(subscribe));
 
@@ -801,25 +837,10 @@ void UwbServiceManager::appendCurrentStatus(pbnjson::JValue &object) {
     object.put("deviceName", mModuleInfo.getDeviceName());
 }
 
-void UwbServiceManager::notifyScanResult(const std::string& macAddress, const std::string& deviceName) {
-    pbnjson::JValue responseObj = pbnjson::Object();
-    mRemoteDeviceMap.emplace(std::pair<std::string , std::string>(macAddress, deviceName));
-    
-    responseObj.put("returnValue", true);
-    responseObj.put("subscribed", true);    
-    pbnjson::JValue devicesArray = pbnjson::Array();
-    
-    for(auto itr: mRemoteDeviceMap) {
-        pbnjson::JValue deviceObj = pbnjson::Object();    
-        deviceObj.put("address", itr.first);
-        deviceObj.put("name", itr.second);    
-        devicesArray.append(deviceObj);
-    }
-    responseObj.put("devices", devicesArray);
-    
+void UwbServiceManager::notifyPairingInfo(const pbnjson::JValue& responseObj) {           
     LSError lsError;
     LSErrorInit(&lsError);
-    if (!LSSubscriptionReply(mServiceHandle, "startDiscovery", responseObj.stringify().c_str(), &lsError))
+    if (!LSSubscriptionReply(mServiceHandle, "getPairedSessions", responseObj.stringify().c_str(), &lsError))
     {
         UWB_LOG_INFO("subscription reply error!!");
         LSErrorFree(&lsError);
@@ -827,6 +848,41 @@ void UwbServiceManager::notifyScanResult(const std::string& macAddress, const st
     }
 
     LSErrorFree(&lsError);
+}
+
+void UwbServiceManager::notifyScanResult(const std::string& macAddress, const std::string& deviceName) {
+    static int count =0;
+	mRemoteDeviceMap.emplace(std::pair<std::string , std::string>(macAddress, deviceName));
+    if(count == 5)
+	{
+		mRemoteDeviceMap.clear();
+		count = 0;
+	}
+	else{
+	    pbnjson::JValue responseObj = pbnjson::Object();
+        responseObj.put("returnValue", true);
+        responseObj.put("subscribed", true); 		
+        pbnjson::JValue devicesArray = pbnjson::Array();
+    
+        for(auto itr: mRemoteDeviceMap) {
+            pbnjson::JValue deviceObj = pbnjson::Object();    
+            deviceObj.put("address", itr.first);
+            deviceObj.put("name", itr.second);    
+            devicesArray.append(deviceObj);
+    }
+        responseObj.put("devices", devicesArray);
+    
+	LSError lsError;
+    LSErrorInit(&lsError);
+    if (!LSSubscriptionReply(mServiceHandle, "startDiscovery", responseObj.stringify().c_str(), &lsError))
+    {
+        UWB_LOG_INFO("subscription reply error!!");
+        LSErrorFree(&lsError);
+        return;
+    }
+    LSErrorFree(&lsError);
+	}
+	count++;
 }
 
 void UwbServiceManager::notifyOpenSessionResponse(uint8_t sessionId) {

@@ -67,10 +67,13 @@ UwbErrorCodes UwbAdaptor::getStatus() {
     return error;
 }
 
-bool UwbAdaptor::getPairedSessions(LSMessage *message) {
+UwbErrorCodes UwbAdaptor::getPairedSessions(LSMessage *message) {
     UWB_LOG_INFO("UwbAdaptor::getPairedSessions");
     //TODO: Add call to driver API
-    return true;
+	UwbErrorCodes error = UWB_ERROR_NONE;
+	error = mUartSerial->getPairingInfo();
+	
+    return error;
 }
 
 UwbErrorCodes UwbAdaptor::setDeviceType(const std::string& deviceType) {

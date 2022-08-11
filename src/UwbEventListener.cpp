@@ -58,6 +58,10 @@ void UwbEventListener::updateRangingInfo(uint8_t reliability, uint8_t sessionId,
     UwbServiceManager::getInstance()->notifySubscriberRangingInfo(std::move(rangingInfo), sessionId);
 }
 
+void UwbEventListener::updatePairingInfo(const pbnjson::JValue& responseObj) {
+    UwbServiceManager::getInstance()->notifyPairingInfo(responseObj);
+}
+
 void UwbEventListener::updateScanResult(const std::string& macAddress, const std::string& deviceName) {
     UwbServiceManager::getInstance()->notifyScanResult(macAddress, deviceName);
 }

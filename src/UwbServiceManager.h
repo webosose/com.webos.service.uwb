@@ -36,6 +36,7 @@ public:
     void notifyDeviceModeChanged(const std::string& deviceMode);
     void notifySubscriberRangingInfo(std::unique_ptr<UwbRangingInfo> rangingInfo, uint8_t sessionId);
     void notifyScanResult(const std::string& macAddress, const std::string& deviceName);
+    void notifyPairingInfo(const pbnjson::JValue& responseObj);
     void notifySubscribersModuleStatus();
     void notifyDiscoveryStatus(bool discoveryStatus);
     void notifyOpenSessionResponse(uint8_t sessionId);
@@ -43,11 +44,11 @@ public:
 private:
     UwbServiceManager();    
     void appendCurrentStatus(pbnjson::JValue &object);
-
-    UWB_SERVICE_METHOD(getUwbServiceState);
-    UWB_SERVICE_METHOD(getUwbSpecificInfo);
+    //TODO:Need to be removed..
+//    UWB_SERVICE_METHOD(getUwbServiceState);
+//    UWB_SERVICE_METHOD(getUwbSpecificInfo);
     UWB_SERVICE_METHOD(getRangingInfo);    
-    UWB_SERVICE_METHOD(setUwbModuleState);
+//    UWB_SERVICE_METHOD(setUwbModuleState);
     UWB_SERVICE_METHOD(getStatus);
     UWB_SERVICE_METHOD(getPairedSessions);
     UWB_SERVICE_METHOD(setState);
