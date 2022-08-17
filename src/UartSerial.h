@@ -30,6 +30,7 @@ class UartSerial {
 public:
     void setEventListener(std::shared_ptr<CallbackInterface> eventListener);
     void InitializeUart(std::string param);
+    void UartSerial::processTime(int32_t time,uint8_t& lsb,uint8_t &msb);
     UwbErrorCodes setUwbModuleState(CommandId cmdId);
     UwbErrorCodes getUwbModuleInfo();
     UwbErrorCodes setDeviceType(uint8_t deviceType);

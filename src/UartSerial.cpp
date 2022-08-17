@@ -303,10 +303,10 @@ void UartSerial::processPairingInfo(char *rx_bin) {
         pairingObj.put("connectionStatus", connectionStatus);   
         pairingArray.append(pairingObj);
 	}
-	mEventListener->updatePairingInfo(responseObj);   
+	mEventListener->updatePairingInfo(pairingArray,pairingCount);   
 }
 
-void processTime(int32_t time,uint8_t& lsb,uint8_t &msb)
+void UartSerial::processTime(int32_t time,uint8_t& lsb,uint8_t &msb)
 {
     lsb = time & 255;
 	msb = ((time & (255 << 8)) >> 8);
