@@ -17,6 +17,12 @@ static std::map<UwbErrorCodes, std::string> uwbErrorTextTable =
     {UWB_SUBSCRIPTION_ERROR, "Method Subscription error"},
     {UWB_UART_WRITE_FAILED, "UART write operation failed"},
     {UWB_ERROR_DEVICENAME_LENGTH, "UWB Device name length exceeded allowed limit"},
+    {UWB_ERROR_UNSUPPORTED_API_CONTROLEE, "Requested API is not supported in Controlee device"},
+    {UWB_ERROR_UNSUPPORTED_API_CONTROLLER, "Requested API is not supported in Controller device"},
+    {UWB_ERROR_ADDRESS_LENGTH, "MAC Address length exceeded allowed limit"},
+    {UWB_ERROR_DISCOVERY_IN_PROGRESS, "Discovery is in progress"},
+    {UWB_ERR_ADV_TIMEOUT_NEG_VALUE, "Invalid negative value for advertising Timeout: "},
+    {UWB_ERR_WRONG_DEV_STATE, "Module state shall be stopped before changing role or mode"},
 };
 
 const std::string retrieveErrorText(UwbErrorCodes errorCode)

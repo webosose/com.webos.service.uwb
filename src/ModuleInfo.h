@@ -16,8 +16,10 @@ public:
     void setDeviceRole(const std::string& role);
     void setDeviceMode(const std::string& mode);
     void setPairingFlag(bool flag);
+    void setDiscoveryStatus(bool discoveryStatus);
     void setUwbMacAddress(const std::string& address);
     void setDeviceName(const std::string& deviceName);
+    void resetModuleInfo();
     
     std::string getFwVersion();
     std::string getFwCrc();
@@ -25,6 +27,7 @@ public:
     std::string getDeviceRole();
     std::string getDeviceMode();
     bool getPairingFlag();
+    bool getDiscoveryStatus();
     std::string getUwbMacAddress();
     std::string getDeviceName();
 
@@ -37,11 +40,12 @@ private:
     std::string mDeviceName = "";
     std::string mFwVersion = "";
     std::string mFwCrc = "";
-    std::string mModuleState = "";
+    std::string mModuleState = "disconnect";
     std::string mDeviceRole = "";
     std::string mDeviceMode = "";
     bool mPairingFlag = false;
     std::string mUwbMacAddress = "";
+    bool mDiscoveryStatus = false;
 };
 
 #endif

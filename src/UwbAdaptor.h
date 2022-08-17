@@ -33,18 +33,19 @@ public:
     bool init(LSHandle *sh);
     void setDeviceInterface(std::shared_ptr<UartSerial> uartSerial);   
 
-    UwbErrorCodes getStatus();
-    UwbErrorCodes setUwbModuleState(const std::string& moduleState);
-    UwbErrorCodes setDeviceType(const std::string& deviceType);
-    UwbErrorCodes setDeviceName(const std::string& deviceName);
-    UwbErrorCodes setDeviceMode(const std::string& deviceMode);
-    UwbErrorCodes startDiscovery(int32_t discoveryTimeout);
-    bool getPairedSessions(LSMessage *message);
-    bool stopDiscovery(LSMessage *message);
-    bool openSession(LSMessage *message);
-    bool closeSession(LSMessage *message);
-    bool startRanging(LSMessage *message);
-    bool stopRanging(LSMessage *message);
+    UwbErrorCodes getStatus() override;
+    UwbErrorCodes setUwbModuleState(const std::string& moduleState) override;
+    UwbErrorCodes setDeviceType(const std::string& deviceType) override;
+    UwbErrorCodes setDeviceName(const std::string& deviceName) override;
+    UwbErrorCodes setDeviceMode(const std::string& deviceMode) override;
+    UwbErrorCodes startDiscovery(int32_t discoveryTimeout) override;
+    UwbErrorCodes openSession(const std::string& address) override;
+    UwbErrorCodes openSessionControlee(int32_t advTimeout) override;
+    UwbErrorCodes getPairedSessions(LSMessage *message) override;
+    UwbErrorCodes stopDiscovery() override;
+    UwbErrorCodes closeSession(uint8_t sessionId) override;
+    UwbErrorCodes startRanging(uint8_t sessionId) override;
+    UwbErrorCodes stopRanging(uint8_t sessionId) override;
 
 private:    
     LSHandle *mLSHandle = nullptr;

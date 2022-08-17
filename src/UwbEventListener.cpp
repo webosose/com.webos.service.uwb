@@ -6,6 +6,10 @@ void UwbEventListener::updateModuleStateChanged(const std::string& moduleState){
     UwbServiceManager::getInstance()->notifyModuleStateChanged(moduleState);
 }
 
+void UwbEventListener::updateModuleStatus() {
+    UwbServiceManager::getInstance()->notifySubscribersModuleStatus();
+}
+
 void UwbEventListener::updateDeviceTypeChanged(uint8_t deviceType) {
     if(deviceType == 0) {
         UwbServiceManager::getInstance()->notifyDeviceRoleChanged("controller");
@@ -28,6 +32,10 @@ void UwbEventListener::updateDeviceNameChanged(const std::string& deviceName) {
     UwbServiceManager::getInstance()->notifyDeviceNameChanged(deviceName);
 }
 
+void UwbEventListener::updateDiscoveryStatus(bool discoveryStatus) {
+    UwbServiceManager::getInstance()->notifyDiscoveryStatus(discoveryStatus);
+}
+
 void UwbEventListener::updateRangingInfo(uint8_t reliability, uint8_t sessionId, int64_t angle, int64_t distance) {
     UWB_LOG_DEBUG("updateRangingInfo : reliability [%d], sessionId [%d], angle [%lld], distance [%lld]", reliability, sessionId, angle, distance);
     double distanceMeter = (double)distance / 100;
@@ -48,4 +56,16 @@ void UwbEventListener::updateRangingInfo(uint8_t reliability, uint8_t sessionId,
     rangingInfo->setSessionId(sessionId);
     
     UwbServiceManager::getInstance()->notifySubscriberRangingInfo(std::move(rangingInfo), sessionId);
+}
+
+void UwbEventListener::updatePairingInfo(const pbnjson::JValue& pairingArray, uint8_t pairingCount) {       
+    UwbServiceManager::getInstance()->notifyPairingInfo(pairingArray,pairingCount);
+}
+
+void UwbEventListener::updateScanResult(const std::string& macAddress, const std::string& deviceName) {
+    UwbServiceManager::getInstance()->notifyScanResult(macAddress, deviceName);
+}
+
+void UwbEventListener::updateOpenSessionResponse(uint8_t sessionId) {
+    UwbServiceManager::getInstance()->notifyOpenSessionResponse(sessionId);
 }

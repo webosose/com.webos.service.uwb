@@ -13,7 +13,8 @@
 #include <sys/stat.h>
 #include <memory>
 #include <cstring>
-#include<sstream>
+#include <sstream>
+#include <map>
 #include "CallbackInterface.h"
 #include "UartConstants.h"
 #include "UwbErrors.h"
@@ -36,9 +37,16 @@ public:
     UwbErrorCodes getDeviceName();
     UwbErrorCodes setDeviceName(const std::string& deviceName);
     UwbErrorCodes getPairingInfo();
+    UwbErrorCodes setScanTime(int32_t discoveryTimeout);
+    UwbErrorCodes startDiscovery();
+    UwbErrorCodes stopDiscovery();
+    UwbErrorCodes openSession(const std::string& address);
+    UwbErrorCodes openSessionControlee(int32_t advTimeout);
+    UwbErrorCodes closeSession(uint8_t sessionId);
+    UwbErrorCodes startRanging(uint8_t sessionId);
+    UwbErrorCodes stopRanging(uint8_t sessionId);
 
 private:
-    uint32_t dataCount = 0; //TODO: For testing. Can be removed.
     int mUartFd = -1;
     bool rxFlag = false;
     bool exitFlag = false;
@@ -47,6 +55,7 @@ private:
     uint8_t mDeviceMode = 0x00;
     std::string mDeviceName = "";
     
+	std::map<std::string,std::string> mdeviceMap{};
     std::shared_ptr<CallbackInterface> mEventListener;
     ModuleInfo& mModuleInfo = ModuleInfo::getInstance();
     
@@ -60,6 +69,8 @@ private:
     void processDeviceName(char *rx_bin);
     void processPairingInfo(char *rx_bin);
     void processMeasurement(char *rx_bin);
+    void processScanResult(char *rx_bin);
+    bool IsUwbConnected();
 };
 
 

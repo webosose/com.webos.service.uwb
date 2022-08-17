@@ -1,7 +1,7 @@
 #include "UwbRangingInfo.h"
 
 UwbRangingInfo::UwbRangingInfo() : m_sessionId(0),
-                                   m_condition(255),
+                                   m_condition(0),
                                    m_remoteDevAddr("NA"),
                                    mElapsedTime(0),
                                    m_connectionStatus(false) {

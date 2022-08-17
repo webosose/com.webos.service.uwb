@@ -28,6 +28,10 @@ void ModuleInfo::setPairingFlag(bool flag) {
     mPairingFlag = flag;
 }
 
+void ModuleInfo::setDiscoveryStatus(bool discoveryStatus) {
+    mDiscoveryStatus = discoveryStatus;
+}
+
 void ModuleInfo::setUwbMacAddress(const std::string& address) {
     mUwbMacAddress = address;
 }
@@ -60,10 +64,26 @@ bool ModuleInfo::getPairingFlag(){
     return mPairingFlag;
 }
 
+bool ModuleInfo::getDiscoveryStatus() {
+    return mDiscoveryStatus;
+}
+
 std::string ModuleInfo::getUwbMacAddress(){
     return mUwbMacAddress;
 }
 
 std::string ModuleInfo::getDeviceName() { 
     return mDeviceName;
+}
+
+void ModuleInfo::resetModuleInfo() {
+    mDeviceName = "";
+    mFwVersion = "";
+    mFwCrc = "";
+    mModuleState = "disconnect";
+    mDeviceRole = "";
+    mDeviceMode = "";
+    mPairingFlag = false;
+    mDiscoveryStatus = false;
+    mUwbMacAddress = "";
 }
