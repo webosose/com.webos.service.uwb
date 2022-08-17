@@ -55,7 +55,7 @@ private:
     uint8_t mDeviceMode = 0x00;
     std::string mDeviceName = "";
     
-    std::map<std::string,std::string> mdeviceMap{};
+	std::map<std::string,std::string> mdeviceMap{};
     std::shared_ptr<CallbackInterface> mEventListener;
     ModuleInfo& mModuleInfo = ModuleInfo::getInstance();
     

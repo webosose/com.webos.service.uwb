@@ -44,4 +44,5 @@ private:
     string m_fwCrc;
 };
 #endif
+
 */

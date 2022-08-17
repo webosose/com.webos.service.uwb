@@ -15,7 +15,7 @@ public:
     void updateDeviceNameChanged(const std::string& deviceName) override;
     void updateRangingInfo(uint8_t condition, uint8_t sessionId, int64_t angle, int64_t distance) override;
     void updateScanResult(const std::string& macAddress, const std::string& deviceName) override;
-    void updatePairingInfo(const pbnjson::JValue& responseObj);
+	void updatePairingInfo(const pbnjson::JValue& pairingArray, uint8_t pairingCount);  
     void updateModuleStatus() override;
     void updateDiscoveryStatus(bool discoveryStatus) override;
     void updateOpenSessionResponse(uint8_t sessionId) override;

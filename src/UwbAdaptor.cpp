@@ -69,7 +69,6 @@ UwbErrorCodes UwbAdaptor::getStatus() {
 
 UwbErrorCodes UwbAdaptor::getPairedSessions(LSMessage *message) {
     UWB_LOG_INFO("UwbAdaptor::getPairedSessions");
-    //TODO: Add call to driver API
 	UwbErrorCodes error = UWB_ERROR_NONE;
 	error = mUartSerial->getPairingInfo();
 	

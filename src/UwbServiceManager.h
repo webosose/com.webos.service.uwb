@@ -36,15 +36,15 @@ public:
     void notifyDeviceModeChanged(const std::string& deviceMode);
     void notifySubscriberRangingInfo(std::unique_ptr<UwbRangingInfo> rangingInfo, uint8_t sessionId);
     void notifyScanResult(const std::string& macAddress, const std::string& deviceName);
-    void notifyPairingInfo(const pbnjson::JValue& responseObj);
-    void notifySubscribersModuleStatus();
+    void notifyPairingInfo(const pbnjson::JValue& pairingArray, uint8_t pairingCount); 
+	void notifySubscribersModuleStatus();
     void notifyDiscoveryStatus(bool discoveryStatus);
     void notifyOpenSessionResponse(uint8_t sessionId);
 
 private:
     UwbServiceManager();    
     void appendCurrentStatus(pbnjson::JValue &object);
-    //TODO:Need to be removed..
+
 //    UWB_SERVICE_METHOD(getUwbServiceState);
 //    UWB_SERVICE_METHOD(getUwbSpecificInfo);
     UWB_SERVICE_METHOD(getRangingInfo);    
@@ -61,6 +61,7 @@ private:
 
     LSHandle *mServiceHandle = nullptr;
     GMainLoop *mMainLoop;
+    inline static bool subscribed = false;
     inline static UwbServiceManager *mUwbServiceMgr{nullptr};
     inline static std::shared_ptr<UwbAdapterInterface> mUwbAdaptor{}; //couldn't make it non-static because it's used in a static function
     UwbSessionControl *mUwbSessionCtl;

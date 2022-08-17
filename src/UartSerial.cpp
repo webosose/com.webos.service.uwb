@@ -274,12 +274,7 @@ UwbErrorCodes UartSerial::getPairingInfo() {
 }
 
 void UartSerial::processPairingInfo(char *rx_bin) {
-	uint8_t pairingCount = rx_bin[2];
-	pbnjson::JValue responseObj = pbnjson::Object();
-	
-	responseObj.put("returnValue", true);
-    responseObj.put("subscribed", true);   
-    responseObj.put("pairingCount", pairingCount);	
+	uint8_t pairingCount = rx_bin[2];	
     pbnjson::JValue pairingArray = pbnjson::Array();
 	
     for(int i=2;i<(pairingCount*3);i += 3){
@@ -307,17 +302,24 @@ void UartSerial::processPairingInfo(char *rx_bin) {
 	    pairingObj.put("deviceName", mModuleInfo.getDeviceName());
         pairingObj.put("connectionStatus", connectionStatus);   
         pairingArray.append(pairingObj);
-		responseObj.put("devices", pairingArray);
 	}
 	mEventListener->updatePairingInfo(responseObj);   
 }
 
+void processTime(int32_t time,uint8_t& lsb,uint8_t &msb)
+{
+    lsb = time & 255;
+	msb = ((time & (255 << 8)) >> 8);
+}
+
 UwbErrorCodes UartSerial::setScanTime(int32_t discoveryTimeout) {
-    std::vector<uint8_t> data (35, 0x00);
+    uint8_t lsb, msb = 0;
+	std::vector<uint8_t> data (35, 0x00);
     data[0] = PREAMBLE;
     data[1] = 0x0A;
-    data[2] = discoveryTimeout; //TODO: Fill with LSB
-    data[3] = discoveryTimeout; //TODO: Fill with MSB
+	processTime(discoveryTimeout, lsb, msb);
+    data[2] = lsb; 
+    data[3] = msb;
     
     data[33] = 0x0d;
     data[34] = 0x0a;
@@ -378,7 +380,7 @@ void UartSerial::processScanResult(char *rx_bin) {
 		count ++;
 	}
 	if(count)
-		 mEventListener->updateScanResult(macAddress, deviceName);
+		mEventListener->updateScanResult(macAddress, deviceName);
 	count1++;
 }
 
@@ -728,11 +730,13 @@ UwbErrorCodes UartSerial::openSession(const std::string& address) {
 }
 
 UwbErrorCodes UartSerial::openSessionControlee(int32_t advTimeout) {
+	uint8_t lsb, msb = 0;
     std::vector<uint8_t> data (35, 0x00);
     data[0] = PREAMBLE;
     data[1] = 0x1A;
-    data[2] = advTimeout; //TODO: Fill with LSB
-    data[3] = advTimeout; //TODO: Fill with MSB
+	processTime(advTimeout, lsb, msb);
+    data[2] = lsb;
+    data[3] = msb;
     
     data[33] = 0x0d;
     data[34] = 0x0a;
