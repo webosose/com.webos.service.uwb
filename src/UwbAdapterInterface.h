@@ -22,7 +22,7 @@ public:
     virtual UwbErrorCodes startDiscovery(int32_t discoveryTimeout) = 0;
     virtual UwbErrorCodes openSession(const std::string& address) = 0;
     virtual UwbErrorCodes openSessionControlee(int32_t advTimeout) = 0;
-    virtual UwbErrorCodes getPairedSessions(LSMessage *message) = 0;
+    virtual UwbErrorCodes getPairedSessions() = 0;
     virtual UwbErrorCodes stopDiscovery() = 0;
     virtual UwbErrorCodes closeSession(uint8_t sessionId) = 0;
     virtual UwbErrorCodes startRanging(uint8_t sessionId) = 0;

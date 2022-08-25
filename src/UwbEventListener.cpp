@@ -36,17 +36,21 @@ void UwbEventListener::updateDiscoveryStatus(bool discoveryStatus) {
     UwbServiceManager::getInstance()->notifyDiscoveryStatus(discoveryStatus);
 }
 
+void UwbEventListener::updatePairingFlag(bool pairingFlag) {
+    UwbServiceManager::getInstance()->notifyPairingFlagChanged(pairingFlag);
+}
+
 void UwbEventListener::updateRangingInfo(uint8_t reliability, uint8_t sessionId, int64_t angle, int64_t distance) {
     UWB_LOG_DEBUG("updateRangingInfo : reliability [%d], sessionId [%d], angle [%lld], distance [%lld]", reliability, sessionId, angle, distance);
     double distanceMeter = (double)distance / 100;
     double angleRadians = (double)(angle * 3.14) / 180;
-    
+
     auto rangingInfo = std::make_unique<UwbRangingInfo>();
     auto distanceMeasure = std::make_unique<DistanceMeasure>(distanceMeter, 1.0, reliability);
     auto angleMeasure = std::make_unique<AngleMeasure>(angleRadians, 1.0, reliability);
     //TODO: Add altitudeAngle measurement.
-    
-    milliseconds ms = duration_cast< milliseconds >(system_clock::now().time_since_epoch());    
+
+    milliseconds ms = duration_cast< milliseconds >(system_clock::now().time_since_epoch());
     rangingInfo->setDistanceMeasure(std::move(distanceMeasure));
     rangingInfo->setAzimuthAngleMeasure(std::move(angleMeasure));
     rangingInfo->setElapsedTime(ms.count());
@@ -54,12 +58,12 @@ void UwbEventListener::updateRangingInfo(uint8_t reliability, uint8_t sessionId,
     rangingInfo->setCondition(reliability);
     rangingInfo->setConnectionStatus(true);
     rangingInfo->setSessionId(sessionId);
-    
+
     UwbServiceManager::getInstance()->notifySubscriberRangingInfo(std::move(rangingInfo), sessionId);
 }
 
-void UwbEventListener::updatePairingInfo(const pbnjson::JValue& pairingArray, uint8_t pairingCount) {       
-    UwbServiceManager::getInstance()->notifyPairingInfo(pairingArray,pairingCount);
+void UwbEventListener::updatePairingInfo() {
+    UwbServiceManager::getInstance()->notifyPairingInfo();
 }
 
 void UwbEventListener::updateScanResult(const std::string& macAddress, const std::string& deviceName) {

@@ -6,6 +6,7 @@
 #include "UwbSessionControl.h"
 #include "ModuleInfo.h"
 #include "UwbResponseBuilder.h"
+#include "PairingInfo.h"
 #include "ls2utils.h"
 #include <lunaservice.h>
 #include <luna-service2/lunaservice.hpp>
@@ -36,18 +37,19 @@ public:
     void notifyDeviceModeChanged(const std::string& deviceMode);
     void notifySubscriberRangingInfo(std::unique_ptr<UwbRangingInfo> rangingInfo, uint8_t sessionId);
     void notifyScanResult(const std::string& macAddress, const std::string& deviceName);
-    void notifyPairingInfo(const pbnjson::JValue& pairingArray, uint8_t pairingCount); 
-	void notifySubscribersModuleStatus();
+    void notifyPairingInfo();
+    void notifySubscribersModuleStatus();
     void notifyDiscoveryStatus(bool discoveryStatus);
+    void notifyPairingFlagChanged(bool pairingFlag);
     void notifyOpenSessionResponse(uint8_t sessionId);
 
 private:
-    UwbServiceManager();    
+    UwbServiceManager();
     void appendCurrentStatus(pbnjson::JValue &object);
 
 //    UWB_SERVICE_METHOD(getUwbServiceState);
 //    UWB_SERVICE_METHOD(getUwbSpecificInfo);
-    UWB_SERVICE_METHOD(getRangingInfo);    
+    UWB_SERVICE_METHOD(getRangingInfo);
 //    UWB_SERVICE_METHOD(setUwbModuleState);
     UWB_SERVICE_METHOD(getStatus);
     UWB_SERVICE_METHOD(getPairedSessions);
@@ -66,6 +68,7 @@ private:
     inline static std::shared_ptr<UwbAdapterInterface> mUwbAdaptor{}; //couldn't make it non-static because it's used in a static function
     UwbSessionControl *mUwbSessionCtl;
     inline static ModuleInfo& mModuleInfo = ModuleInfo::getInstance();
+    inline static PairingInfo& mPairingInfo = PairingInfo::getInstance();
     inline static std::unique_ptr<UwbRangingInfo> mSavedUwbRangingInfo = nullptr; // for saving latest rangingInfo
     inline static std::unique_ptr<IResponseBuilder> mResponseBuilder{std::make_unique<UwbResponseBuilder>()};
     std::unordered_map<std::string , std::string> mRemoteDeviceMap{};

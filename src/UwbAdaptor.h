@@ -28,10 +28,10 @@ public:
     UwbAdaptor();
     ~UwbAdaptor();
     UwbAdaptor(const UwbAdaptor&) = delete;
-    UwbAdaptor& operator=(const UwbAdaptor&) = delete;    
- 
+    UwbAdaptor& operator=(const UwbAdaptor&) = delete;
+
     bool init(LSHandle *sh);
-    void setDeviceInterface(std::shared_ptr<UartSerial> uartSerial);   
+    void setDeviceInterface(std::shared_ptr<UartSerial> uartSerial);
 
     UwbErrorCodes getStatus() override;
     UwbErrorCodes setUwbModuleState(const std::string& moduleState) override;
@@ -41,13 +41,13 @@ public:
     UwbErrorCodes startDiscovery(int32_t discoveryTimeout) override;
     UwbErrorCodes openSession(const std::string& address) override;
     UwbErrorCodes openSessionControlee(int32_t advTimeout) override;
-    UwbErrorCodes getPairedSessions(LSMessage *message) override;
+    UwbErrorCodes getPairedSessions() override;
     UwbErrorCodes stopDiscovery() override;
     UwbErrorCodes closeSession(uint8_t sessionId) override;
     UwbErrorCodes startRanging(uint8_t sessionId) override;
     UwbErrorCodes stopRanging(uint8_t sessionId) override;
 
-private:    
+private:
     LSHandle *mLSHandle = nullptr;
     std::shared_ptr<UartSerial> mUartSerial = nullptr;
 };

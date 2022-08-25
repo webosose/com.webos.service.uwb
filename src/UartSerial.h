@@ -19,6 +19,7 @@
 #include "UartConstants.h"
 #include "UwbErrors.h"
 #include "ModuleInfo.h"
+#include "PairingInfo.h"
 
 #define NUM_PRINT_BYTES  16
 enum {
@@ -30,7 +31,7 @@ class UartSerial {
 public:
     void setEventListener(std::shared_ptr<CallbackInterface> eventListener);
     void InitializeUart(std::string param);
-    void UartSerial::processTime(int32_t time,uint8_t& lsb,uint8_t &msb);
+    void processTime(int32_t time,uint8_t& lsb,uint8_t& msb);
     UwbErrorCodes setUwbModuleState(CommandId cmdId);
     UwbErrorCodes getUwbModuleInfo();
     UwbErrorCodes setDeviceType(uint8_t deviceType);
@@ -55,11 +56,12 @@ private:
     uint8_t mDeviceType = 0x00;
     uint8_t mDeviceMode = 0x00;
     std::string mDeviceName = "";
-    
-	std::map<std::string,std::string> mdeviceMap{};
+
+    std::map<std::string,std::string> mdeviceMap{};
     std::shared_ptr<CallbackInterface> mEventListener;
     ModuleInfo& mModuleInfo = ModuleInfo::getInstance();
-    
+    PairingInfo& mPairingInfo = PairingInfo::getInstance();
+
     void configureUart();
     speed_t setBaudrate(const int speed);
     void printData(char *rx_bin, int rx_length);

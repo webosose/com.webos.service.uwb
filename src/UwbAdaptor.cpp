@@ -24,7 +24,7 @@ void UwbAdaptor::setDeviceInterface(std::shared_ptr<UartSerial> uartSerial) {
 UwbErrorCodes UwbAdaptor::startDiscovery(int32_t discoveryTimeout) {
     UWB_LOG_INFO("UwbAdaptor::startDiscovery");
     UwbErrorCodes error = UWB_ERROR_NONE;
-    
+
     if(discoveryTimeout > 0) {
         error = mUartSerial->setScanTime(discoveryTimeout);
         if (error != UWB_ERROR_NONE) {
@@ -61,17 +61,15 @@ UwbErrorCodes UwbAdaptor::setUwbModuleState(const std::string& moduleState) {
 
 UwbErrorCodes UwbAdaptor::getStatus() {
     UWB_LOG_INFO("UwbAdaptor::getStatus");
-
     UwbErrorCodes error = UWB_ERROR_NONE;
     error = mUartSerial->getUwbModuleInfo();
     return error;
 }
 
-UwbErrorCodes UwbAdaptor::getPairedSessions(LSMessage *message) {
+UwbErrorCodes UwbAdaptor::getPairedSessions() {
     UWB_LOG_INFO("UwbAdaptor::getPairedSessions");
-	UwbErrorCodes error = UWB_ERROR_NONE;
-	error = mUartSerial->getPairingInfo();
-	
+    UwbErrorCodes error = UWB_ERROR_NONE;
+    error = mUartSerial->getPairingInfo();
     return error;
 }
 
