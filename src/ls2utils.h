@@ -61,6 +61,7 @@
 #define RELAXED_SCHEMA(attributes)                    "{\"type\":\"object\"" attributes ",\"additionalProperties\":true}"
 
 // Macros to use in place of the parameters in the SCHEMA_xxx macros above
+#define PROP_EMPTY()                                  ""
 #define PROP(name, type)                              "\"" #name "\":{\"type\":\"" #type "\"}"
 #define PROP_WITH_VAL_1(name, type, v1)               "\"" #name "\":{\"type\":\"" #type "\", \"enum\": [" #v1 "]}"
 #define PROP_WITH_VAL_2(name, type, v1, v2)           "\"" #name "\":{\"type\":\"" #type "\", \"enum\": [" #v1 ", " #v2 "]}"

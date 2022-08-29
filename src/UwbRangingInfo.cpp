@@ -10,7 +10,7 @@ UwbRangingInfo::UwbRangingInfo() : m_sessionId(0),
     mAltitudeAngleMeasure = std::make_unique<AngleMeasure>(0.0, 0.0, 0.0);
 }
 
-uint16_t UwbRangingInfo::getSessionId() const{
+uint8_t UwbRangingInfo::getSessionId() const{
     return m_sessionId;
 }
 
@@ -42,7 +42,7 @@ std::unique_ptr<AngleMeasure>& UwbRangingInfo::getAltitudeAngleMeasure(){
     return mAltitudeAngleMeasure;
 }
 
-void UwbRangingInfo::setSessionId(uint16_t sessionId) {
+void UwbRangingInfo::setSessionId(uint8_t sessionId) {
     m_sessionId = sessionId;
 }
 

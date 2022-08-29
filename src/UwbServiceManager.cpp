@@ -155,7 +155,6 @@ bool UwbServiceManager::getRangingInfo(LSHandle *sh, LSMessage *message, void *d
         LSErrorPrint(&lsError, stdout);
         return false;
     }
-    LSUtils::postToClient(request, responseObj);
     return true;
 }
 
@@ -191,7 +190,12 @@ bool UwbServiceManager::startDiscovery(LSHandle *sh, LSMessage *message, void *d
         LSUtils::respondWithError(request, UWB_ERROR_UNSUPPORTED_API_CONTROLEE);
         return true;
     }
- 
+
+    if(mModuleInfo.getModuleState() == "stop"){
+		LSUtils::respondWithError(request, UWB_ERR_START_DISC_FAIL, true);
+		return true;
+	}
+
     pbnjson::JValue requestObj;
     int parseError = 0;
 
@@ -343,11 +347,10 @@ bool UwbServiceManager::getPairedSessions(LSHandle *sh, LSMessage *message, void
     }
     pbnjson::JValue responseObj = pbnjson::Object();
 
-    //Note: now getPairedSession API will work for both Controller & Controlee
-    /*if(mModuleInfo.getDeviceRole() == "controlee") {
+    if(mModuleInfo.getDeviceRole() == "controlee") {
         LSUtils::respondWithError(request, UWB_ERROR_UNSUPPORTED_API_CONTROLEE);
         return true;
-    }*/
+    }
 
     LSError lsError;
     LSErrorInit(&lsError);
@@ -362,11 +365,6 @@ bool UwbServiceManager::getPairedSessions(LSHandle *sh, LSMessage *message, void
             LSMessageReply(sh,message, responseObj.stringify().c_str() , &lsError );
             return true;
         }
-    }
-    UwbErrorCodes error = UWB_ERROR_NONE;
-    if (error != UWB_ERROR_NONE){
-        LSUtils::respondWithError(request, error);
-        return true;
     }
     responseObj.put("returnValue", true);
     responseObj.put("subscribed", subscribed);
@@ -550,7 +548,7 @@ bool UwbServiceManager::stopDiscovery(LSHandle *sh, LSMessage *message, void *da
     pbnjson::JValue requestObj;
     int parseError = 0;
 
-    const std::string schema = STRICT_SCHEMA(PROPS_1(PROP(subscribe, boolean)));
+    const std::string schema = STRICT_SCHEMA(PROPS_1(PROP_EMPTY()));
     if (!LSUtils::parsePayload(request.getPayload(), requestObj, schema, &parseError)) {
         LSUtils::respondWithError(request, UWB_ERR_SCHEMA_VALIDATION_FAIL);
         return true;
@@ -727,6 +725,11 @@ bool UwbServiceManager::startRanging(LSHandle *sh, LSMessage *message, void *dat
         uint8_t sessionId = 0;
         sessionId = requestObj["sessionId"].asNumber<int32_t>();
 
+        if(sessionId != 1){
+			LSUtils::respondWithError(request, UWB_ERR_NOT_VALID_INPUT);
+			return true;
+		}
+
         UwbErrorCodes error = UWB_ERROR_NONE;
         error = mUwbAdaptor->startRanging(sessionId);
 
@@ -769,7 +772,12 @@ bool UwbServiceManager::stopRanging(LSHandle *sh, LSMessage *message, void *data
     {
         uint8_t sessionId = 0;
         sessionId = requestObj["sessionId"].asNumber<int32_t>();
-        
+
+        if(sessionId != 1){
+			LSUtils::respondWithError(request, UWB_ERR_NOT_VALID_INPUT);
+			return true;
+		}
+
         UwbErrorCodes error = UWB_ERROR_NONE;
         error = mUwbAdaptor->stopRanging(sessionId);
 

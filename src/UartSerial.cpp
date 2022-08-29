@@ -51,6 +51,7 @@ void UartSerial::InitializeUart(std::string param) {
     getDeviceName();
     usleep(100000);
     getUwbModuleInfo();
+    usleep(100000);
     getPairingInfo();
     rxThreadId.join();
     close(mUartFd);

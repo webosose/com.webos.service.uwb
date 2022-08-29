@@ -16,7 +16,7 @@ public:
     UwbRangingInfo();
     ~UwbRangingInfo() = default;
 
-    uint16_t getSessionId() const;
+    uint8_t getSessionId() const;
     bool getConnectionStatus() const;
     int getCondition() const;
     string getRemoteDevAddr() const;
@@ -24,7 +24,7 @@ public:
     std::unique_ptr<DistanceMeasure>& getDistanceMeasure();
     std::unique_ptr<AngleMeasure>& getAzimuthAngleMeasure();
     std::unique_ptr<AngleMeasure>& getAltitudeAngleMeasure();
-    void setSessionId(uint16_t sessionId);
+    void setSessionId(uint8_t sessionId);
     void setConnectionStatus(bool connectionStatus);
     void setCondition(int condition);
     void setRemoteDevAddr(string remoteDevAddr);
@@ -34,7 +34,7 @@ public:
     void setAltitudeAngleMeasure(std::unique_ptr<AngleMeasure> angleMeasure);
 
 private:
-    uint16_t m_sessionId{0}; //TODO: not needed in this class. Remove it.
+    uint8_t m_sessionId{0}; //TODO: not needed in this class. Remove it.
     int m_condition{0};        
     string m_remoteDevAddr{""};
     int64_t mElapsedTime{0};
