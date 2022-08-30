@@ -1,13 +1,25 @@
+// @@@LICENSE
+//
+//      Copyright (c) 2022 LG Electronics, Inc.
+//
+// Confidential computer software. Valid license from LG required for
+// possession, use or copying. Consistent with FAR 12.211 and 12.212,
+// Commercial Computer Software, Computer Software Documentation, and
+// Technical Data for Commercial Items are licensed to the U.S. Government
+// under vendor's standard commercial license.
+//
+// LICENSE@@@
+
 #include "UwbEventListener.h"
 
 using namespace std::chrono;
 
-void UwbEventListener::updateModuleStateChanged(const std::string& moduleState){
-    UwbServiceManager::getInstance()->notifyModuleStateChanged(moduleState);
-}
-
 void UwbEventListener::updateModuleStatus() {
     UwbServiceManager::getInstance()->notifySubscribersModuleStatus();
+}
+
+void UwbEventListener::updateModuleStateChanged(const std::string& moduleState){
+    UwbServiceManager::getInstance()->notifyModuleStateChanged(moduleState);
 }
 
 void UwbEventListener::updateDeviceTypeChanged(uint8_t deviceType) {
@@ -32,12 +44,24 @@ void UwbEventListener::updateDeviceNameChanged(const std::string& deviceName) {
     UwbServiceManager::getInstance()->notifyDeviceNameChanged(deviceName);
 }
 
+void UwbEventListener::updatePairingFlag(bool pairingFlag) {
+    UwbServiceManager::getInstance()->notifyPairingFlagChanged(pairingFlag);
+}
+
+void UwbEventListener::updatePairingInfo() {
+    UwbServiceManager::getInstance()->notifyPairingInfo();
+}
+
 void UwbEventListener::updateDiscoveryStatus(bool discoveryStatus) {
     UwbServiceManager::getInstance()->notifyDiscoveryStatus(discoveryStatus);
 }
 
-void UwbEventListener::updatePairingFlag(bool pairingFlag) {
-    UwbServiceManager::getInstance()->notifyPairingFlagChanged(pairingFlag);
+void UwbEventListener::updateScanResult(const std::string& macAddress, const std::string& deviceName) {
+    UwbServiceManager::getInstance()->notifyScanResult(macAddress, deviceName);
+}
+
+void UwbEventListener::updateOpenSessionResponse(uint8_t sessionId) {
+    UwbServiceManager::getInstance()->notifyOpenSessionResponse(sessionId);
 }
 
 void UwbEventListener::updateRangingInfo(uint8_t reliability, uint8_t sessionId, int64_t angle, int64_t distance) {
@@ -60,16 +84,4 @@ void UwbEventListener::updateRangingInfo(uint8_t reliability, uint8_t sessionId,
     rangingInfo->setSessionId(sessionId);
 
     UwbServiceManager::getInstance()->notifySubscriberRangingInfo(std::move(rangingInfo), sessionId);
-}
-
-void UwbEventListener::updatePairingInfo() {
-    UwbServiceManager::getInstance()->notifyPairingInfo();
-}
-
-void UwbEventListener::updateScanResult(const std::string& macAddress, const std::string& deviceName) {
-    UwbServiceManager::getInstance()->notifyScanResult(macAddress, deviceName);
-}
-
-void UwbEventListener::updateOpenSessionResponse(uint8_t sessionId) {
-    UwbServiceManager::getInstance()->notifyOpenSessionResponse(sessionId);
 }

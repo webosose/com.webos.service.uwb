@@ -1,3 +1,15 @@
+// @@@LICENSE
+//
+//      Copyright (c) 2022 LG Electronics, Inc.
+//
+// Confidential computer software. Valid license from LG required for
+// possession, use or copying. Consistent with FAR 12.211 and 12.212,
+// Commercial Computer Software, Computer Software Documentation, and
+// Technical Data for Commercial Items are licensed to the U.S. Government
+// under vendor's standard commercial license.
+//
+// LICENSE@@@
+
 #ifndef H_UwbServiceManager
 #define H_UwbServiceManager
 
@@ -47,10 +59,9 @@ private:
     UwbServiceManager();
     void appendCurrentStatus(pbnjson::JValue &object);
 
-//    UWB_SERVICE_METHOD(getUwbServiceState);
-//    UWB_SERVICE_METHOD(getUwbSpecificInfo);
+  //UWB_SERVICE_METHOD(getUwbServiceState);
+  //UWB_SERVICE_METHOD(getUwbSpecificInfo);
     UWB_SERVICE_METHOD(getRangingInfo);
-//    UWB_SERVICE_METHOD(setUwbModuleState);
     UWB_SERVICE_METHOD(getStatus);
     UWB_SERVICE_METHOD(getPairedSessions);
     UWB_SERVICE_METHOD(setState);
@@ -63,7 +74,6 @@ private:
 
     LSHandle *mServiceHandle = nullptr;
     GMainLoop *mMainLoop;
-    inline static bool subscribed = false;
     inline static UwbServiceManager *mUwbServiceMgr{nullptr};
     inline static std::shared_ptr<UwbAdapterInterface> mUwbAdaptor{}; //couldn't make it non-static because it's used in a static function
     UwbSessionControl *mUwbSessionCtl;

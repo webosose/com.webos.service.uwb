@@ -1,6 +1,6 @@
 // @@@LICENSE
 //
-//      Copyright (c) 2014-2016 LG Electronics, Inc.
+//      Copyright (c) 2022 LG Electronics, Inc.
 //
 // Confidential computer software. Valid license from LG required for
 // possession, use or copying. Consistent with FAR 12.211 and 12.212,
@@ -21,25 +21,24 @@
 #define LS_CATEGORY_TABLE_NAME(name) name##_table
 
 #define LS_CREATE_CLASS_CATEGORY_BEGIN(cl, name) \
-	constexpr static const LSMethod LS_CATEGORY_TABLE_NAME(name)[] = {
+    constexpr static const LSMethod LS_CATEGORY_TABLE_NAME(name)[] = {
 
 #define LS_CREATE_CATEGORY_BEGIN(cl, name) \
-	typedef cl cl_t; \
-	constexpr static const LSMethod LS_CATEGORY_TABLE_NAME(name)[] = {
+    typedef cl cl_t; \
+    constexpr static const LSMethod LS_CATEGORY_TABLE_NAME(name)[] = {
 
 #define LS_CATEGORY_MAPPED_METHOD(name, func) { #name, \
-	&LS::Handle::methodWraper<cl_t, &cl_t::func>, \
-	static_cast<LSMethodFlags>(0) },
+    &LS::Handle::methodWraper<cl_t, &cl_t::func>, \
+    static_cast<LSMethodFlags>(0) },
 
 #define LS_CATEGORY_CLASS_METHOD(cls, name) { #name, \
-	&LS::Handle::methodWraper<cls, &cls::name>, \
-	static_cast<LSMethodFlags>(0) },
+    &LS::Handle::methodWraper<cls, &cls::name>, \
+    static_cast<LSMethodFlags>(0) },
 
 #define LS_CREATE_CATEGORY_END \
 { nullptr, nullptr } \
-	};
+};
 
-// Build a schema as a const char * string without any execution overhead
 #define SCHEMA_ANY                                    "{}"
 #define SCHEMA_1(param)                               "{\"type\":\"object\",\"properties\":{" param "},\"additionalProperties\":false}"
 
@@ -86,70 +85,70 @@ bool generatePayload(const pbnjson::JValue &object, std::string &payload);
 
 inline bool parsePayload(const std::string &payload, pbnjson::JValue &object)
 {
-	pbnjson::JSchema parseSchema = pbnjson::JSchema::AllSchema();
+    pbnjson::JSchema parseSchema = pbnjson::JSchema::AllSchema();
 
-	pbnjson::JDomParser parser;
+    pbnjson::JDomParser parser;
 
-	if (!parser.parse(payload, parseSchema))
-		return false;
+    if (!parser.parse(payload, parseSchema))
+        return false;
 
-	object = parser.getDom();
+    object = parser.getDom();
 
-	return true;
+    return true;
 }
 
 
 inline bool parsePayload(const std::string &payload, pbnjson::JValue &object, const std::string &schema, int *error)
 {
-	pbnjson::JSchema parseSchema = pbnjson::JSchema::AllSchema();
-	if (schema.length() > 0)
-		parseSchema = pbnjson::JSchemaFragment(schema);
+    pbnjson::JSchema parseSchema = pbnjson::JSchema::AllSchema();
+    if (schema.length() > 0)
+    parseSchema = pbnjson::JSchemaFragment(schema);
 
-	pbnjson::JDomParser parser;
+    pbnjson::JDomParser parser;
 
-	if (!parser.parse(payload, parseSchema))
-	{
-		if (strstr(parser.getError(), "parse error") != NULL)
-		{
-			// notify this is a schema error, so that caller can make further
-			// checks for throwing custom errors (particular key missing, etc)
-			pbnjson::JSchema parseSchema = pbnjson::JSchema::AllSchema();
-			if (parser.parse(payload, parseSchema))
-			{
-				*error = JSON_PARSE_SCHEMA_ERROR;
-				object = parser.getDom();
-			}
-		}
-		return false;
-	}
+    if (!parser.parse(payload, parseSchema))
+    {
+        if (strstr(parser.getError(), "parse error") != NULL)
+        {
+            // notify this is a schema error, so that caller can make further
+            // checks for throwing custom errors (particular key missing, etc)
+            pbnjson::JSchema parseSchema = pbnjson::JSchema::AllSchema();
+            if (parser.parse(payload, parseSchema))
+            {
+                *error = JSON_PARSE_SCHEMA_ERROR;
+                object = parser.getDom();
+            }
+        }
+        return false;
+    }
 
-	object = parser.getDom();
-	return true;
+    object = parser.getDom();
+    return true;
 }
 
 void respondWithError(LS::Message &message, const std::string& errorText, unsigned int errorCode = -1, bool failedSubscription = false);
 
 inline void respondWithError(LSMessage *message, const std::string& errorText, unsigned int errorCode = -1)
 {
-	LS::Message msg(message);
-	respondWithError(msg, errorText, errorCode);
+    LS::Message msg(message);
+    respondWithError(msg, errorText, errorCode);
 }
 
 inline void respondWithError(LS::Message &message, UwbErrorCodes errorCode, bool failedSubscription = false)
 {
-	respondWithError(message, retrieveErrorText(errorCode), errorCode, failedSubscription);
+    respondWithError(message, retrieveErrorText(errorCode), errorCode, failedSubscription);
 }
 
 inline void respondWithError(LSMessage *message, UwbErrorCodes errorCode, bool failedSubscription = false)
 {
-	LS::Message msg(message);
-	respondWithError(msg, retrieveErrorText(errorCode), errorCode, failedSubscription);
+    LS::Message msg(message);
+    respondWithError(msg, retrieveErrorText(errorCode), errorCode, failedSubscription);
 }
 
 inline void respondWithError(LSMessage *message, const std::string& errorText, UwbErrorCodes errorCode, bool failedSubscription = false)
 {
-        LS::Message msg(message);
-        respondWithError(msg, errorText, errorCode, failedSubscription);
+    LS::Message msg(message);
+    respondWithError(msg, errorText, errorCode, failedSubscription);
 }
 
 void postToSubscriptionPoint(std::shared_ptr<LS::SubscriptionPoint> subscriptionPoint, pbnjson::JValue &object);
@@ -158,15 +157,13 @@ void postToClient(LS::Message &message, pbnjson::JValue &object);
 
 inline void postToClient(LSMessage *message, pbnjson::JValue &object)
 {
-	if (!message)
-		return;
+    if (!message)
+        return;
 
-	LS::Message request(message);
-	postToClient(request, object);
+    LS::Message request(message);
+    postToClient(request, object);
 }
 
-} // namespace LSUtils
+}
 
 #endif
-
-// vim: noai:ts=4:sw=4:ss=4:expandtab

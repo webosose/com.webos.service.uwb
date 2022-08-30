@@ -1,9 +1,21 @@
+// @@@LICENSE
+//
+//      Copyright (c) 2022 LG Electronics, Inc.
+//
+// Confidential computer software. Valid license from LG required for
+// possession, use or copying. Consistent with FAR 12.211 and 12.212,
+// Commercial Computer Software, Computer Software Documentation, and
+// Technical Data for Commercial Items are licensed to the U.S. Government
+// under vendor's standard commercial license.
+//
+// LICENSE@@@
+
 #include "UwbAdaptor.h"
 #include "UwbLogging.h"
 #include "LunaUwbServiceUtil.h"
 
 UwbAdaptor::UwbAdaptor() {
-    UWB_LOG_INFO("UwbAdaptor Constructor");
+    UWB_LOG_DEBUG("UwbAdaptor Constructor");
 }
 
 UwbAdaptor::~UwbAdaptor() {
@@ -11,7 +23,7 @@ UwbAdaptor::~UwbAdaptor() {
 }
 
 bool UwbAdaptor::init(LSHandle *sh) {
-    UWB_LOG_INFO("UwbAdaptor Init");
+    UWB_LOG_DEBUG("UwbAdaptor Init");
     mLSHandle = sh;
 
     return true;
@@ -56,20 +68,6 @@ UwbErrorCodes UwbAdaptor::setUwbModuleState(const std::string& moduleState) {
         error = UWB_ERR_NOT_VALID_INPUT;
     }
 
-    return error;
-}
-
-UwbErrorCodes UwbAdaptor::getStatus() {
-    UWB_LOG_INFO("UwbAdaptor::getStatus");
-    UwbErrorCodes error = UWB_ERROR_NONE;
-    error = mUartSerial->getUwbModuleInfo();
-    return error;
-}
-
-UwbErrorCodes UwbAdaptor::getPairedSessions() {
-    UWB_LOG_INFO("UwbAdaptor::getPairedSessions");
-    UwbErrorCodes error = UWB_ERROR_NONE;
-    error = mUartSerial->getPairingInfo();
     return error;
 }
 

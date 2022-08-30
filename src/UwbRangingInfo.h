@@ -1,3 +1,15 @@
+// @@@LICENSE
+//
+//      Copyright (c) 2022 LG Electronics, Inc.
+//
+// Confidential computer software. Valid license from LG required for
+// possession, use or copying. Consistent with FAR 12.211 and 12.212,
+// Commercial Computer Software, Computer Software Documentation, and
+// Technical Data for Commercial Items are licensed to the U.S. Government
+// under vendor's standard commercial license.
+//
+// LICENSE@@@
+
 #ifndef _UWBRANGINGINFO_H
 #define _UWBRANGINGINFO_H
 
@@ -34,8 +46,8 @@ public:
     void setAltitudeAngleMeasure(std::unique_ptr<AngleMeasure> angleMeasure);
 
 private:
-    uint8_t m_sessionId{0}; //TODO: not needed in this class. Remove it.
-    int m_condition{0};        
+    uint8_t m_sessionId{0};
+    int m_condition{0};
     string m_remoteDevAddr{""};
     int64_t mElapsedTime{0};
     bool m_connectionStatus{true};

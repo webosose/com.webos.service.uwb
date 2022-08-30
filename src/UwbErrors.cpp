@@ -1,3 +1,15 @@
+// @@@LICENSE
+//
+//      Copyright (c) 2022 LG Electronics, Inc.
+//
+// Confidential computer software. Valid license from LG required for
+// possession, use or copying. Consistent with FAR 12.211 and 12.212,
+// Commercial Computer Software, Computer Software Documentation, and
+// Technical Data for Commercial Items are licensed to the U.S. Government
+// under vendor's standard commercial license.
+//
+// LICENSE@@@
+
 #include <string>
 #include <map>
 
@@ -5,7 +17,7 @@
 
 static std::map<UwbErrorCodes, std::string> uwbErrorTextTable =
 {
-	{UWB_ERROR_NONE, "No error"},
+    {UWB_ERROR_NONE, "No error"},
     {UWB_ERR_BAD_JSON, "Invalid JSON input"},
     {UWB_ERR_SCHEMA_VALIDATION_FAIL, "The JSON input does not match the expected schema"},
     {UWB_ERR_POWER_STATE_CHANGE_FAIL, "Failed to change UWB module state"},

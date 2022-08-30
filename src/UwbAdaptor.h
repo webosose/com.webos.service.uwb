@@ -1,3 +1,15 @@
+// @@@LICENSE
+//
+//      Copyright (c) 2022 LG Electronics, Inc.
+//
+// Confidential computer software. Valid license from LG required for
+// possession, use or copying. Consistent with FAR 12.211 and 12.212,
+// Commercial Computer Software, Computer Software Documentation, and
+// Technical Data for Commercial Items are licensed to the U.S. Government
+// under vendor's standard commercial license.
+//
+// LICENSE@@@
+
 #ifndef H_UwbAdaptor
 #define H_UwbAdaptor
 
@@ -33,7 +45,6 @@ public:
     bool init(LSHandle *sh);
     void setDeviceInterface(std::shared_ptr<UartSerial> uartSerial);
 
-    UwbErrorCodes getStatus() override;
     UwbErrorCodes setUwbModuleState(const std::string& moduleState) override;
     UwbErrorCodes setDeviceType(const std::string& deviceType) override;
     UwbErrorCodes setDeviceName(const std::string& deviceName) override;
@@ -41,7 +52,6 @@ public:
     UwbErrorCodes startDiscovery(int32_t discoveryTimeout) override;
     UwbErrorCodes openSession(const std::string& address) override;
     UwbErrorCodes openSessionControlee(int32_t advTimeout) override;
-    UwbErrorCodes getPairedSessions() override;
     UwbErrorCodes stopDiscovery() override;
     UwbErrorCodes closeSession(uint8_t sessionId) override;
     UwbErrorCodes startRanging(uint8_t sessionId) override;
@@ -52,4 +62,4 @@ private:
     std::shared_ptr<UartSerial> mUartSerial = nullptr;
 };
 
-#endif//H_UwbAdaptor
+#endif

@@ -1,3 +1,15 @@
+// @@@LICENSE
+//
+//      Copyright (c) 2022 LG Electronics, Inc.
+//
+// Confidential computer software. Valid license from LG required for
+// possession, use or copying. Consistent with FAR 12.211 and 12.212,
+// Commercial Computer Software, Computer Software Documentation, and
+// Technical Data for Commercial Items are licensed to the U.S. Government
+// under vendor's standard commercial license.
+//
+// LICENSE@@@
+
 #include <glib.h>
 #include <string>
 #include <memory>
@@ -45,12 +57,12 @@ int main(int argc, char *argv[]) {
     auto eventListener = std::make_shared<UwbEventListener>();
     uartSerial->setEventListener(eventListener);
     std::thread uartThread(&UartSerial::InitializeUart, uartSerial, "Init Uart");
-    
+
     //End of start uart communication
 
-    UWB_LOG_INFO("UWB service started.");
+    UWB_LOG_DEBUG("UWB service started.");
     g_main_loop_run(mainLoop);
-    UWB_LOG_INFO("UWB service stopped.");
+    UWB_LOG_DEBUG("UWB service stopped.");
     g_main_loop_unref(mainLoop);
     uwbService->deinit();
 
