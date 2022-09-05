@@ -22,7 +22,6 @@ void UartSerial::setEventListener(shared_ptr<CallbackInterface> eventListener) {
 bool UartSerial::IsUwbConnected()
 {
     FILE *fp;
-    int status;
     char result[5] = {0,};
 
     bool connected = false;
@@ -182,65 +181,55 @@ void UartSerial::serialDataRead() {
         }
 
         if (rx_length == 35) {
+             printData(rx_bin, rx_length);
             if( rx_bin[0] == 0xcc ) {
                 EventId eventId = static_cast<EventId>(rx_bin[1]);
+                UWB_LOG_INFO("Event Id = [%02x]",eventId);
                 switch(eventId) {
                     case HOST_STATUS_MODULE_INFO : {
-                        UWB_LOG_INFO("HOST_STATUS_MODULE_INFO (0x3C) received");
                         processModuleInfo(rx_bin);
                         break;
                     }
                     case HOST_STATUS_PAIRING_INFO : {
-                        UWB_LOG_INFO("HOST_STATUS_PAIRING_INFO (0x3D) received");
                         processPairingInfo(rx_bin);
                         break;
                     }
                     case HOST_EVT_MEASUREMENT : {
-                        UWB_LOG_INFO("HOST_EVT_MEASUREMENT (0x3E) received");
                         processMeasurement(rx_bin);
                         break;
                     }
                     case HOST_EVT_MEASUREMENT_BYPASS : {
-                        UWB_LOG_INFO("HOST_EVT_MEASUREMENT_BYPASS (0x3F) received");
                         break;
                     }
                     case HOST_EVT_TRANSFER_DATA : {
-                        UWB_LOG_INFO("HOST_EVT_TRANSFER_DATA (0x40) received");
                         break;
                     }
                     case HOST_EVT_SCAN_RESULT : {
-                        UWB_LOG_INFO("HOST_EVT_SCAN_RESULT (0x41) received");
                         processScanResult(rx_bin);
                         break;
                     }
                     case HOST_EVT_DISCONNECT : {
-                        UWB_LOG_INFO("HOST_EVT_DISCONNECT (0x42) received");
                         break;
                     }
                     case HOST_EVT_CONNECT : {
-                        UWB_LOG_INFO("HOST_EVT_CONNECT (0x43) received");
                         break;
                     }
                     case HOST_EVT_CMD : {
-                        UWB_LOG_INFO("HOST_EVT_CMD (0x44) received");
                         processCommonEvent(rx_bin);
                         break;
                     }
                     case HOST_EVT_DEVICE_NAME : {
-                        UWB_LOG_INFO("HOST_EVT_DEVICE_NAME (0x45) received");
                         processDeviceName(rx_bin);
                         break;
                     }
                     case HOST_ACK_MODULE : {
-                        UWB_LOG_INFO("HOST_ACK_MODULE (0x46) received");
                         break;
                     }
                     case HOST_ACK_SERVICE : {
-                        UWB_LOG_INFO("HOST_ACK_SERVICE (0x47) received");
                         break;
                     }
                     default : {
-                        UWB_LOG_INFO("Undefined Event Id = [%02x]");
+                        break;
                     }
                 }
             }
@@ -261,7 +250,6 @@ void UartSerial::serialDataRead() {
 }
 
 UwbErrorCodes UartSerial::setUwbModuleState(CommandId cmdId) {
-    UWB_LOG_INFO("commandId: [%02x]", cmdId);
     std::vector<uint8_t> data (35, 0x00);
     data[0] = PREAMBLE;
     data[1] = cmdId;
@@ -276,7 +264,6 @@ UwbErrorCodes UartSerial::setUwbModuleState(CommandId cmdId) {
 }
 
 UwbErrorCodes UartSerial::getUwbModuleInfo() {
-    UWB_LOG_INFO("UartSerial::getUwbModuleInfo is Called");
     std::vector<uint8_t> data (35, 0x00);
     data[0] = PREAMBLE;
     data[1] = 0x03;
@@ -373,7 +360,6 @@ void UartSerial::processPairingInfo(char *rx_bin) {
 
     for(int i=2;i<(pairingCount*3);i += 3){
         uint8_t sessionId = rx_bin[i+1];
-    UWB_LOG_INFO("sessionId: %d", sessionId );
 
     std::string deviceRole = "";
     std::string deviceName = "";
@@ -385,13 +371,9 @@ void UartSerial::processPairingInfo(char *rx_bin) {
         deviceRole = "Controlee";
         deviceName = "CONTROLEE_DEVICE";
 
-    UWB_LOG_INFO("deviceRole: %s", deviceRole.c_str());
-
     bool connectionStatus = false;
     if(rx_bin[i+3] == 0x01)
         connectionStatus = true;
-
-    UWB_LOG_INFO("connectionStatus : %d", connectionStatus);
 
     pbnjson::JValue pairingObj = pbnjson::Object();
     pairingObj.put("sessionId", sessionId);
@@ -488,7 +470,6 @@ void UartSerial::processScanResult(char *rx_bin) {
             ptr += sprintf(ptr,":");
     }
     std::string macAddress = address;
-    UWB_LOG_INFO("macAddress: %s", macAddress.c_str() );
 
     ostringstream name;
     for(int i=8;i<33;i++) {
@@ -496,7 +477,6 @@ void UartSerial::processScanResult(char *rx_bin) {
             name << rx_bin[i];
     }
     std::string deviceName  = name.str();
-    UWB_LOG_INFO("deviceName: %s", deviceName.c_str() );
 
     int count = 0;
     static int count1 = 0;
@@ -669,7 +649,6 @@ void UartSerial::processDeviceName(char *rx_bin) {
             os << rx_bin[i];
     }
     std::string deviceName  = os.str();
-    UWB_LOG_INFO("deviceName: %s", deviceName.c_str() );
     mDeviceName = deviceName;
     mModuleInfo.setDeviceName(deviceName);
 }
@@ -683,6 +662,7 @@ void UartSerial::processCommonEvent(char *rx_bin) {
     switch(commandId) {
         case HOST_CMD_MODULE_START : {
             if(commandResult == 1) {
+                UWB_LOG_INFO("Module state changed");
                 mEventListener->updateModuleStateChanged("start");
             }
             else if(commandResult == 0) {
@@ -692,6 +672,7 @@ void UartSerial::processCommonEvent(char *rx_bin) {
         }
         case HOST_CMD_MODULE_STOP : {
             if(commandResult == 1) {
+                UWB_LOG_INFO("Module state changed");
                 mEventListener->updateModuleStateChanged("stop");
             }
             else if(commandResult == 0) {
@@ -710,6 +691,7 @@ void UartSerial::processCommonEvent(char *rx_bin) {
         }
         case HOST_SET_DEVICE_MODE : {
             if(commandResult == 1) {
+                UWB_LOG_INFO("Device mode changed");
                 mEventListener->updateDeviceModeChanged(mDeviceMode);
             }
             else if(commandResult == 0) {
@@ -719,6 +701,7 @@ void UartSerial::processCommonEvent(char *rx_bin) {
         }
         case HOST_SET_DEVICE_NAME : {
             if(commandResult == 1) {
+                UWB_LOG_INFO("Device name changed");
                 mEventListener->updateDeviceNameChanged(mDeviceName);
             }
             else if(commandResult == 0) {
@@ -762,7 +745,6 @@ void UartSerial::processCommonEvent(char *rx_bin) {
         case HOST_REQ_ADVERTISING : {
             if(commandResult == 1) {
                 uint8_t sessionId = rx_bin[4];
-                UWB_LOG_INFO("sessionId: %d", sessionId );
                 UWB_LOG_INFO("HOST_REQ_ADVERTISING successful");
                 mEventListener->updatePairingFlag(true);
                 getPairingInfo();
@@ -812,7 +794,7 @@ void UartSerial::processCommonEvent(char *rx_bin) {
 
 void UartSerial::processMeasurement(char *rx_bin) {
     uint8_t sessionId = rx_bin[2];
-    UWB_LOG_INFO("sessionId: [%02x]", sessionId);
+    UWB_LOG_DEBUG("sessionId: [%02x]", sessionId);
     int16_t angle = rx_bin[3] | rx_bin[4] << 8;
     int16_t distance = rx_bin[5] | rx_bin[6] << 8;
     uint8_t reliability = rx_bin[7];

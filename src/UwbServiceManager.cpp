@@ -114,7 +114,7 @@ bool UwbServiceManager::getUwbSpecificInfo(LSHandle *sh, LSMessage *message, voi
 
 bool UwbServiceManager::getRangingInfo(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
-    
+
     LS::Message request(message);
     bool subscribed = false;
 
@@ -171,7 +171,6 @@ bool UwbServiceManager::getRangingInfo(LSHandle *sh, LSMessage *message, void *d
 
 void UwbServiceManager::notifySubscriberRangingInfo(std::unique_ptr<UwbRangingInfo> rangingInfo, uint8_t sessionId)
 {
-    UWB_LOG_DEBUG("notifySubscriberRangingInfo");
     LSError lsError;
     LSErrorInit(&lsError);
 
@@ -404,7 +403,7 @@ bool UwbServiceManager::getPairedSessions(LSHandle *sh, LSMessage *message, void
 
     LS::Message request(message);
     bool subscribed = false;
-    
+
     pbnjson::JValue requestObj;
     int parseError = 0;
 
@@ -437,8 +436,8 @@ bool UwbServiceManager::getPairedSessions(LSHandle *sh, LSMessage *message, void
 
     responseObj.put("returnValue", true);
     responseObj.put("subscribed", subscribed);
-    responseObj.put("PairingCount", mPairingInfo.getPairingCount());
-    responseObj.put("Sessions", mPairingInfo.getSessionInfo());
+    responseObj.put("pairingCount", mPairingInfo.getPairingCount());
+    responseObj.put("sessions", mPairingInfo.getSessionInfo());
     LSUtils::postToClient(request, responseObj);
     return true;
 }
@@ -832,7 +831,7 @@ bool UwbServiceManager::startRanging(LSHandle *sh, LSMessage *message, void *dat
     {
         uint8_t sessionId = 0;
         sessionId = requestObj["sessionId"].asNumber<int32_t>();
-        
+
         if(sessionId != 1){
             LSUtils::respondWithError(request, UWB_ERR_NOT_VALID_INPUT);
             return true;
@@ -885,7 +884,7 @@ bool UwbServiceManager::stopRanging(LSHandle *sh, LSMessage *message, void *data
             LSUtils::respondWithError(request, UWB_ERR_NOT_VALID_INPUT);
             return true;
         }
-        
+
         UwbErrorCodes error = UWB_ERROR_NONE;
         error = mUwbAdaptor->stopRanging(sessionId);
 
