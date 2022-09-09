@@ -21,26 +21,20 @@ void UartSerial::setEventListener(shared_ptr<CallbackInterface> eventListener) {
 
 bool UartSerial::IsUwbConnected()
 {
-    FILE *fp;
-    char result[5] = {0,};
-
     bool connected = false;
+    ifstream fileHandler;
 
-    std::string command = "ls -l /dev/ttyUSB_LGEUWB | grep ttyUSB_LGEUWB | wc -l";
+    fileHandler.open("/dev/ttyUSB_LGEUWB");
 
-    fp = popen(command.c_str(), "r");
-    if (fp == NULL)
-        UWB_LOG_ERROR("handle error");
-
-    while (fgets(result, 5, fp) != NULL)
+    if(fileHandler.is_open())
     {
-        if (strstr(result, "1") != NULL)
-        {
-            connected = true;
-        }
+        connected = true;
+	UWB_LOG_INFO("UWB module connected!!!");
     }
-
-    pclose(fp);
+    else{
+        UWB_LOG_ERROR("UWB module not connected!!!");
+    }
+    fileHandler.close();
     return connected;
 }
 
