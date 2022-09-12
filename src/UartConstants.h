@@ -13,6 +13,13 @@
 #ifndef _UARTCONSTANTS_H
 #define _UARTCONSTANTS_H
 
+#define CMD_SUCCESS  0x01
+#define CMD_FAILURE  0x00
+#define UART_DATA_SIZE  35
+#define DEVICENAME_LENGTH  25
+#define CRC_MSB  0x0a
+#define CRC_LSB  0x0d
+
 enum CommandId {
     HOST_CMD_MODULE_START = 0x01,
     HOST_CMD_MODULE_STOP = 0x02,

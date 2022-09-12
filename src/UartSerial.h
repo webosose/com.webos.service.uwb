@@ -26,18 +26,13 @@
 #include <memory>
 #include <cstring>
 #include <sstream>
+#include <fstream>
 #include <map>
 #include "CallbackInterface.h"
 #include "UartConstants.h"
 #include "UwbErrors.h"
 #include "ModuleInfo.h"
 #include "PairingInfo.h"
-
-#define NUM_PRINT_BYTES  16
-enum {
-    STRING = 1,
-    BINARY,
-};
 
 class UartSerial {
 public:
@@ -77,7 +72,7 @@ private:
     void configureUart();
     speed_t setBaudrate(const int speed);
     void printData(char *rx_bin, int rx_length);
-    void printBytes(int type, int length, const char *buffer);
+    void printBytes(int length, const char *buffer);
     void serialDataRead();
     void processCommonEvent(char *rx_bin);
     void processModuleInfo(char *rx_bin);
