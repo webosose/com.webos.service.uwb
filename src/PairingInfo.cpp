@@ -24,6 +24,19 @@ pbnjson::JValue PairingInfo::getSessionInfo(){
     return mSessionArray;
 }
 
+std::string PairingInfo::getPairedDeviceName(std::string deviceAddress) {
+    std::map<std::string, std::string>::iterator it;
+    it = mDiscoveredDevices.find(deviceAddress);
+    if(it != mDiscoveredDevices.end()){
+        return it->second;
+    }
+    return "Controlee_Device";
+}
+
+void PairingInfo::setDiscoveredDevices(std::string& deviceAddress, std::string& deviceName){
+    mDiscoveredDevices.emplace(std::pair<std::string , std::string>(deviceAddress, deviceName));
+}
+
 void PairingInfo::setPairingCount(uint8_t pairingCount){
     mPairingCount = pairingCount;
 }

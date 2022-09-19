@@ -358,11 +358,9 @@ void UartSerial::processPairingInfo(char *rx_bin) {
     std::string deviceName = "";
     if(rx_bin[i+2] == 0x00){
         deviceRole = "Controller";
-        deviceName = "CONTROLLER_DEVICE";
     }
     else{
         deviceRole = "Controlee";
-        deviceName = "CONTROLEE_DEVICE";
     }
     bool connectionStatus = false;
     if(rx_bin[i+3] == 0x01)
@@ -371,7 +369,7 @@ void UartSerial::processPairingInfo(char *rx_bin) {
     pbnjson::JValue pairingObj = pbnjson::Object();
     pairingObj.put("sessionId", sessionId);
     pairingObj.put("deviceRole", deviceRole);
-    pairingObj.put("deviceName", deviceName);//TODO: Need to store the device names from scan result and update it here.
+    pairingObj.put("deviceName", mPairingInfo.getPairedDeviceName(mMacAddress));
     pairingObj.put("connectionStatus", connectionStatus);
     pairingArray.append(pairingObj);
     }
@@ -481,13 +479,14 @@ void UartSerial::processScanResult(char *rx_bin) {
     }
 
     if(mdeviceMap.count(macAddress) == 0){
+        mPairingInfo.setDiscoveredDevices(macAddress, deviceName);
         mdeviceMap.emplace(std::pair<std::string , std::string>(macAddress, deviceName));
         count ++;
     }
     if(count){
         mEventListener->updateScanResult(macAddress, deviceName);
-        count1++;
     }
+    count1++;
 }
 
 UwbErrorCodes UartSerial::stopDiscovery() {
@@ -509,6 +508,7 @@ UwbErrorCodes UartSerial::openSession(const std::string& address) {
     if(address.size()>17){
         return UWB_ERROR_ADDRESS_LENGTH;
     }
+    mMacAddress = address;
     char *ptr = &address[0];
     char delim[] = ":";
     char *token = strtok(ptr,delim);

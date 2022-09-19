@@ -14,20 +14,24 @@
 #define _PAIRINGINFO_H
 
 #include <string>
+#include <map>
 #include <pbnjson.hpp>
 
 class PairingInfo {
 public:
 
-   static PairingInfo& getInstance() {
+    static PairingInfo& getInstance() {
         static PairingInfo instance;
         return instance;
-   }
+    }
 
-   uint8_t getPairingCount();
-   pbnjson::JValue getSessionInfo();
-   void setPairingCount(uint8_t pairingCount);
-   void setSessionInfo(pbnjson::JValue& pairingArray);
+    uint8_t getPairingCount();
+    pbnjson::JValue getSessionInfo();
+    std::string getPairedDeviceName(std::string deviceAddress);
+
+    void setDiscoveredDevices(std::string& deviceAddress, std::string& deviceName);
+    void setPairingCount(uint8_t pairingCount);
+    void setSessionInfo(pbnjson::JValue& pairingArray);
 
 private:
     PairingInfo();
@@ -35,6 +39,7 @@ private:
     PairingInfo(const PairingInfo&)= delete;
     PairingInfo& operator=(const PairingInfo&)= delete;
 
+    std::map<std::string,std::string> mDiscoveredDevices{};
     uint8_t mPairingCount=0;
     pbnjson::JValue mSessionArray = pbnjson::Array();
 

@@ -63,6 +63,7 @@ private:
     uint8_t mDeviceType = 0x00;
     uint8_t mDeviceMode = 0x00;
     std::string mDeviceName = "";
+    std::string mMacAddress = "";
 
     std::map<std::string,std::string> mdeviceMap{};
     std::shared_ptr<CallbackInterface> mEventListener;
