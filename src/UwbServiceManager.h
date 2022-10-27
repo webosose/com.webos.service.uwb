@@ -59,8 +59,8 @@ private:
     UwbServiceManager();
     void appendCurrentStatus(pbnjson::JValue &object);
 
-  //UWB_SERVICE_METHOD(getUwbServiceState);
-  //UWB_SERVICE_METHOD(getUwbSpecificInfo);
+    UWB_SERVICE_METHOD(getUwbServiceState);
+    UWB_SERVICE_METHOD(getUwbSpecificInfo);
     UWB_SERVICE_METHOD(getRangingInfo);
     UWB_SERVICE_METHOD(getStatus);
     UWB_SERVICE_METHOD(getPairedSessions);

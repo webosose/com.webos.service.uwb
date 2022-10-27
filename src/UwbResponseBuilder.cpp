@@ -42,7 +42,6 @@ void UwbResponseBuilder::buildRangingInfo(pbnjson::JValue &responseObj, std::uni
     responseObj.put("rangingInfo", rangingInfoObj);
 }
 
-/*
 void UwbResponseBuilder::buildSpecificInfo(pbnjson::JValue &responseObj, UwbSpecInfo &info) {
     responseObj.put("modState",info.getModState());
     responseObj.put("fwVersion", info.getFwVersion());
@@ -52,5 +51,3 @@ void UwbResponseBuilder::buildSpecificInfo(pbnjson::JValue &responseObj, UwbSpec
 void UwbResponseBuilder::buildServiceState(pbnjson::JValue &responseObj, bool isServiceAvailable) {
     responseObj.put("serviceAvailability", isServiceAvailable);
 }
-
-*/

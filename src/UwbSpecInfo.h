@@ -10,7 +10,6 @@
 //
 // LICENSE@@@
 
-/*
 #ifndef _UWBSPECIFICINFO_H   //File need to be removed.
 #define _UWBSPECIFICINFO_H
 #include <string>
@@ -56,5 +55,3 @@ private:
     string m_fwCrc;
 };
 #endif
-
-*/

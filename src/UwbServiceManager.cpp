@@ -15,30 +15,31 @@
 #include <pbnjson.hpp>
 
 LSMethod UwbServiceManager::serviceMethods[] = {
-   // { "getUwbServiceState", UwbServiceManager::_getUwbServiceState },
-   // { "getUwbSpecificInfo", UwbServiceManager::_getUwbSpecificInfo },
-    { "getRangingInfo",     UwbServiceManager::_getRangingInfo },
-    { "getStatus", UwbServiceManager::_getStatus },
-    { "getPairedSessions",     UwbServiceManager::_getPairedSessions },
-    { "setState",     UwbServiceManager::_setState },
-    { "startDiscovery",     UwbServiceManager::_startDiscovery },
-    { "stopDiscovery", UwbServiceManager::_stopDiscovery },
-    { "openSession", UwbServiceManager::_openSession },
-    { "closeSession",     UwbServiceManager::_closeSession },
-    { "startRanging", UwbServiceManager::_startRanging },
-    { "stopRanging", UwbServiceManager::_stopRanging },
+    { "getUwbServiceState", UwbServiceManager::_getUwbServiceState, LUNA_METHOD_FLAG_DEPRECATED },
+    { "getUwbSpecificInfo", UwbServiceManager::_getUwbSpecificInfo, LUNA_METHOD_FLAG_DEPRECATED },
+    { "getRangingInfo",     UwbServiceManager::_getRangingInfo, LUNA_METHOD_FLAGS_NONE},
+    { "getStatus", UwbServiceManager::_getStatus, LUNA_METHOD_FLAGS_NONE },
+    { "getPairedSessions",     UwbServiceManager::_getPairedSessions, LUNA_METHOD_FLAGS_NONE },
+    { "setState",     UwbServiceManager::_setState, LUNA_METHOD_FLAGS_NONE },
+    { "startDiscovery",     UwbServiceManager::_startDiscovery, LUNA_METHOD_FLAGS_NONE },
+    { "stopDiscovery", UwbServiceManager::_stopDiscovery, LUNA_METHOD_FLAGS_NONE },
+    { "openSession", UwbServiceManager::_openSession, LUNA_METHOD_FLAGS_NONE },
+    { "closeSession",     UwbServiceManager::_closeSession, LUNA_METHOD_FLAGS_NONE },
+    { "startRanging", UwbServiceManager::_startRanging, LUNA_METHOD_FLAGS_NONE },
+    { "stopRanging", UwbServiceManager::_stopRanging, LUNA_METHOD_FLAGS_NONE },
     { 0               ,      0                 }
 };
 
 
 UwbServiceManager *UwbServiceManager::getInstance() {
-    if(mUwbServiceMgr == nullptr) mUwbServiceMgr = new UwbServiceManager();
+    if(mUwbServiceMgr == nullptr)
+        mUwbServiceMgr = new UwbServiceManager();
     return mUwbServiceMgr;
 }
 
 UwbServiceManager::UwbServiceManager():
-        mMainLoop(nullptr),
-        mUwbSessionCtl(nullptr) {
+    mMainLoop(nullptr),
+    mUwbSessionCtl(nullptr) {
 }
 
 UwbServiceManager::~UwbServiceManager(){
@@ -99,7 +100,7 @@ bool UwbServiceManager::deinit() {
     return true;
 }
 
-/*bool UwbServiceManager::getUwbServiceState(LSHandle *sh, LSMessage *message, void *data) {
+bool UwbServiceManager::getUwbServiceState(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
 
     return true;
@@ -110,7 +111,6 @@ bool UwbServiceManager::getUwbSpecificInfo(LSHandle *sh, LSMessage *message, voi
 
     return true;
 }
-*/
 
 bool UwbServiceManager::getRangingInfo(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );

@@ -10,8 +10,6 @@
 //
 // LICENSE@@@
 
-/*
-
 #include "UwbSpecInfo.h"       //File need to be removed
 
 UwbSpecInfo* UwbSpecInfo::m_uwbSpecInfo = nullptr;
@@ -30,5 +28,3 @@ UwbSpecInfo::UwbSpecInfo() : m_modState(false),
 UwbSpecInfo::~UwbSpecInfo() {
 
 }
-
-*/
