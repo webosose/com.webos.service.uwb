@@ -102,14 +102,76 @@ bool UwbServiceManager::deinit() {
 
 bool UwbServiceManager::getUwbServiceState(LSHandle *sh, LSMessage *message, void *data) {
     UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
+    LSError mLSError;
+    bool isSubscription = false;
+    pbnjson::JValue responseObj = pbnjson::Object();
+    LSErrorInit(&mLSError);
 
+    if (LSMessageIsSubscription(message)) {
+        isSubscription = true;
+        if (LSSubscriptionAdd(sh, "getUwbServiceState", message, &mLSError) == false) {
+            UWB_LOG_ERROR("Failed to add getUwbServiceState to subscription");
+
+            responseObj.put("returnValue", false);
+            responseObj.put("errorCode", UWB_UNKNOWN_ERROR);
+            responseObj.put("errorText", "Unknwon");
+            LSMessageReply(sh,message, responseObj.stringify().c_str() , &mLSError );
+            return true;
+        }
+    }
+
+    bool isServiceAvailable = false;
+    writeServiceState(responseObj, isServiceAvailable);
+
+    responseObj.put("returnValue", true);
+    responseObj.put("subscribed", isSubscription);
+
+    if (!LSMessageReply(sh, message, responseObj.stringify().c_str(), &mLSError))
+    {
+        UWB_LOG_ERROR("HANDLE_getUwbServiceState Message reply error!!");
+        LSErrorPrint(&mLSError, stdout);
+
+        return false;
+    }
     return true;
 }
 
 bool UwbServiceManager::getUwbSpecificInfo(LSHandle *sh, LSMessage *message, void *data) {
-    UWB_LOG_INFO("Luna API Called %s", __FUNCTION__ );
+    UWB_LOG_INFO("Luna API Called new %s", __FUNCTION__ );
+    LSError mLSError;
+    bool isSubscription = false;
+    pbnjson::JValue responseObj = pbnjson::Object();
+    LSErrorInit(&mLSError);
 
+    if (LSMessageIsSubscription(message)) {
+        isSubscription = true;
+        if (LSSubscriptionAdd(sh, "getUwbSpecificInfo", message, &mLSError) == false) {
+            UWB_LOG_ERROR("Failed to add getUwbSpecificInfo to subscription");
+
+            responseObj.put("returnValue", false);
+            responseObj.put("errorCode", UWB_UNKNOWN_ERROR);
+            responseObj.put("errorText", "Unknwon");
+            LSMessageReply(sh,message, responseObj.stringify().c_str() , &mLSError );
+            return true;
+        }
+    }
+
+    mResponseBuilder->buildSpecificInfo(responseObj, mUwbSpecInfo);
+    responseObj.put("returnValue", true);
+    responseObj.put("subscribed", isSubscription);
+
+    if (!LSMessageReply(sh, message, responseObj.stringify().c_str(), &mLSError))
+    {
+        UWB_LOG_ERROR("HANDLE_getUwbSpecificInfo Message reply error!!");
+        LSErrorPrint(&mLSError, stdout);
+        return false;
+    }
     return true;
+}
+
+void UwbServiceManager::writeServiceState(pbnjson::JValue &responseObj, bool isServiceAvailable) {
+    UWB_LOG_INFO("writeServiceState");
+    responseObj.put("serviceAvailability", isServiceAvailable);
 }
 
 bool UwbServiceManager::getRangingInfo(LSHandle *sh, LSMessage *message, void *data) {

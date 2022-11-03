@@ -54,6 +54,7 @@ public:
     void notifyDiscoveryStatus(bool discoveryStatus);
     void notifyPairingFlagChanged(bool pairingFlag);
     void notifyOpenSessionResponse(uint8_t sessionId);
+    void writeServiceState(pbnjson::JValue &responseObj, bool isServiceAvailable);
 
 private:
     UwbServiceManager();
@@ -82,6 +83,7 @@ private:
     inline static std::unique_ptr<UwbRangingInfo> mSavedUwbRangingInfo = nullptr; // for saving latest rangingInfo
     inline static std::unique_ptr<IResponseBuilder> mResponseBuilder{std::make_unique<UwbResponseBuilder>()};
     std::unordered_map<std::string , std::string> mRemoteDeviceMap{};
+    inline static UwbSpecInfo& mUwbSpecInfo = UwbSpecInfo::getInstance();
 };
 
 

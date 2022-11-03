@@ -18,9 +18,10 @@ using namespace std;
 
 class UwbSpecInfo {
 public:
-    static UwbSpecInfo* getInstance();
-
-    ~UwbSpecInfo();
+    static UwbSpecInfo& getInstance() {
+        static UwbSpecInfo instance;
+        return instance;
+    }
 
     bool getModState() {
         return m_modState;
@@ -48,10 +49,9 @@ public:
 
 private:
     UwbSpecInfo();
-
-    static UwbSpecInfo *m_uwbSpecInfo;
-    bool m_modState;
-    string m_fwVersion;
-    string m_fwCrc;
+    UwbSpecInfo& operator=(const UwbSpecInfo&)= delete;
+    bool m_modState = 0;
+    string m_fwVersion = "0";
+    string m_fwCrc = "0";
 };
 #endif
